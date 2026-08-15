@@ -35,7 +35,8 @@ export function LanguageSwitcher({ search = "" }: { search?: string }) {
     setOpen(false);
     if (next === locale) return;
     persistLocale(next);
-    router.push(`${withLocale(pathname, next)}${search}`);
+    const href = `${withLocale(pathname, next)}${search}`;
+    router.push(href as Parameters<typeof router.push>[0]);
   }
 
   return (

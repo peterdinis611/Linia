@@ -16,18 +16,24 @@ export function localeUrl(locale: Locale) {
   return siteUrl(localePath(locale));
 }
 
+export type HrefLangMap = Record<Locale | "x-default", string>;
+
+function hrefLangMap(toHref: (locale: Locale) => string): HrefLangMap {
+  const languages = {
+    "x-default": toHref(defaultLocale),
+  } as HrefLangMap;
+  for (const locale of locales) {
+    languages[locale] = toHref(locale);
+  }
+  return languages;
+}
+
 export function languageAlternatePaths() {
-  return {
-    "x-default": localePath(defaultLocale),
-    ...Object.fromEntries(locales.map((locale) => [locale, localePath(locale)])),
-  };
+  return hrefLangMap(localePath);
 }
 
 export function languageAlternateUrls() {
-  return {
-    "x-default": localeUrl(defaultLocale),
-    ...Object.fromEntries(locales.map((locale) => [locale, localeUrl(locale)])),
-  };
+  return hrefLangMap(localeUrl);
 }
 
 export function localeOgImagePath(locale: Locale) {
