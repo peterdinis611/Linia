@@ -88,5 +88,5 @@ export async function generateMetadata({
 }
 
 export default function Home() {
-  return <JourneySearch />;
+  return <JourneySearch/>;
 }

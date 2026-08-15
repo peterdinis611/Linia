@@ -20,7 +20,7 @@ function MapLoading() {
   const { t } = useI18n();
   return (
     <div className="map-loading" data-testid="map-loading">
-      <HallLoader compact label={t("map.loading")} />
+      <HallLoader label={t("map.loading")} />
     </div>
   );
 }

@@ -1,73 +1,65 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
-
-export type TrackVehicle = "train" | "bus";
+export type TrackVehicle = "train" | "car";
 
 export function SearchingTrack() {
-  const [vehicle, setVehicle] = useState<TrackVehicle | null>(null);
-  const markRef = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    setVehicle(Math.random() < 0.5 ? "train" : "bus");
-  }, []);
-
-  useEffect(() => {
-    const mark = markRef.current;
-    if (!mark) return;
-    const onLap = () => setVehicle((current) => (current === "train" ? "bus" : "train"));
-    mark.addEventListener("animationiteration", onLap);
-    return () => mark.removeEventListener("animationiteration", onLap);
-  }, [vehicle]);
-
   return (
-    <div className="searching-track" aria-hidden="true" data-vehicle={vehicle ?? undefined}>
-      {vehicle ? (
-        <span
-          ref={markRef}
-          className="searching-vehicle"
-          data-testid="searching-vehicle"
-          data-vehicle={vehicle}
-        >
-          {vehicle === "train" ? <TrainMark /> : <BusMark />}
+    <div className="searching-scene" aria-hidden="true" data-testid="searching-track">
+      <div className="searching-road">
+        <span className="searching-vehicle" data-testid="searching-vehicle" data-vehicle="car">
+          <CarMark />
         </span>
-      ) : null}
+      </div>
+      <div className="searching-railway">
+        <span className="searching-vehicle" data-testid="searching-vehicle" data-vehicle="train">
+          <TrainMark />
+        </span>
+      </div>
     </div>
+  );
+}
+
+function Wheel({ cx, cy, r }: { cx: number; cy: number; r: number }) {
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={r} />
+      <circle cx={cx} cy={cy} r={r * 0.38} opacity="0.35" />
+    </g>
+  );
+}
+
+function CarMark() {
+  return (
+    <svg viewBox="0 0 84 36" fill="currentColor">
+      <path d="M16 18.5 24.5 8.2h22.8l12.4 10.3H72c4.2 0 7.2 2.6 7.2 6.2v3.4H8.2V24c0-3.2 3.2-5.5 7.8-5.5z" />
+      <rect x="26.2" y="10.4" width="10.6" height="7.2" rx="0.8" opacity="0.32" />
+      <rect x="38.8" y="10.4" width="12.4" height="7.2" rx="0.8" opacity="0.32" />
+      <rect x="70.6" y="20.2" width="5.4" height="2.4" rx="0.6" opacity="0.55" />
+      <rect x="10.4" y="20.6" width="4.2" height="2.2" rx="0.5" opacity="0.4" />
+      <Wheel cx={22} cy={29.2} r={5.1} />
+      <Wheel cx={62} cy={29.2} r={5.1} />
+    </svg>
   );
 }
 
 function TrainMark() {
   return (
-    <svg viewBox="0 0 56 18" fill="currentColor">
-      <rect x="1.6" y="4.2" width="18.4" height="9.6" rx="1.1" />
-      <rect x="20.6" y="4.2" width="18.4" height="9.6" rx="1.1" />
-      <path d="M39.2 4.4h9.2L54.2 7.6v6.2H39.2z" />
-      <rect x="4.6" y="6.1" width="4.4" height="3.2" opacity="0.38" />
-      <rect x="11.6" y="6.1" width="4.4" height="3.2" opacity="0.38" />
-      <rect x="23.6" y="6.1" width="4.4" height="3.2" opacity="0.38" />
-      <rect x="30.6" y="6.1" width="4.4" height="3.2" opacity="0.38" />
-      <rect x="42.4" y="6.2" width="4.2" height="3.1" opacity="0.38" />
-      <circle cx="8.4" cy="15.1" r="1.85" />
-      <circle cx="17.2" cy="15.1" r="1.85" />
-      <circle cx="27.4" cy="15.1" r="1.85" />
-      <circle cx="36.2" cy="15.1" r="1.85" />
-      <circle cx="46.8" cy="15.1" r="1.85" />
-    </svg>
-  );
-}
-
-function BusMark() {
-  return (
-    <svg viewBox="0 0 48 18" fill="currentColor">
-      <path d="M2.2 5.1c0-1.2.9-2.2 2.1-2.2h37.2c1.6 0 2.9 1.2 3.1 2.8l.8 6.6H2.2z" />
-      <rect x="2.2" y="12.3" width="43.2" height="1.6" />
-      <rect x="6.2" y="5.2" width="5.1" height="3.4" opacity="0.38" />
-      <rect x="13.4" y="5.2" width="5.1" height="3.4" opacity="0.38" />
-      <rect x="20.6" y="5.2" width="5.1" height="3.4" opacity="0.38" />
-      <rect x="27.8" y="5.2" width="5.1" height="3.4" opacity="0.38" />
-      <rect x="36.6" y="5.2" width="6.4" height="3.6" opacity="0.28" />
-      <circle cx="11.2" cy="15.1" r="1.95" />
-      <circle cx="36.4" cy="15.1" r="1.95" />
+    <svg viewBox="0 0 128 36" fill="currentColor">
+      <rect x="4" y="9" width="34" height="16" rx="1.8" />
+      <rect x="40" y="9" width="34" height="16" rx="1.8" />
+      <path d="M76 9h28.5L116 15.4v9.6H76z" />
+      <path d="M104 5.2h6.4v4.2h-6.4z" opacity="0.85" />
+      <path d="M106.2 1.6h2.2v4h-2.2z" />
+      <rect x="9" y="12.2" width="8.4" height="5.4" rx="0.5" opacity="0.32" />
+      <rect x="20.2" y="12.2" width="8.4" height="5.4" rx="0.5" opacity="0.32" />
+      <rect x="45" y="12.2" width="8.4" height="5.4" rx="0.5" opacity="0.32" />
+      <rect x="56.2" y="12.2" width="8.4" height="5.4" rx="0.5" opacity="0.32" />
+      <rect x="82" y="12.2" width="10.2" height="6" rx="0.5" opacity="0.28" />
+      <rect x="113.4" y="17.4" width="5.6" height="2.4" rx="0.5" opacity="0.55" />
+      <Wheel cx={14} cy={29.4} r={4.6} />
+      <Wheel cx={28} cy={29.4} r={4.6} />
+      <Wheel cx={50} cy={29.4} r={4.6} />
+      <Wheel cx={64} cy={29.4} r={4.6} />
+      <Wheel cx={90} cy={29.4} r={4.6} />
+      <Wheel cx={104} cy={29.4} r={4.6} />
     </svg>
   );
 }

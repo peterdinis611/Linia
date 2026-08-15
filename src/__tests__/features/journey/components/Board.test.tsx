@@ -13,16 +13,13 @@ describe("StationClock", () => {
 });
 
 describe("SearchingBoard", () => {
-  it("shows the live search copy", async () => {
+  it("shows the live search copy", () => {
     renderHall(<SearchingBoard />);
     const board = screen.getByTestId("searching-board");
     expect(board).toHaveTextContent("Checking live connections");
     expect(board).toHaveAttribute("role", "status");
     expect(board).toHaveAttribute("aria-busy", "true");
-    expect(await screen.findByTestId("searching-vehicle")).toHaveAttribute(
-      "data-vehicle",
-      expect.stringMatching(/^(train|bus)$/),
-    );
+    expect(screen.getAllByTestId("searching-vehicle")).toHaveLength(2);
   });
 });
 

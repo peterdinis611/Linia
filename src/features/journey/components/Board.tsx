@@ -47,24 +47,9 @@ export function SearchingBoard() {
       aria-live="polite"
       aria-busy="true"
     >
-      <div className="searching-signal" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </div>
       <div>
         <p className="kicker">{t("board.searchingKicker")}</p>
         <p className="font-display mt-1 text-lg italic">{t("board.searchingTitle")}</p>
-      </div>
-      <div className="searching-flaps" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-        <span />
-        <span />
-        <span />
-        <span />
-        <span />
       </div>
       <SearchingTrack />
     </div>

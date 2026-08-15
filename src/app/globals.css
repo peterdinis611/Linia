@@ -1537,88 +1537,90 @@ body::before {
   color: var(--amber);
 }
 
-.searching-signal {
-  display: flex;
-  gap: 8px;
+.searching-scene {
+  display: grid;
+  gap: 0.55rem;
+  width: 100%;
 }
 
-.searching-signal span {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--ink-muted) 28%, var(--board));
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-  animation: searching-lamp 1.35s ease-in-out infinite;
-}
-
-.searching-signal span:nth-child(1) {
-  --lamp: var(--signal);
-}
-
-.searching-signal span:nth-child(2) {
-  --lamp: var(--amber);
-  animation-delay: 0.18s;
-}
-
-.searching-signal span:nth-child(3) {
-  --lamp: #7dce8a;
-  animation-delay: 0.36s;
-}
-
-.searching-flaps {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-.searching-flaps span {
-  display: block;
-  width: 11px;
-  height: 16px;
-  background: var(--board-face);
-  border: 1px solid color-mix(in srgb, var(--amber) 22%, transparent);
-  box-shadow: inset 0 -7px 0 color-mix(in srgb, #000 22%, transparent);
-  animation: flap 1.05s ease-in-out infinite;
-}
-
-.searching-flaps span:nth-child(2) { animation-delay: 0.08s; }
-.searching-flaps span:nth-child(3) { animation-delay: 0.16s; }
-.searching-flaps span:nth-child(4) { animation-delay: 0.24s; }
-.searching-flaps span:nth-child(5) { animation-delay: 0.32s; }
-.searching-flaps span:nth-child(6) { animation-delay: 0.4s; }
-.searching-flaps span:nth-child(7) { animation-delay: 0.48s; }
-.searching-flaps span:nth-child(8) { animation-delay: 0.56s; }
-
-.searching-track {
+.searching-road,
+.searching-railway {
   position: relative;
-  height: 1.45rem;
   overflow: hidden;
+  height: 2.7rem;
 }
 
-.searching-track::before {
+.searching-road::before {
   content: "";
   position: absolute;
   right: 0;
-  bottom: 3px;
+  bottom: 0.42rem;
+  left: 0;
+  height: 3px;
+  background: color-mix(in srgb, var(--ink-muted) 55%, transparent);
+}
+
+.searching-road::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0.42rem;
   left: 0;
   height: 3px;
   background: repeating-linear-gradient(
     90deg,
-    color-mix(in srgb, var(--amber) 38%, transparent) 0 8px,
-    transparent 8px 16px
+    var(--amber) 0 12px,
+    transparent 12px 22px
   );
+  animation: searching-ground 0.7s linear infinite;
+}
+
+.searching-railway::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0.28rem;
+  left: 0;
+  height: 11px;
+  background: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--amber) 70%, transparent) 0 9px,
+    transparent 9px 18px
+  );
+  animation: searching-ground 0.85s linear infinite;
+}
+
+.searching-railway::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0.52rem;
+  left: 0;
+  height: 2px;
+  background: color-mix(in srgb, var(--ink) 55%, var(--amber));
+  box-shadow: 0 6px 0 color-mix(in srgb, var(--ink) 55%, var(--amber));
 }
 
 .searching-vehicle {
   position: absolute;
-  bottom: 2px;
-  left: -3.4rem;
+  left: -9rem;
   display: block;
-  width: 3.25rem;
-  height: 1.1rem;
   color: var(--signal);
-  filter: drop-shadow(0 0 8px var(--signal-glow));
-  animation: searching-train 1.7s linear infinite;
+  filter: drop-shadow(0 0 10px var(--signal-glow));
+}
+
+.searching-vehicle[data-vehicle="car"] {
+  bottom: 0.12rem;
+  width: 6.4rem;
+  height: 2.35rem;
+  animation: searching-drive 4.1s linear infinite;
+}
+
+.searching-vehicle[data-vehicle="train"] {
+  bottom: 0.08rem;
+  width: 9.2rem;
+  height: 2.45rem;
+  animation: searching-drive 5.2s linear infinite;
 }
 
 .searching-vehicle svg {
@@ -1627,9 +1629,19 @@ body::before {
   height: 100%;
 }
 
-.hall-loader-compact .searching-vehicle {
-  width: 2.85rem;
-  height: 1rem;
+.hall-loader-compact .searching-road,
+.hall-loader-compact .searching-railway {
+  height: 2.15rem;
+}
+
+.hall-loader-compact .searching-vehicle[data-vehicle="car"] {
+  width: 5rem;
+  height: 1.85rem;
+}
+
+.hall-loader-compact .searching-vehicle[data-vehicle="train"] {
+  width: 7.1rem;
+  height: 1.9rem;
 }
 
 .map-loading {
@@ -1654,42 +1666,14 @@ body::before {
   margin-top: 0;
 }
 
-.hall-loader-compact .searching-track {
+.hall-loader .searching-scene,
+.hall-loader-compact .searching-scene {
   justify-self: stretch;
   width: 100%;
 }
 
 .hall-loader-compact .hall-loader-label {
   text-align: center;
-}
-
-.hall-loader-dial {
-  position: relative;
-  width: 3.4rem;
-  height: 3.4rem;
-}
-
-.hall-loader-compact .hall-loader-dial {
-  width: 2.6rem;
-  height: 2.6rem;
-}
-
-.hall-loader-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  border: 3px solid color-mix(in srgb, var(--rule-strong) 55%, transparent);
-  border-top-color: var(--signal);
-  border-right-color: var(--amber);
-  animation: spin 0.8s linear infinite;
-}
-
-.hall-loader-hub {
-  position: absolute;
-  inset: 30%;
-  border-radius: 999px;
-  background: var(--board);
-  box-shadow: 0 0 0 2px var(--amber);
 }
 
 .hall-loader-label {
@@ -2091,24 +2075,21 @@ body::before {
   }
 }
 
-@keyframes searching-lamp {
-  0%,
-  100% {
-    background: color-mix(in srgb, var(--ink-muted) 28%, var(--board));
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+@keyframes searching-drive {
+  from {
+    left: -9.4rem;
   }
-  40% {
-    background: var(--lamp);
-    box-shadow: 0 0 10px color-mix(in srgb, var(--lamp) 70%, transparent);
+  to {
+    left: calc(100% + 0.5rem);
   }
 }
 
-@keyframes searching-train {
+@keyframes searching-ground {
   from {
-    left: -3.4rem;
+    background-position: 0 0;
   }
   to {
-    left: calc(100% + 0.4rem);
+    background-position: -40px 0;
   }
 }
 
@@ -2248,21 +2229,19 @@ body::before {
   .ticket,
   .search-cta,
   .search-cta-spin,
-  .hall-loader-ring,
-  .searching-flaps span,
-  .searching-signal span,
   .searching-vehicle,
+  .searching-road::after,
+  .searching-railway::before,
   .searching-ribbon::after {
     animation: none !important;
     transition: none !important;
   }
 
-  .searching-vehicle {
-    left: 0.35rem;
+  .searching-vehicle[data-vehicle="car"] {
+    left: 0.55rem;
   }
 
-  .searching-signal span:first-child {
-    background: var(--signal);
-    box-shadow: 0 0 8px var(--signal-glow);
+  .searching-vehicle[data-vehicle="train"] {
+    left: 2.4rem;
   }
 }
