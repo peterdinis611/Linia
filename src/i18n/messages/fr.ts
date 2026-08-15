@@ -15,7 +15,7 @@ export const fr: Messages = {
       "recherche de bus, horaires de train, autocar, Europe, Transitous, itinéraires en direct",
   },
   brand: {
-    kicker: "Horaires européens ouverts",
+    kicker: "Horaires ouverts d'Europe",
     liveBoard: "Tableau en direct",
   },
   language: {
@@ -50,13 +50,13 @@ export const fr: Messages = {
       "Tapez où la ligne se termine et choisissez-la dans la liste. Inverser tourne les deux bouts.",
     step2Title: "Ajouter un arrêt si besoin",
     step2Body:
-      "Gardez Point à point pour un simple A vers B. Passez à Via pour traverser jusqu’à deux gares.",
+      "Gardez Point à point pour un simple A vers B. Passez à Via arrêts pour traverser jusqu’à deux gares. Le tableau de gare imprime ce qui part d’un arrêt.",
     step3Title: "Réglez l’heure du voyage",
     step3Body:
       "Partez maintenant, choisissez une heure, ou tamponnez Toute la journée pour chaque trajet de la date. Arriver avant tourne l’horloge vers l’arrivée.",
     stepMapTitle: "Lire la carte",
     stepMapBody:
-      "Épinglez l’origine et la destination sur le papier. Déplacez les épingles. Je suis ici et la carte entière sont à côté du billet.",
+      "Épinglez l’origine et la destination sur le papier. Déplacez les épingles. « Je suis ici » et la carte entière restent à côté du billet.",
     step4Title: "Trouver des correspondances et lire la ligne",
     step4Body:
       "Comparez les transporteurs, prenez un billet, puis suivez le trajet arrêt par arrêt. Les retards en direct s’impriment sur la bande.",
@@ -64,7 +64,7 @@ export const fr: Messages = {
   search: {
     formLabel: "Recherche d’itinéraire",
     kicker: "Émettre un billet",
-    title: "D’ici jusqu’là",
+    title: "D’ici jusque-là",
     origin: "De",
     originPlaceholder: "Gare, ville ou adresse",
     destination: "Vers",
@@ -73,7 +73,7 @@ export const fr: Messages = {
     route: "Itinéraire",
     routeType: "Type d’itinéraire",
     pointToPoint: "Point à point",
-    viaStops: "Via",
+    viaStops: "Via arrêts",
     stationBoard: "Tableau de gare",
     viaN: "Via {n}",
     viaPlaceholder: "Arrêt sur le trajet",
@@ -113,12 +113,12 @@ export const fr: Messages = {
     accessible: "Accessible",
     bike: "Vélo",
     nightRail: "Train de nuit",
-    nearbyBoard: "Les départs",
-    pinLine: "Épingler la ligne",
-    pinnedHome: "Maison",
+    nearbyBoard: "Ce qui part d'ici",
+    pinLine: "Épingler ce trajet",
+    pinnedHome: "Chez moi",
     pinnedWork: "Au travail",
-    pinnedOther: "Cette ligne",
-    unpinLine: "Retirer",
+    pinnedOther: "Ce trajet",
+    unpinLine: "Détacher",
     submitBoard: "Lire le tableau",
     date: "Date",
     time: "Heure",
@@ -231,7 +231,7 @@ export const fr: Messages = {
     sortTransfers: "Le moins de correspondances",
     resetFilters: "Réinitialiser les filtres",
     stale: "Les heures ont pu changer",
-    onTheLine: "Sur cette ligne",
+    onTheLine: "En cours",
   },
   share: {
     open: "Partager",
@@ -254,8 +254,8 @@ export const fr: Messages = {
     title: "Refaire ce voyage",
   },
   pinned: {
-    kicker: "Lignes épinglées",
-    title: "Tes billets habituels",
+    kicker: "Trajets épinglés",
+    title: "Vos billets habituels",
   },
   format: {
     minutes: "{count} min",
@@ -330,7 +330,7 @@ export const fr: Messages = {
     FUNICULAR: "Funiculaire",
     AERIAL_LIFT: "Télécabine",
     AIRPLANE: "Vol",
-    TRANSIT: "Transit",
+    TRANSIT: "Transports",
   },
   status: {
     notFoundKicker: "Aucun chemin",
@@ -345,7 +345,7 @@ export const fr: Messages = {
     errorBodyDigest: "Une panne de ligne a arrêté la page. Référence {digest}. Réessayez le tableau.",
     retry: "Réessayer",
     globalKicker: "La halle est fermée",
-    globalTitle: "Le tableau racine a échoué",
+    globalTitle: "Le tableau principal a cédé",
     globalBody: "La disposition même de la gare a coincé. Essayez d’imprimer la halle à nouveau.",
     globalBodyDigest: "La disposition même de la gare a coincé. Référence {digest}.",
     loadingKicker: "Consultation du tableau",

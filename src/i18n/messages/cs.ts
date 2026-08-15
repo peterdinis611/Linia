@@ -10,13 +10,13 @@ export const cs: Messages = {
     shareTitle: "{from} → {to} — Linia",
     shareDescription: "Veřejná jízdenka Linia z {from} do {to}.",
     shareBoardTitle: "{from} — tabule Linia",
-    shareBoardDescription: "Živé odjezdy z {from}.",
+    shareBoardDescription: "Odjezdy živě z {from}.",
     keywords:
       "vyhledávání autobusů, vlakový jízdní řád, dálkový autobus, Evropa, Transitous, živá spojení",
   },
   brand: {
-    kicker: "Otevřené evropské jízdní řády",
-    liveBoard: "Živá tabule",
+    kicker: "Otevřené jízdní řády Evropy",
+    liveBoard: "Tabule živě",
   },
   language: {
     label: "Jazyk",
@@ -38,7 +38,7 @@ export const cs: Messages = {
     progress: "{{current}} / {{total}}",
     walk: "Projít halou",
     intro:
-      "Tato hala tiskne živé autobusové a vlakové linky po Evropě. Jděte po razítkách: zadejte konce, nastavte hodiny, potom čtěte tabuli.",
+      "Tato hala tiskne živě autobusové a vlakové linky po Evropě. Jděte po razítkách: zadejte konce, nastavte hodiny, potom čtěte tabuli.",
     step1Title: "Zadejte odkud a kam",
     step1Body:
       "Napište stanici, město nebo adresu a vyberte ji ze seznamu. Místa můžete i připnout na mapě a špendlíky posunout.",
@@ -50,7 +50,7 @@ export const cs: Messages = {
       "Napište, kde linka končí, a vyberte ji ze seznamu. Výměna otočí oba konce.",
     step2Title: "Přidejte zastávku, pokud ji potřebujete",
     step2Body:
-      "Nechte Z bodu do bodu pro jednoduché A do B. Zapněte Přes zastávky, chcete-li jet až dvěma stanicemi.",
+      "Nechte Z bodu do bodu pro jednoduché A do B. Zapněte Přes zastávky, chcete-li jet až dvěma stanicemi. Tabule stanice tiskne, co odjíždí z jednoho místa.",
     step3Title: "Nastavte, kdy cestujete",
     step3Body:
       "Odjeďte teď, vyberte čas, nebo orazítkujte Celý den pro každé spojení na datum. Přijet do otočí hodiny na příjezd.",
@@ -81,7 +81,7 @@ export const cs: Messages = {
     removeViaN: "Odebrat zastávku {n}",
     addVia: "Přidat zastávku",
     leaveNow: "Odjet teď",
-    arriveBy: "Přijet do",
+    arriveBy: "Příjezd do",
     allDay: "Celý den",
     allDayKicker: "Tabule dne",
     arrival: "Příjezd",
@@ -113,8 +113,8 @@ export const cs: Messages = {
     accessible: "Bezbariérové",
     bike: "Kolo",
     nightRail: "Noční vlak",
-    nearbyBoard: "Co odsud jede",
-    pinLine: "Připnout trať",
+    nearbyBoard: "Co odjíždí odtud",
+    pinLine: "Připnout tuto trať",
     pinnedHome: "Domů",
     pinnedWork: "Do práce",
     pinnedOther: "Tato trať",
@@ -151,10 +151,10 @@ export const cs: Messages = {
   board: {
     clock: "Nádražní hodiny",
     searchingKicker: "Prohledávám tabuli",
-    searchingTitle: "Ověřuji živá spojení",
+    searchingTitle: "Ověřuji spojení živě",
     idleKicker: "Tabule je otevřená",
     idleTitle: "Pojmenujte stanici. Pojmenujte město. Překročte hranici.",
-    idleBody: "Živé evropské vlakové a autobusové časy, tištěné jako papírový jízdní řád.",
+    idleBody: "Evropské vlakové a autobusové časy živě, tištěné jako papírový jízdní řád.",
     emptyMark: "Bez cesty",
     emptyKicker: "Na tento odjezd nic nejede",
     emptyTitle: "Nenašla se žádná spojení",
@@ -207,7 +207,7 @@ export const cs: Messages = {
     here: "Tady jsem",
     fullscreen: "Celá mapa",
     exitFullscreen: "Zavřít celou mapu",
-    approximate: "Čára je přibližná, dokud se nevytiskne živá trasa.",
+    approximate: "Čára je přibližná, dokud se nevytiskne trasa živě.",
   },
   results: {
     departures: "Odjezdy",
@@ -229,9 +229,9 @@ export const cs: Messages = {
     sortDepart: "Odjezd",
     sortFastest: "Nejrychlejší",
     sortTransfers: "Nejméně přestupů",
-    resetFilters: "Zrušiť filtry",
+    resetFilters: "Zrušit filtry",
     stale: "Časy se mohly změnit",
-    onTheLine: "Na této trati",
+    onTheLine: "Na trati",
   },
   share: {
     open: "Sdílet",
@@ -345,12 +345,12 @@ export const cs: Messages = {
     errorBodyDigest: "Porucha na trati zastavila stránku. Odkaz {digest}. Zkuste tabuli znovu.",
     retry: "Zkusit znovu",
     globalKicker: "Hala je zavřená",
-    globalTitle: "Kořenová tabule selhala",
+    globalTitle: "Hlavní tabule selhala",
     globalBody: "Zasekla se samotná dispozice stanice. Zkuste halu vytisknout znovu.",
     globalBodyDigest: "Zasekla se samotná dispozice stanice. Odkaz {digest}.",
     loadingKicker: "Prohledávám tabuli",
     loadingTitle: "Tiskne se jízdní řád",
-    loadingBody: "Živé evropské vlakové a autobusové časy jsou na cestě. Počkejte na nástupišti.",
+    loadingBody: "Evropské vlakové a autobusové časy živě jsou na cestě. Počkejte na nástupišti.",
   },
   footer: {
     printedFrom: "Tištěno z",

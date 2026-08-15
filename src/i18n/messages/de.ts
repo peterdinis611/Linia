@@ -15,7 +15,7 @@ export const de: Messages = {
       "Bussuche, Bahnfahrplan, Fernbus, Europa, Transitous, Live-Verbindungen",
   },
   brand: {
-    kicker: "Offene europäische Fahrpläne",
+    kicker: "Offene Fahrpläne Europas",
     liveBoard: "Live-Tafel",
   },
   language: {
@@ -50,13 +50,13 @@ export const de: Messages = {
       "Tippe, wo die Linie endet, und wähle sie aus der Liste. Tauschen dreht beide Enden um.",
     step2Title: "Einen Halt hinzufügen, wenn nötig",
     step2Body:
-      "Lass Punkt zu Punkt für ein einfaches A nach B. Schalte Via-Halte ein, um bis zu zwei Bahnhöfe anzufahren.",
+      "Lass Punkt zu Punkt für ein einfaches A nach B. Schalte Via-Halte ein, um bis zu zwei Bahnhöfe anzufahren. Die Bahnhofstafel druckt, was an einem Halt abfährt.",
     step3Title: "Festlegen, wann du fährst",
     step3Body:
       "Jetzt abfahren, eine Uhrzeit wählen, oder Ganzer Tag stempeln für jede Verbindung am Datum. Ankunft bis dreht die Uhr auf die Ankunft.",
     stepMapTitle: "Die Karte lesen",
     stepMapBody:
-      "Heftet Start und Ziel aufs Papier. Ziehe die Nadeln. Ich bin hier und die ganze Karte sitzen beim Ticket.",
+      "Hefte Start und Ziel aufs Papier. Ziehe die Nadeln. Ich bin hier und die ganze Karte sitzen beim Ticket.",
     step4Title: "Verbindungen finden und die Linie lesen",
     step4Body:
       "Vergleiche Betreiber, nimm ein Ticket und folge der Fahrt Halt für Halt. Live-Verspätungen stehen auf dem Streifen.",
@@ -113,12 +113,12 @@ export const de: Messages = {
     accessible: "Barrierefrei",
     bike: "Fahrrad",
     nightRail: "Nachtzug",
-    nearbyBoard: "Was fährt ab",
-    pinLine: "Linie anheften",
+    nearbyBoard: "Was hier abfährt",
+    pinLine: "Diese Linie anheften",
     pinnedHome: "Nach Hause",
     pinnedWork: "Zur Arbeit",
     pinnedOther: "Diese Linie",
-    unpinLine: "Lösen",
+    unpinLine: "Losheften",
     submitBoard: "Tafel lesen",
     date: "Datum",
     time: "Uhrzeit",
@@ -154,7 +154,7 @@ export const de: Messages = {
     searchingTitle: "Live-Verbindungen werden geprüft",
     idleKicker: "Die Tafel ist offen",
     idleTitle: "Nenne einen Bahnhof. Nenne eine Stadt. Überschreite eine Grenze.",
-    idleBody: "Live europäische Bahn- und Buszeiten, gedruckt wie ein Papierfahrplan.",
+    idleBody: "Europäische Bahn- und Buszeiten live, gedruckt wie ein Papierfahrplan.",
     emptyMark: "Kein Weg",
     emptyKicker: "Nichts auf dieser Abfahrt",
     emptyTitle: "Keine Verbindungen gefunden",
@@ -231,7 +231,7 @@ export const de: Messages = {
     sortTransfers: "Wenigste Umstiege",
     resetFilters: "Filter zurücksetzen",
     stale: "Zeiten können sich geändert haben",
-    onTheLine: "Auf dieser Linie",
+    onTheLine: "Unterwegs",
   },
   share: {
     open: "Teilen",
@@ -255,7 +255,7 @@ export const de: Messages = {
   },
   pinned: {
     kicker: "Angeheftete Linien",
-    title: "Deine üblichen Tickets",
+    title: "Deine Stammstrecken",
   },
   format: {
     minutes: "{count} min",
@@ -345,7 +345,7 @@ export const de: Messages = {
     errorBodyDigest: "Ein Streckenfehler hat die Seite gestoppt. Hinweis {digest}. Versuche die Tafel erneut.",
     retry: "Nochmal versuchen",
     globalKicker: "Die Halle ist geschlossen",
-    globalTitle: "Die Stammtafel ist ausgefallen",
+    globalTitle: "Die Haupttafel ist ausgefallen",
     globalBody: "Die Bahnhofsanlage selbst hakte. Versuche, die Halle erneut zu drucken.",
     globalBodyDigest: "Die Bahnhofsanlage selbst hakte. Hinweis {digest}.",
     loadingKicker: "Tafel wird befragt",

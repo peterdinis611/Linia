@@ -10,13 +10,13 @@ export const pl: Messages = {
     shareTitle: "{from} → {to} — Linia",
     shareDescription: "Publiczny bilet Linia z {from} do {to}.",
     shareBoardTitle: "{from} — tablica Linia",
-    shareBoardDescription: "Żywe odjazdy z {from}.",
+    shareBoardDescription: "Odjazdy na żywo z {from}.",
     keywords:
       "wyszukiwanie autobusów, rozkład pociągów, autokar, Europa, Transitous, żywe połączenia",
   },
   brand: {
-    kicker: "Otwarte europejskie rozkłady",
-    liveBoard: "Żywa tablica",
+    kicker: "Otwarte rozkłady jazdy Europy",
+    liveBoard: "Tablica na żywo",
   },
   language: {
     label: "Język",
@@ -36,9 +36,9 @@ export const pl: Messages = {
     next: "Dalej",
     back: "Wstecz",
     progress: "{{current}} / {{total}}",
-    walk: "Przejść halę",
+    walk: "Przejdź halę",
     intro:
-      "Ta hala drukuje żywe autobusowe i kolejowe linie po Europie. Idź po pieczątkach: podaj końce, ustaw zegar, potem czytaj tablicę.",
+      "Ta hala drukuje na żywo autobusowe i kolejowe linie po Europie. Idź po pieczątkach: podaj końce, ustaw zegar, potem czytaj tablicę.",
     step1Title: "Podaj skąd i dokąd",
     step1Body:
       "Wpisz stację, miasto lub adres i wybierz z listy. Miejsca możesz też przypiąć na mapie i przesunąć pinezki.",
@@ -50,7 +50,7 @@ export const pl: Messages = {
       "Wpisz, gdzie linia się kończy, i wybierz z listy. Zamiana odwraca oba końce.",
     step2Title: "Dodaj przystanek, jeśli trzeba",
     step2Body:
-      "Zostaw Z punktu do punktu dla prostego A do B. Włącz Przez przystanki, by przejechać przez dwie stacje.",
+      "Zostaw Z punktu do punktu dla prostego A do B. Włącz Przez przystanki, by przejechać przez dwie stacje. Tablica stacji drukuje, co odjeżdża z jednego przystanku.",
     step3Title: "Ustaw, kiedy jedziesz",
     step3Body:
       "Wyjedź teraz, wybierz godzinę albo ostempluj Cały dzień, by zobaczyć wszystkie połączenia z wybranej daty. Przyjazd do obraca zegar na przyjazd.",
@@ -59,7 +59,7 @@ export const pl: Messages = {
       "Przypnij start i cel na papierze. Przesuń pinezki. Tu jestem i cała mapa są przy bilecie.",
     step4Title: "Znajdź połączenia i przeczytaj linię",
     step4Body:
-      "Porównaj przewoźników, wybierz bilet i śledź podróż przystanek po przystanku. Żywe opóźnienia są na pasku.",
+      "Porównaj przewoźników, wybierz bilet i śledź podróż przystanek po przystanku. Opóźnienia na żywo są na pasku.",
   },
   search: {
     formLabel: "Wyszukiwanie połączenia",
@@ -113,9 +113,9 @@ export const pl: Messages = {
     accessible: "Bez barier",
     bike: "Rower",
     nightRail: "Pociąg nocny",
-    nearbyBoard: "Co odjeżdża",
-    pinLine: "Przypnij linię",
-    pinnedHome: "Dom",
+    nearbyBoard: "Co stąd odjeżdża",
+    pinLine: "Przypnij tę linię",
+    pinnedHome: "Do domu",
     pinnedWork: "Do pracy",
     pinnedOther: "Ta linia",
     unpinLine: "Odepnij",
@@ -151,10 +151,10 @@ export const pl: Messages = {
   board: {
     clock: "Zegar stacyjny",
     searchingKicker: "Przeszukuję tablicę",
-    searchingTitle: "Sprawdzam żywe połączenia",
+    searchingTitle: "Sprawdzam połączenia na żywo",
     idleKicker: "Tablica jest otwarta",
     idleTitle: "Nazwij stację. Nazwij miasto. Przekrocz granicę.",
-    idleBody: "Żywe europejskie czasy pociągów i autobusów, drukowane jak papierowy rozkład.",
+    idleBody: "Europejskie godziny pociągów i autobusów na żywo, drukowane jak papierowy rozkład.",
     emptyMark: "Bez drogi",
     emptyKicker: "Nic na ten odjazd",
     emptyTitle: "Nie znaleziono połączeń",
@@ -231,7 +231,7 @@ export const pl: Messages = {
     sortTransfers: "Najmniej przesiadek",
     resetFilters: "Wyczyść filtry",
     stale: "Godziny mogły się zmienić",
-    onTheLine: "Na tej linii",
+    onTheLine: "W drodze",
   },
   share: {
     open: "Udostępnij",
@@ -254,8 +254,8 @@ export const pl: Messages = {
     title: "Znów tę podróż",
   },
   pinned: {
-    kicker: "Przypięte linie",
-    title: "Twoje zwykłe bilety",
+    kicker: "Przypięte trasy",
+    title: "Twoje stałe bilety",
   },
   format: {
     minutes: "{count} min",
@@ -327,7 +327,7 @@ export const pl: Messages = {
     TRAM: "Tramwaj",
     FERRY: "Prom",
     CABLE_CAR: "Kolejka",
-    FUNICULAR: "Funikular",
+    FUNICULAR: "Kolejka terenowa",
     AERIAL_LIFT: "Gondola",
     AIRPLANE: "Lot",
     TRANSIT: "Komunikacja",
@@ -350,7 +350,7 @@ export const pl: Messages = {
     globalBodyDigest: "Zaciął się sam układ stacji. Odniesienie {digest}.",
     loadingKicker: "Przeszukuję tablicę",
     loadingTitle: "Drukuje się rozkład",
-    loadingBody: "Żywe europejskie czasy pociągów i autobusów są w drodze. Poczekaj na peronie.",
+    loadingBody: "Europejskie czasy pociągów i autobusów na żywo są w drodze. Poczekaj na peronie.",
   },
   footer: {
     printedFrom: "Drukowane z",

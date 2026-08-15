@@ -4,7 +4,7 @@ export const it: Messages = {
   meta: {
     title: "Linia — ricerca di bus e treni in Europa",
     description:
-      "Cerca itinerari live di bus e treni in Europa con i dati aperti di Transitous.",
+      "Cerca itinerari in diretta di bus e treni in Europa con i dati aperti di Transitous.",
     notFoundTitle: "Non trovato — Linia",
     notFoundDescription: "Questa pagina dell'orario non esiste.",
     shareTitle: "{from} → {to} — Linia",
@@ -12,11 +12,11 @@ export const it: Messages = {
     shareBoardTitle: "{from} — tabellone Linia",
     shareBoardDescription: "Partenze in diretta da {from}.",
     keywords:
-      "ricerca bus Europa, orario treni, pullman, trasporto pubblico, Transitous, itinerari live",
+      "ricerca bus Europa, orario treni, pullman, trasporto pubblico, Transitous, itinerari in diretta",
   },
   brand: {
-    kicker: "Orari europei aperti",
-    liveBoard: "Tabellone live",
+    kicker: "Orari aperti d'Europa",
+    liveBoard: "Tabellone in diretta",
   },
   language: {
     label: "Lingua",
@@ -50,16 +50,16 @@ export const it: Messages = {
       "Scrivi dove finisce la linea e sceglila dall'elenco. Inverti scambia le due estremità.",
     step2Title: "Aggiungi una fermata se ti serve",
     step2Body:
-      "Lascia Punto a punto per un semplice A-B. Passa a Via fermate per transitare da fino a due stazioni.",
+      "Lascia Punto a punto per un semplice A-B. Passa a Via fermate per transitare da al massimo due stazioni. Il tabellone stampa cosa parte da una fermata.",
     step3Title: "Imposta quando viaggi",
     step3Body:
       "Parti ora, scegli un orario, o timbra Tutto il giorno per ogni collegamento della data. Arrivo entro gira l'orologio sull'arrivo.",
     stepMapTitle: "Leggi la mappa",
     stepMapBody:
-      "Fissa partenza e destinazione sulla carta. Trascina gli spilli. Qui sono e la mappa intera stanno col biglietto.",
+      "Fissa partenza e destinazione sulla carta. Trascina gli spilli. Sono qui e la mappa intera stanno col biglietto.",
     step4Title: "Trova i collegamenti e leggi la linea",
     step4Body:
-      "Confronta i vettori, scegli un biglietto, poi segui il viaggio fermata per fermata. I ritardi live si stampano sulla striscia.",
+      "Confronta i vettori, scegli un biglietto, poi segui il viaggio fermata per fermata. I ritardi in diretta si stampano sulla striscia.",
   },
   search: {
     formLabel: "Ricerca viaggio",
@@ -113,12 +113,12 @@ export const it: Messages = {
     accessible: "Accessibile",
     bike: "Bici",
     nightRail: "Treno notturno",
-    nearbyBoard: "Cosa parte",
-    pinLine: "Fissa la linea",
-    pinnedHome: "Casa",
+    nearbyBoard: "Cosa parte da qui",
+    pinLine: "Fissa questo tragitto",
+    pinnedHome: "A casa",
     pinnedWork: "Al lavoro",
-    pinnedOther: "Questa linea",
-    unpinLine: "Rimuovi",
+    pinnedOther: "Questo tragitto",
+    unpinLine: "Stacca",
     submitBoard: "Leggi il tabellone",
     date: "Data",
     time: "Ora",
@@ -152,7 +152,7 @@ export const it: Messages = {
   board: {
     clock: "Orologio di stazione",
     searchingKicker: "Consulto il tabellone",
-    searchingTitle: "Controllo i collegamenti live",
+    searchingTitle: "Controllo i collegamenti in diretta",
     idleKicker: "Il tabellone è aperto",
     idleTitle: "Nomina una stazione. Nomina una città. Attraversa un confine.",
     idleBody:
@@ -210,18 +210,18 @@ export const it: Messages = {
     here: "Sono qui",
     fullscreen: "Mappa intera",
     exitFullscreen: "Esci dalla mappa intera",
-    approximate: "La linea è approssimativa finché non si stampa il percorso live.",
+    approximate: "La linea è approssimativa finché non si stampa il percorso in diretta.",
   },
   results: {
     departures: "Partenze",
-    live: "Live",
+    live: "In diretta",
     emptyDirect: "Nessun collegamento diretto. Prova Cambi, o cerca di nuovo.",
     emptyDirectCarriers: "Nessun collegamento diretto per i vettori scelti.",
     emptyTransfers: "Nessun collegamento con cambio. Prova Diretti, o cerca di nuovo.",
     emptyTransfersCarriers: "Nessun collegamento con cambio per i vettori scelti.",
     emptyCarriers: "Nessun collegamento per i vettori scelti.",
     direct: "Diretti",
-    liveDelay: "ritardo live",
+    liveDelay: "ritardo in diretta",
     earlier: "Prima",
     later: "Dopo",
     refresh: "Aggiorna",
@@ -234,7 +234,7 @@ export const it: Messages = {
     sortTransfers: "Meno cambi",
     resetFilters: "Azzera filtri",
     stale: "Gli orari potrebbero essere cambiati",
-    onTheLine: "Su questa linea",
+    onTheLine: "In viaggio",
   },
   share: {
     open: "Condividi",
@@ -257,8 +257,8 @@ export const it: Messages = {
     title: "Rifai questo viaggio",
   },
   pinned: {
-    kicker: "Linee fissate",
-    title: "I tuoi biglietti usuali",
+    kicker: "Tratte fissate",
+    title: "I tuoi biglietti di sempre",
   },
   format: {
     minutes: "{count} min",
@@ -277,7 +277,7 @@ export const it: Messages = {
     delayEarly: "{minutes} min",
     stopsFailed: "Le fermate non si sono potute caricare.",
     retryStops: "Carica fermate",
-    now: "Ora",
+    now: "Adesso",
   },
   carriers: {
     compare: "Confronta operatori",
@@ -339,7 +339,7 @@ export const it: Messages = {
     notFoundKicker: "Nessun percorso",
     notFoundTitle: "Questo binario è vuoto",
     notFoundBody:
-      "La pagina chiesta non è sul tabellone. Controlla lo spelling, o torna nella sala principale.",
+      "La pagina chiesta non è sul tabellone. Controlla l'ortografia, o torna nella sala principale.",
     notFoundAction: "Torna in sala",
     errorMark: "Guasto",
     errorKicker: "Il tabellone si è inceppato",
@@ -350,9 +350,9 @@ export const it: Messages = {
       "Un guasto di linea ha fermato la pagina. Riferimento {digest}. Riprova il tabellone.",
     retry: "Riprova",
     globalKicker: "La sala è chiusa",
-    globalTitle: "Il tabellone radice è fallito",
-    globalBody: "Si è inceppato il layout stesso della stazione. Riprova a stampare la sala.",
-    globalBodyDigest: "Si è inceppato il layout stesso della stazione. Riferimento {digest}.",
+    globalTitle: "Il tabellone principale non risponde",
+    globalBody: "Si è inceppata la disposizione stessa della stazione. Riprova a stampare la sala.",
+    globalBodyDigest: "Si è inceppata la disposizione stessa della stazione. Riferimento {digest}.",
     loadingKicker: "Consulto il tabellone",
     loadingTitle: "Stampo l'orario",
     loadingBody: "Arrivano gli orari europei di treni e pullman. Resta sul binario.",

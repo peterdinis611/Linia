@@ -2,7 +2,7 @@ import type { Messages } from "./en";
 
 export const nl: Messages = {
   meta: {
-    title: "Linia — bus- en treinexzoeken in Europa",
+    title: "Linia — bus- en treinzoeken in Europa",
     description:
       "Zoek live bus- en treinritten door Europa met open Transitous-data.",
     notFoundTitle: "Niet gevonden — Linia",
@@ -10,13 +10,13 @@ export const nl: Messages = {
     shareTitle: "{from} → {to} — Linia",
     shareDescription: "Een openbaar Linia-kaartje van {from} naar {to}.",
     shareBoardTitle: "{from} — Linia-bord",
-    shareBoardDescription: "Live vertrekken vanaf {from}.",
+    shareBoardDescription: "Actuele vertrekken vanaf {from}.",
     keywords:
       "Europese buszoeken, treindienstregeling, touringcar, ov, Transitous, live ritten",
   },
   brand: {
-    kicker: "Open Europese dienstregelingen",
-    liveBoard: "Live bord",
+    kicker: "Open dienstregelingen van Europa",
+    liveBoard: "Actueel bord",
   },
   language: {
     label: "Taal",
@@ -38,10 +38,10 @@ export const nl: Messages = {
     progress: "{{current}} / {{total}}",
     walk: "Loop door de hal",
     intro:
-      "Deze hal drukt live Europese bus- en treinlijnen. Volg de stempels: noem de uiteinden, zet de klok, lees dan het bord.",
+      "Deze hal drukt actuele Europese bus- en treinlijnen. Volg de stempels: noem de uiteinden, zet de klok, lees dan het bord.",
     step1Title: "Noem vertrek en bestemming",
     step1Body:
-      "Typ een station, stad of adres en kies het uit de lijst. Je kunt plekken ook op de kaart pinnen en de spelden slepen.",
+      "Typ een station, stad of adres en kies het uit de lijst. Je kunt plekken ook op de kaart vastzetten en de spelden slepen.",
     stepOriginTitle: "Kies vertrek",
     stepOriginBody:
       "Typ waar je begint en kies het station uit de lijst. Vanaf mijn locatie stempelt het begin voor je.",
@@ -50,7 +50,7 @@ export const nl: Messages = {
       "Typ waar de lijn eindigt en kies het uit de lijst. Wisselen draait de twee uiteinden om.",
     step2Title: "Voeg een stop toe als het moet",
     step2Body:
-      "Houd Punt tot punt voor een simpele A naar B. Schakel Via stops in om langs tot twee stations te gaan.",
+      "Houd Punt tot punt voor een simpele A naar B. Schakel Via-haltes in om langs tot twee stations te gaan. Het stationsbord drukt wat er van één halte vertrekt.",
     step3Title: "Zet wanneer je reist",
     step3Body:
       "Nu weg, kies een tijd, of stempel Die dag voor elke verbinding op de datum. Aankomst voor draait de klok naar aankomst.",
@@ -59,7 +59,7 @@ export const nl: Messages = {
       "Pin vertrek en bestemming op het papier. Sleep de spelden. Hier ben ik en de hele kaart horen bij het kaartje.",
     step4Title: "Vind verbindingen en lees de lijn",
     step4Body:
-      "Vergelijk vervoerders, kies een kaartje, volg de rit halt voor halt. Live vertragingen drukken op de strook.",
+      "Vergelijk vervoerders, kies een kaartje, volg de rit halt voor halt. Actuele vertragingen drukken op de strook.",
   },
   search: {
     formLabel: "Reiszoeken",
@@ -73,7 +73,7 @@ export const nl: Messages = {
     route: "Route",
     routeType: "Routetype",
     pointToPoint: "Punt tot punt",
-    viaStops: "Via stops",
+    viaStops: "Via-haltes",
     stationBoard: "Stationsbord",
     viaN: "Via {n}",
     viaPlaceholder: "Stop om langs te gaan",
@@ -113,12 +113,12 @@ export const nl: Messages = {
     accessible: "Toegankelijk",
     bike: "Fiets",
     nightRail: "Nachttrein",
-    nearbyBoard: "Wat vertrekt",
-    pinLine: "Lijn vastzetten",
-    pinnedHome: "Thuis",
+    nearbyBoard: "Wat hier vertrekt",
+    pinLine: "Deze lijn vastzetten",
+    pinnedHome: "Naar huis",
     pinnedWork: "Naar werk",
     pinnedOther: "Deze lijn",
-    unpinLine: "Losmaken",
+    unpinLine: "Loshalen",
     submitBoard: "Lees het bord",
     date: "Datum",
     time: "Tijd",
@@ -139,7 +139,7 @@ export const nl: Messages = {
     timeInvalid: "Voer een geldige tijd in",
     placesDifferent: "Vertrek en bestemming moeten verschillen",
     viaDifferentEnds: "Via moet verschillen van vertrek en bestemming",
-    viaDifferentStops: "Via-stops moeten verschillen",
+    viaDifferentStops: "Via-haltes moeten verschillen",
     placeRequired: "Kies een plek uit de lijst",
     queryTooShort: "Voer minstens 2 tekens in",
     queryTooLong: "De zoekopdracht is te lang",
@@ -152,10 +152,10 @@ export const nl: Messages = {
   board: {
     clock: "Stationsklok",
     searchingKicker: "Het bord raadplegen",
-    searchingTitle: "Live verbindingen controleren",
+    searchingTitle: "Actuele verbindingen controleren",
     idleKicker: "Het bord is open",
     idleTitle: "Noem een station. Noem een stad. Steek een grens over.",
-    idleBody: "Live Europese trein- en bustijden, gedrukt als een papieren dienstregeling.",
+    idleBody: "Actuele Europese trein- en bustijden, gedrukt als een papieren dienstregeling.",
     emptyMark: "Geen pad",
     emptyKicker: "Niets op dit vertrek",
     emptyTitle: "Geen verbindingen gevonden",
@@ -208,18 +208,18 @@ export const nl: Messages = {
     here: "Ik ben hier",
     fullscreen: "Hele kaart",
     exitFullscreen: "Hele kaart sluiten",
-    approximate: "De lijn is bij benadering tot het live pad drukt.",
+    approximate: "De lijn is bij benadering tot het actuele pad drukt.",
   },
   results: {
     departures: "Vertrekken",
-    live: "Live",
+    live: "Actueel",
     emptyDirect: "Geen directe verbindingen. Probeer Overstappen, of zoek opnieuw.",
     emptyDirectCarriers: "Geen directe verbindingen voor de gekozen vervoerders.",
     emptyTransfers: "Geen verbindingen met overstap. Probeer Direct, of zoek opnieuw.",
     emptyTransfersCarriers: "Geen verbindingen met overstap voor de gekozen vervoerders.",
     emptyCarriers: "Geen verbindingen voor de gekozen vervoerders.",
     direct: "Direct",
-    liveDelay: "live vertraging",
+    liveDelay: "actuele vertraging",
     earlier: "Eerder",
     later: "Later",
     refresh: "Vernieuwen",
@@ -232,7 +232,7 @@ export const nl: Messages = {
     sortTransfers: "Minste overstappen",
     resetFilters: "Filters wissen",
     stale: "Tijden kunnen zijn veranderd",
-    onTheLine: "Op deze lijn",
+    onTheLine: "Onderweg",
   },
   share: {
     open: "Delen",
@@ -255,8 +255,8 @@ export const nl: Messages = {
     title: "Maak deze reis opnieuw",
   },
   pinned: {
-    kicker: "Vastgezette lijnen",
-    title: "Je gebruikelijke kaartjes",
+    kicker: "Vastgezette trajecten",
+    title: "Je vaste kaartjes",
   },
   format: {
     minutes: "{count} min",
@@ -352,7 +352,7 @@ export const nl: Messages = {
     globalBodyDigest: "De stationsindeling zelf liep vast. Referentie {digest}.",
     loadingKicker: "Het bord raadplegen",
     loadingTitle: "De dienstregeling drukken",
-    loadingBody: "Live Europese trein- en bustijden komen eraan. Blijf op het perron.",
+    loadingBody: "Actuele Europese trein- en bustijden komen eraan. Blijf op het perron.",
   },
   footer: {
     printedFrom: "Gedrukt van",
