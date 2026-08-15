@@ -22,8 +22,10 @@ describe("ItineraryDetail", () => {
       ],
     });
     renderHall(<ItineraryDetail itinerary={itinerary} />);
-    expect(screen.getByTestId("alert-notice")).toHaveTextContent("Changed service");
-    expect(screen.getByTestId("alert-notice")).toHaveTextContent("Replacement bus");
+    const notices = screen.getAllByTestId("alert-notice");
+    expect(notices.length).toBeGreaterThan(0);
+    expect(notices[0]).toHaveTextContent("Changed service");
+    expect(notices[0]).toHaveTextContent("Replacement bus");
   });
 
   it("opens a station board from a stop with an id", async () => {

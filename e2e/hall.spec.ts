@@ -95,4 +95,48 @@ test.describe("hall stamps", () => {
     await expect(page.getByRole("button", { name: "Bezbariérové" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Spiatočný" })).toBeVisible();
   });
+
+  test("reopens a public station board from the address", async ({ page }) => {
+    await page.goto("/");
+    await page.getByTestId("station-board-mode").click();
+    await selectPlace(page, "Origin", "Berlin", "Berlin Hbf");
+    await expect(page.getByTestId("station-board")).toBeVisible();
+    const boardUrl = page.url();
+    expect(boardUrl).toMatch(/board=1/);
+
+    await page.goto(boardUrl);
+    await expect(page.getByTestId("station-board-mode")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await expect(page.getByRole("combobox", { name: "Origin" })).toHaveValue("Berlin Hbf");
+    await expect(page.getByTestId("station-board")).toBeVisible();
+  });
+
+  test("shares the return stamp on the public ticket", async ({ page }) => {
+    await page.goto("/");
+    await searchBerlinPrague(page);
+    await page.getByTestId("return-trip").click();
+    await expect(page.getByTestId("hall-leg-inbound")).toBeVisible();
+
+    await page.getByTestId("share-open").click();
+    const shareUrl = await page.getByTestId("share-url").inputValue();
+    expect(shareUrl).toContain("back=");
+    expect(shareUrl).toContain("rtrip=");
+
+    await page.goto(shareUrl);
+    await expect(page.getByTestId("return-trip")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("hall-leg-outbound")).toBeVisible();
+    await expect(page.getByTestId("hall-leg-inbound")).toBeVisible();
+  });
+
+  test("opens a service notice on the strip", async ({ page }) => {
+    await page.goto("/");
+    await searchBerlinPrague(page);
+    await expect(page.getByTestId("alert-ribbon")).toBeVisible();
+    const notice = page.getByTestId("alert-notice").first();
+    await expect(notice).toBeVisible();
+    await notice.locator("summary").click();
+    await expect(notice).toContainText("Rail replacement between Dresden and Praha.");
+  });
 });

@@ -30,6 +30,39 @@ export function languageAlternateUrls() {
   };
 }
 
+export function localeOgImagePath(locale: Locale) {
+  return `${localePath(locale)}/opengraph-image`;
+}
+
+export function hallRobots() {
+  return {
+    rules: [
+      {
+        userAgent: "*",
+        allow: "/",
+      },
+      {
+        userAgent: ["Googlebot", "Googlebot-Image"],
+        allow: "/",
+        disallow: ["/*/ticket-og"],
+      },
+    ],
+    sitemap: siteUrl("/sitemap.xml"),
+    host: new URL(siteUrl()).host,
+  };
+}
+
+export function hallSitemap() {
+  const languages = languageAlternateUrls();
+  return locales.map((locale) => ({
+    url: localeUrl(locale),
+    changeFrequency: "daily" as const,
+    priority: locale === defaultLocale ? 1 : 0.8,
+    alternates: { languages },
+    images: [siteUrl(localeOgImagePath(locale))],
+  }));
+}
+
 export function hallJsonLd(locale: Locale, dict: Messages) {
   const origin = siteOrigin();
   const url = localeUrl(locale);

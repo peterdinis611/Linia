@@ -101,6 +101,37 @@ describe("SearchForm", () => {
     expect(props.onWantReturnChange).toHaveBeenCalledWith(true);
   });
 
+  it("hides the journey desk on the station board", () => {
+    renderForm({ routeMode: "board" });
+    expect(screen.queryByRole("combobox", { name: "Destination" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Swap origin and destination" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("return-trip")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("accessible")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Read the board" })).toBeInTheDocument();
+    expect(screen.getByTestId("station-board-mode")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  it("prints a return date when the stamp is on", () => {
+    renderForm({ wantReturn: true });
+    expect(screen.getByText("Return stamp")).toBeInTheDocument();
+    expect(screen.getByTestId("return-date")).toBeInTheDocument();
+    expect(screen.getByTestId("return-time")).toBeInTheDocument();
+    expect(screen.getByTestId("return-trip")).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("prints a return time fault", () => {
+    renderForm({
+      wantReturn: true,
+      fieldErrors: { returnTime: "validation.returnTimeRequired" },
+    });
+    expect(screen.getByRole("alert")).toHaveTextContent("Choose a return time");
+  });
+
   it("asks to find connections", async () => {
     const user = userEvent.setup();
     const { props } = renderForm();

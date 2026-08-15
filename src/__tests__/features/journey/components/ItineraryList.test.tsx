@@ -43,4 +43,26 @@ describe("ItineraryList", () => {
     await user.click(tickets[1]!);
     expect(onSelect).toHaveBeenCalledWith(1);
   });
+
+  it("stamps a service ribbon on a ticket", () => {
+    const first = railItinerary({
+      legs: [
+        {
+          ...railItinerary().legs[0]!,
+          alerts: [
+            {
+              headerText: "Replacement bus",
+              descriptionText: "Rail replacement.",
+              effect: "MODIFIED_SERVICE",
+            },
+          ],
+        },
+      ],
+    });
+    renderHall(
+      <ItineraryList itineraries={[first]} selectedIndex={0} onSelect={vi.fn()} />,
+    );
+    expect(screen.getByTestId("alert-ribbon")).toHaveTextContent("Changed service");
+    expect(screen.getByTestId("alert-ribbon")).toHaveTextContent("Replacement bus");
+  });
 });

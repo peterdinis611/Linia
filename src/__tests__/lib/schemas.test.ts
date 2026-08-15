@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { berlin, prague } from "@/test/fixtures";
+import { berlin, prague, railItinerary } from "@/test/fixtures";
 import {
   fieldErrorsFromZod,
+  itinerarySchema,
   journeySearchFormSchema,
+  stopTimeEventSchema,
+  stopTimesInputSchema,
+  transitAlertSchema,
 } from "@/lib/schemas";
 
 const base = {
@@ -39,7 +43,11 @@ describe("journeySearchFormSchema", () => {
       board: true,
     });
     expect(parsed.success).toBe(false);
-    expect(fieldErrorsFromZod(parsed.error!).from).toBe("validation.originRequired");
+    if (!parsed.success) {
+      expect(fieldErrorsFromZod(parsed.error).from).toBe(
+        "validation.originRequired",
+      );
+    }
   });
 
   it("needs a destination unless the board is stamped", () => {
@@ -48,9 +56,11 @@ describe("journeySearchFormSchema", () => {
       to: null,
     });
     expect(parsed.success).toBe(false);
-    expect(fieldErrorsFromZod(parsed.error!).to).toBe(
-      "validation.destinationRequired",
-    );
+    if (!parsed.success) {
+      expect(fieldErrorsFromZod(parsed.error).to).toBe(
+        "validation.destinationRequired",
+      );
+    }
   });
 
   it("needs a return stamp time", () => {
@@ -59,9 +69,11 @@ describe("journeySearchFormSchema", () => {
       wantReturn: true,
     });
     expect(parsed.success).toBe(false);
-    expect(fieldErrorsFromZod(parsed.error!).returnTime).toBe(
-      "validation.returnTimeRequired",
-    );
+    if (!parsed.success) {
+      expect(fieldErrorsFromZod(parsed.error).returnTime).toBe(
+        "validation.returnTimeRequired",
+      );
+    }
   });
 
   it("rejects a return that leaves before the outbound", () => {
@@ -73,9 +85,11 @@ describe("journeySearchFormSchema", () => {
       returnTime: "2026-08-15T08:00",
     });
     expect(parsed.success).toBe(false);
-    expect(fieldErrorsFromZod(parsed.error!).returnTime).toBe(
-      "validation.returnAfterOutbound",
-    );
+    if (!parsed.success) {
+      expect(fieldErrorsFromZod(parsed.error).returnTime).toBe(
+        "validation.returnAfterOutbound",
+      );
+    }
   });
 
   it("accepts a return after the outbound", () => {
@@ -97,5 +111,83 @@ describe("journeySearchFormSchema", () => {
       wantReturn: true,
     });
     expect(parsed.success).toBe(true);
+  });
+
+  it("rejects the same station as both ends", () => {
+    const parsed = journeySearchFormSchema.safeParse({
+      ...base,
+      to: berlin,
+    });
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) {
+      expect(fieldErrorsFromZod(parsed.error).to).toBe(
+        "validation.placesDifferent",
+      );
+    }
+  });
+});
+
+describe("stopTimesInputSchema", () => {
+  it("accepts a station board request", () => {
+    const parsed = stopTimesInputSchema.safeParse({
+      stop: berlin,
+      arriveBy: true,
+      modeFilter: "train",
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.n).toBe(20);
+      expect(parsed.data.arriveBy).toBe(true);
+    }
+  });
+});
+
+describe("transit notices", () => {
+  it("fills blank alert copy", () => {
+    const parsed = transitAlertSchema.safeParse({ effect: "NO_SERVICE" });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.headerText).toBe("");
+      expect(parsed.data.descriptionText).toBe("");
+    }
+  });
+
+  it("keeps a notice on a journey and a departure", () => {
+    const itinerary = itinerarySchema.safeParse(
+      railItinerary({
+        legs: [
+          {
+            ...railItinerary().legs[0]!,
+            alerts: [
+              {
+                headerText: "Replacement bus",
+                descriptionText: "Rail replacement.",
+                effect: "MODIFIED_SERVICE",
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    expect(itinerary.success).toBe(true);
+    if (itinerary.success) {
+      expect(itinerary.data.legs[0]?.alerts?.[0]?.effect).toBe("MODIFIED_SERVICE");
+    }
+
+    const event = stopTimeEventSchema.safeParse({
+      place: {
+        name: berlin.name,
+        lat: berlin.lat,
+        lon: berlin.lon,
+        departure: "2026-08-14T08:00:00Z",
+        alerts: [{ headerText: "Platform change", descriptionText: "Use 12." }],
+      },
+      mode: "RAIL",
+      displayName: "EC 172",
+    });
+    expect(event.success).toBe(true);
+    if (event.success) {
+      expect(event.data.place.alerts?.[0]?.headerText).toBe("Platform change");
+    }
   });
 });

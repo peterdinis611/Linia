@@ -1,8 +1,8 @@
 "use client";
 
-import { Toggle } from "@/components/ui/toggle";
+import type { CSSProperties } from "react";
 import { useI18n } from "@/i18n/provider";
-import { compareCarriers } from "@/lib/carriers";
+import { compareCarriers, shortCarrierName } from "@/lib/carriers";
 import type { Itinerary } from "@/lib/transit/types";
 
 type CarrierCompareProps = {
@@ -34,40 +34,41 @@ export function CarrierCompare({
   }
 
   return (
-    <div className="min-w-0 space-y-2">
-      <p className="kicker">{t("carriers.compare")}</p>
-      <div className="flex flex-wrap gap-1.5">
-        <Toggle
-          size="sm"
-          variant="outline"
-          pressed={showingAll}
+    <div className="carrier-desk" data-testid="carrier-desk">
+      <div className="carrier-desk-head">
+        <p className="kicker">{t("carriers.compare")}</p>
+        <p className="carrier-desk-count">{carriers.length}</p>
+      </div>
+      <div className="carrier-strip" role="group" aria-label={t("carriers.compare")}>
+        <button
+          type="button"
+          className="carrier-chip carrier-chip-all"
+          data-on={showingAll}
+          aria-pressed={showingAll}
           aria-label={t("carriers.showAll")}
-          onPressedChange={() => onSelectedCarriersChange([])}
-          className="h-7 px-2.5 text-xs"
+          onClick={() => onSelectedCarriersChange([])}
         >
           {t("carriers.all")}
-        </Toggle>
+        </button>
         {carriers.map((carrier) => {
           const on = selectedCarriers.includes(carrier.name);
+          const short = shortCarrierName(carrier.name);
           return (
-            <Toggle
+            <button
+              type="button"
               key={carrier.name}
-              size="sm"
-              variant="outline"
-              pressed={on}
+              className="carrier-chip"
+              data-on={on}
               aria-pressed={on}
-              onPressedChange={() =>
-                toggleCarrier(carrier.name, carrier.bestItineraryIndex)
-              }
-              className="h-7 max-w-[11rem] px-2.5 text-xs"
+              title={carrier.name}
+              aria-label={carrier.name}
+              style={{ "--carrier": carrier.color } as CSSProperties}
+              onClick={() => toggleCarrier(carrier.name, carrier.bestItineraryIndex)}
             >
-              <span
-                className="size-1.5 shrink-0 rounded-full"
-                style={{ background: carrier.color }}
-                aria-hidden="true"
-              />
-              <span className="truncate">{carrier.name}</span>
-            </Toggle>
+              <span className="carrier-chip-mark" aria-hidden="true" />
+              <span className="carrier-chip-name">{short}</span>
+              <span className="carrier-chip-count">{carrier.connections}</span>
+            </button>
           );
         })}
       </div>

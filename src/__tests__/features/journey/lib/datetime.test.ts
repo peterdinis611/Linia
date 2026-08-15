@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  addDaysToDateTime,
   joinDateTime,
   monthCells,
   sameDay,
@@ -26,6 +27,11 @@ describe("datetime", () => {
       month: 9,
       day: 1,
     });
+  });
+
+  it("stamps a return one day later", () => {
+    expect(addDaysToDateTime("2026-08-14T08:30", 1)).toBe("2026-08-15T08:30");
+    expect(addDaysToDateTime("2026-08-31T21:45", 1)).toBe("2026-09-01T21:45");
   });
 
   it("builds a six-week paper calendar", () => {

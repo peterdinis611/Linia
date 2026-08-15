@@ -19,6 +19,20 @@ describe("HallWhen", () => {
     expect(onChange).toHaveBeenCalledWith("2026-08-20T08:30");
   });
 
+  it("prefixes the return stamp fields", () => {
+    renderHall(
+      <HallWhen
+        datetime="2026-08-15T08:30"
+        leaveNow={false}
+        idPrefix="return"
+        onChange={vi.fn()}
+      />,
+    );
+    expect(screen.getByTestId("return-date")).toBeInTheDocument();
+    expect(screen.getByTestId("return-time")).toBeInTheDocument();
+    expect(screen.queryByTestId("journey-date")).not.toBeInTheDocument();
+  });
+
   it("hides the clock when the whole day is stamped", () => {
     renderHall(
       <HallWhen

@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Fragment,
   useEffect,
   useMemo,
   useRef,
@@ -21,7 +20,6 @@ import L from "leaflet";
 import {
   Marker,
   MapContainer,
-  Polyline,
   Popup,
   TileLayer,
   useMap,
@@ -236,41 +234,12 @@ export default function RouteMapInner({
         onBasemapChange={setBasemap}
         onToggleFull={onToggleFull}
       />
-      {paths.length === 0 && previewLine.length >= 2 ? (
-        <Polyline
-          positions={previewLine}
-          pathOptions={{
-            color: previewColor,
-            weight: 3,
-            opacity: 0.72,
-            dashArray: "10 10",
-          }}
-        />
-      ) : null}
-      {paths.map((path, index) => (
-        <Fragment key={`${path.label}-${index}`}>
-          <Polyline
-            positions={path.positions}
-            pathOptions={{
-              color: halo,
-              weight: path.dashed ? 6 : 8,
-              opacity: path.faded ? 0.12 : 0.85,
-              dashArray: path.dashed ? "6 8" : undefined,
-            }}
-          />
-          <Polyline
-            positions={path.positions}
-            pathOptions={{
-              color: path.color,
-              weight: path.dashed ? 3 : path.faded ? 3 : 5,
-              opacity: path.faded ? 0.28 : 0.96,
-              dashArray: path.dashed ? "6 8" : undefined,
-            }}
-          >
-            <Popup>{path.label}</Popup>
-          </Polyline>
-        </Fragment>
-      ))}
+      <JourneyPaths
+        paths={paths}
+        preview={previewLine}
+        previewColor={previewColor}
+        halo={halo}
+      />
       {from && origin && (
         <Marker
           position={origin}
@@ -500,6 +469,65 @@ function MapResizer() {
   return null;
 }
 
+function JourneyPaths({
+  paths,
+  preview,
+  previewColor,
+  halo,
+}: {
+  paths: PathLeg[];
+  preview: LatLngExpression[];
+  previewColor: string;
+  halo: string;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    const layers: L.Layer[] = [];
+
+    if (paths.length === 0 && preview.length >= 2) {
+      layers.push(
+        L.polyline(preview, {
+          color: previewColor,
+          weight: 3,
+          opacity: 0.72,
+          dashArray: "10 10",
+          className: "journey-preview",
+        }).addTo(map),
+      );
+    }
+
+    for (const path of paths) {
+      layers.push(
+        L.polyline(path.positions, {
+          color: halo,
+          weight: path.dashed ? 6 : 8,
+          opacity: path.faded ? 0.12 : 0.85,
+          dashArray: path.dashed ? "6 8" : undefined,
+          className: "journey-path-halo",
+        }).addTo(map),
+      );
+      const line = L.polyline(path.positions, {
+        color: path.color,
+        weight: path.dashed ? 3 : path.faded ? 3 : 5,
+        opacity: path.faded ? 0.28 : 0.96,
+        dashArray: path.dashed ? "6 8" : undefined,
+        className: "journey-path",
+      }).addTo(map);
+      if (path.label) line.bindPopup(path.label);
+      layers.push(line);
+    }
+
+    return () => {
+      for (const layer of layers) {
+        map.removeLayer(layer);
+      }
+    };
+  }, [map, paths, preview, previewColor, halo]);
+
+  return null;
+}
+
 function FitPoints({
   points,
   fitKey,
@@ -512,6 +540,11 @@ function FitPoints({
 
   useEffect(() => {
     map.invalidateSize({ animate: false });
+    if (points.length === 0) {
+      if (lastKey.current !== null) map.setView(EUROPE_CENTER, 4);
+      lastKey.current = fitKey;
+      return;
+    }
     if (lastKey.current === fitKey) return;
     lastKey.current = fitKey;
     if (points.length >= 2) {
@@ -521,11 +554,7 @@ function FitPoints({
       });
       return;
     }
-    if (points.length === 1) {
-      map.setView(points[0], 12);
-      return;
-    }
-    map.setView(EUROPE_CENTER, 4);
+    map.setView(points[0], 12);
   }, [map, points, fitKey]);
 
   return null;

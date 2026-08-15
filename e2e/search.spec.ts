@@ -89,6 +89,14 @@ test.describe("home", () => {
       "href",
       /\/en\/?$/,
     );
+    await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute(
+      "content",
+      /index/,
+    );
+    await expect(page.locator('meta[name="googlebot"]')).toHaveAttribute(
+      "content",
+      /max-image-preview:large/,
+    );
 
     const jsonLd = JSON.parse(
       (await page.locator('script[type="application/ld+json"]').textContent()) ?? "{}",
@@ -99,17 +107,26 @@ test.describe("home", () => {
 
     const robots = await request.get("/robots.txt");
     expect(robots.ok()).toBeTruthy();
+    expect(robots.headers()["cache-control"]).toMatch(/max-age=3600/);
     const robotsText = await robots.text();
+    expect(robotsText).toContain("User-agent: *");
     expect(robotsText).toContain("Allow: /");
     expect(robotsText).toContain("sitemap.xml");
-    expect(robotsText).toContain("ticket-og");
+    expect(robotsText).toContain("User-agent: Googlebot");
+    expect(robotsText).toContain("Disallow: /*/ticket-og");
+    expect(robotsText).toMatch(/^Host: /m);
 
     const sitemap = await request.get("/sitemap.xml");
     expect(sitemap.ok()).toBeTruthy();
+    expect(sitemap.headers()["cache-control"]).toMatch(/max-age=3600/);
     const sitemapText = await sitemap.text();
     expect(sitemapText).toContain("/en");
     expect(sitemapText).toContain("/sk");
+    expect(sitemapText).toContain("/uk");
     expect(sitemapText).toContain('hreflang="x-default"');
+    expect(sitemapText).toContain('hreflang="sk"');
+    expect(sitemapText).toContain("/en/opengraph-image");
+    expect(sitemapText).not.toContain("ticket-og");
 
     const manifest = await request.get("/manifest.webmanifest");
     expect(manifest.ok()).toBeTruthy();
@@ -360,6 +377,20 @@ test.describe("search form validation", () => {
     await expect(page.getByRole("button", { name: "Clear ticket" })).toHaveCount(0);
     await expect(page.getByTestId("recent-searches")).toBeVisible();
     await expect(page.getByTestId("recent-searches").getByText("Berlin Hbf")).toBeVisible();
+    await expect(page.locator(".journey-path, .journey-preview")).toHaveCount(0);
+  });
+
+  test("wipes the map line when origin is cleared", async ({ page }) => {
+    await page.goto("/");
+    await searchBerlinPrague(page);
+    await expect(page.getByTestId("journey-results")).toBeVisible();
+    await expect(page.locator(".journey-path, .journey-preview")).not.toHaveCount(0);
+
+    await page.getByRole("button", { name: "Clear Origin" }).click();
+
+    await expect(page.getByRole("combobox", { name: "Origin" })).toHaveValue("");
+    await expect(page.getByTestId("empty-board")).toBeVisible();
+    await expect(page.locator(".journey-path, .journey-preview")).toHaveCount(0);
   });
 
   test("reprints a recent search from the empty board", async ({ page }) => {

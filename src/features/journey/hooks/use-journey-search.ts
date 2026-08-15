@@ -230,11 +230,20 @@ export function useJourneySearch() {
     setError(null);
   }
 
+  function dropPlan() {
+    resetResults();
+    lastPlan.current = null;
+    claimedPlan.current = "";
+    writeShareUrl("");
+    bumpFit();
+  }
+
   function handleFromChange(place: SelectedPlace | null, _source: PlaceSource = "form") {
     setFrom(place);
     clearPlaceErrors();
     setPendingPick(null);
     if (place) bumpFit();
+    else dropPlan();
   }
 
   function handleToChange(place: SelectedPlace | null, _source: PlaceSource = "form") {
@@ -242,6 +251,7 @@ export function useJourneySearch() {
     clearPlaceErrors();
     setPendingPick(null);
     if (place) bumpFit();
+    else dropPlan();
   }
 
   function handleViaChange(index: number, place: SelectedPlace | null) {
@@ -732,10 +742,7 @@ export function useJourneySearch() {
     setFieldErrors({});
     setPickMode("idle");
     setPendingPick(null);
-    resetResults();
-    lastPlan.current = null;
-    claimedPlan.current = "";
-    writeShareUrl("");
+    dropPlan();
     setLiveAt(null);
     setGeoError(null);
   }

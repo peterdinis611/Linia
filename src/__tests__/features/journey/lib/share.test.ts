@@ -83,4 +83,41 @@ describe("share", () => {
     expect(snapshot?.allDay).toBe(false);
     expect(snapshot?.tripKey).toBe(itineraryKey(selected));
   });
+
+  it("keeps the outbound clock when a return is stamped", () => {
+    const outbound = railItinerary();
+    const inbound = railItinerary({
+      startTime: "2026-08-16T14:00:00Z",
+      legs: [
+        {
+          ...outbound.legs[0]!,
+          tripId: "trip-ec-173",
+          startTime: "2026-08-16T14:00:00Z",
+        },
+      ],
+    });
+    const snapshot = snapshotForShare({
+      ...base,
+      allDay: true,
+      leaveNow: false,
+      returnDatetime: "2026-08-16T14:00",
+      selected: outbound,
+      returnSelected: inbound,
+    });
+    expect(snapshot?.allDay).toBe(true);
+    expect(snapshot?.leaveNow).toBe(false);
+    expect(snapshot?.datetime).toBe(base.datetime);
+    expect(snapshot?.returnDatetime).toBe("2026-08-16T14:00");
+    expect(snapshot?.returnTripKey).toBe(itineraryKey(inbound));
+    expect(encodeShareQuery(snapshot!)).toContain("rtrip=");
+  });
+
+  it("drops a ticket without a destination unless the board is stamped", () => {
+    expect(parseShareQuery("?from=52.52500*13.36900*STOP*stop-berlin*Berlin%20Hbf")).toBeNull();
+    expect(
+      parseShareQuery(
+        "?board=1&from=52.52500*13.36900*STOP*stop-berlin*Berlin%20Hbf",
+      ),
+    ).toMatchObject({ board: true, to: null, from: { name: "Berlin Hbf" } });
+  });
 });

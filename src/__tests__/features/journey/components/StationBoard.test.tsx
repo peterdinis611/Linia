@@ -41,4 +41,40 @@ describe("StationBoard", () => {
     await user.click(row);
     expect(onSelect).toHaveBeenCalledWith(event);
   });
+
+  it("prints arrivals, delay, a cancellation, and a notice", () => {
+    const delayed: StopTimeEvent = {
+      ...event,
+      realTime: true,
+      place: {
+        ...event.place,
+        departure: "2026-08-14T08:12:00Z",
+        scheduledDeparture: "2026-08-14T08:00:00Z",
+      },
+      cancelled: true,
+      alerts: [
+        {
+          headerText: "Replacement bus",
+          descriptionText: "Rail replacement.",
+          effect: "MODIFIED_SERVICE",
+        },
+      ],
+    };
+    renderHall(
+      <StationBoard
+        stopTimes={[delayed]}
+        arriveBy
+        selectedTripId="trip-ec-172"
+        onSelect={vi.fn()}
+      />,
+    );
+
+    const board = screen.getByTestId("station-board");
+    expect(board).toHaveAttribute("aria-label", "What arrives here");
+    const row = screen.getByTestId("station-row-0");
+    expect(row).toHaveAttribute("aria-selected", "true");
+    expect(row).toHaveTextContent("Cancelled");
+    expect(row).toHaveTextContent("+12 min");
+    expect(screen.getByTestId("alert-ribbon")).toHaveTextContent("Changed service");
+  });
 });

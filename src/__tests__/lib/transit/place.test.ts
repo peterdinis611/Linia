@@ -4,6 +4,7 @@ import {
   coordPlace,
   isRoutableStop,
   placeToSelected,
+  samePlace,
 } from "@/lib/transit/place";
 
 describe("place helpers", () => {
@@ -36,5 +37,14 @@ describe("place helpers", () => {
   it("treats a named stop as routable", () => {
     expect(isRoutableStop(berlin)).toBe(true);
     expect(isRoutableStop(coordPlace(48.1, 17.1))).toBe(false);
+  });
+
+  it("treats nearby pins as the same place", () => {
+    expect(samePlace(berlin, { lat: berlin.lat + 0.0001, lon: berlin.lon })).toBe(
+      true,
+    );
+    expect(samePlace(berlin, { lat: berlin.lat + 1, lon: berlin.lon })).toBe(
+      false,
+    );
   });
 });

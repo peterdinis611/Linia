@@ -31,6 +31,52 @@ export function carrierName(leg: Leg): string | null {
   return leg.agencyName?.trim() || null;
 }
 
+const CARRIER_SHORT: Record<string, string> = {
+  "deutsche bahn": "DB",
+  "db fernverkehr": "DB",
+  "flixbus": "FlixBus",
+  "flixbus eu": "FlixBus",
+  "oebb personenverkehr": "ÖBB",
+  "osterreichische bundesbahnen": "ÖBB",
+  "zeleznicna spolocnost slovensko": "ZSSK",
+  "ceske drahy": "ČD",
+  "dopravny podnik bratislava": "DPB",
+  "pkp intercity": "PKP IC",
+  "mav start": "MÁV",
+  "sncf voyageurs": "SNCF",
+  "regiojet": "RegioJet",
+  "leo express": "Leo Express",
+};
+
+function carrierKey(name: string) {
+  return name
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function tidyCarrierName(name: string) {
+  return name
+    .replace(
+      /\s*,?\s*(a\.s\.|s\.r\.o\.|spol\.\s*s r\.o\.|gmbh|ag|plc|ltd\.?|inc\.?|zrt\.?|d\.d\.|d\.o\.o\.)\s*$/i,
+      "",
+    )
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+export function shortCarrierName(name: string) {
+  const key = carrierKey(name);
+  const known = CARRIER_SHORT[key];
+  if (known) return known;
+  for (const [pattern, short] of Object.entries(CARRIER_SHORT)) {
+    if (key.startsWith(`${pattern} `)) return short;
+  }
+  return tidyCarrierName(name);
+}
+
 export function itineraryMatchesCarriers(
   itinerary: Itinerary,
   selected: string[],

@@ -49,6 +49,32 @@ function isoPlusHours(iso, hours) {
     .replace(/\.\d{3}Z$/, "Z");
 }
 
+function encodePolyline(coordinates, precision = 6) {
+  const factor = 10 ** precision;
+  let lastLat = 0;
+  let lastLon = 0;
+  let encoded = "";
+
+  function write(value) {
+    let chunk = value < 0 ? ~(value << 1) : value << 1;
+    while (chunk >= 0x20) {
+      encoded += String.fromCharCode((0x20 | (chunk & 0x1f)) + 63);
+      chunk >>= 5;
+    }
+    encoded += String.fromCharCode(chunk + 63);
+  }
+
+  for (const [lat, lon] of coordinates) {
+    const nextLat = Math.round(lat * factor);
+    const nextLon = Math.round(lon * factor);
+    write(nextLat - lastLat);
+    write(nextLon - lastLon);
+    lastLat = nextLat;
+    lastLon = nextLon;
+  }
+  return encoded;
+}
+
 function itinerary(start = "2026-08-14T08:00:00Z", extras = {}) {
   const end = isoPlusHours(start, 4.5);
   const route = extras.routeShortName ?? "EC 172";
@@ -104,7 +130,15 @@ function itinerary(start = "2026-08-14T08:00:00Z", extras = {}) {
             departure: isoPlusHours(start, 2 + 5 / 60),
           },
         ],
-        legGeometry: { points: "", precision: 6, length: 0 },
+        legGeometry: {
+          points: encodePolyline([
+            [fromPlace.lat, fromPlace.lon],
+            [51.04, 13.73],
+            [toPlace.lat, toPlace.lon],
+          ]),
+          precision: 6,
+          length: 3,
+        },
       },
     ],
   };

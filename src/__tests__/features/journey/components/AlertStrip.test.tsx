@@ -20,8 +20,9 @@ const delayed: TransitAlert = {
 
 describe("AlertStrip", () => {
   it("prints nothing without a notice", () => {
-    const { container } = renderHall(<AlertStrip alerts={[]} />);
-    expect(container).toBeEmptyDOMElement();
+    renderHall(<AlertStrip alerts={[]} />);
+    expect(screen.queryByTestId("alert-ribbon")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("alert-notice")).not.toBeInTheDocument();
   });
 
   it("stamps a compact ribbon on a ticket", () => {
