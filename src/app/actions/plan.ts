@@ -1,0 +1,177 @@
+"use server";
+
+import { TransitError } from "@/lib/errors";
+import { isoOnLocalDate, startOfLocalDay } from "@/lib/format";
+import { actionClient } from "@/lib/safe-action";
+import {
+  geocodeMatchSchema,
+  itinerarySchema,
+  planJourneyInputSchema,
+  planResponseSchema,
+  placeSchema,
+} from "@/lib/schemas";
+import { motisFetch, placeQueryParam, transitModesFor } from "@/lib/transit/client";
+import { isRoutableStop } from "@/lib/transit/place";
+import type { Itinerary, SelectedPlace } from "@/lib/transit/types";
+
+const DAY_SECONDS = 86_400;
+const DAY_ITINERARIES = 20;
+const MAX_DAY_PAGES = 5;
+
+export const planJourneyAction = actionClient
+  .inputSchema(planJourneyInputSchema)
+  .outputSchema(planResponseSchema)
+  .action(async ({ parsedInput }) => {
+    const allDay = Boolean(parsedInput.allDay);
+    const params = new URLSearchParams({
+      fromPlace: placeQueryParam(parsedInput.from),
+      toPlace: placeQueryParam(parsedInput.to),
+      arriveBy: String(allDay ? false : parsedInput.arriveBy),
+      directModes: "WALK",
+      timetableView: "true",
+    });
+
+    const transitModes = transitModesFor(parsedInput.modeFilter);
+    if (transitModes) {
+      params.set("transitModes", transitModes);
+    }
+
+    if (parsedInput.transferFilter === "direct") {
+      params.set("maxTransfers", "0");
+    }
+
+    const time = allDay && parsedInput.time
+      ? startOfLocalDay(parsedInput.time)
+      : parsedInput.time;
+    if (time) {
+      params.set("time", new Date(time).toISOString());
+    }
+
+    if (allDay) {
+      params.set("numItineraries", String(DAY_ITINERARIES));
+      params.set("searchWindow", String(DAY_SECONDS));
+    }
+
+    if (parsedInput.via.length > 0) {
+      const viaIds: string[] = [];
+      for (const stop of parsedInput.via) {
+        viaIds.push(await stopIdForVia(stop, parsedInput.language));
+      }
+      params.set("via", viaIds.join(","));
+      params.set("viaMinimumStay", viaIds.map(() => "0").join(","));
+    }
+
+    const revalidate = parsedInput.fresh
+      ? undefined
+      : allDay
+        ? 60
+        : time
+          ? 45
+          : undefined;
+    const first = await fetchPlanPage(params, parsedInput.language, revalidate);
+    const pages = [first.itineraries];
+    let cursor = first.nextPageCursor;
+    const stamp = time ?? parsedInput.time;
+
+    if (allDay && stamp) {
+      for (let page = 1; page < MAX_DAY_PAGES && cursor; page += 1) {
+        const last = pages.at(-1)?.at(-1);
+        if (last && !isoOnLocalDate(last.startTime, stamp)) break;
+        params.set("pageCursor", cursor);
+        const next = await fetchPlanPage(params, parsedInput.language, revalidate);
+        pages.push(next.itineraries);
+        cursor = next.nextPageCursor;
+      }
+    }
+
+    const itineraries = uniqueJourneys(pages.flat());
+    const kept = allDay && stamp
+      ? itineraries.filter((item) => isoOnLocalDate(item.startTime, stamp))
+      : itineraries;
+
+    return {
+      from: first.from,
+      to: first.to,
+      itineraries: kept,
+      direct: first.direct,
+    };
+  });
+
+async function fetchPlanPage(
+  params: URLSearchParams,
+  language?: string,
+  revalidate?: number,
+) {
+  if (language) params.set("language", language);
+  const body = await motisFetch("/v5/plan", params, { language, revalidate });
+  if (!body || typeof body !== "object") {
+    throw new TransitError("errors.searchFailed");
+  }
+
+  const payload = body as Record<string, unknown>;
+  const from = placeSchema.optional().safeParse(payload.from);
+  const to = placeSchema.optional().safeParse(payload.to);
+  const nextPageCursor =
+    typeof payload.nextPageCursor === "string" && payload.nextPageCursor
+      ? payload.nextPageCursor
+      : undefined;
+
+  return {
+    from: from.success ? from.data : undefined,
+    to: to.success ? to.data : undefined,
+    itineraries: parseItineraries(payload.itineraries),
+    direct: parseItineraries(payload.direct),
+    nextPageCursor,
+  };
+}
+
+function uniqueJourneys(items: Itinerary[]) {
+  const seen = new Set<string>();
+  const out: Itinerary[] = [];
+  for (const item of items) {
+    const key = [
+      item.startTime,
+      item.endTime,
+      item.transfers,
+      item.legs.map((leg) => leg.tripId ?? leg.routeShortName ?? "").join(","),
+    ].join("|");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
+  }
+  return out;
+}
+
+async function stopIdForVia(place: SelectedPlace, language?: string) {
+  if (isRoutableStop(place)) {
+    return place.id;
+  }
+
+  const params = new URLSearchParams({
+    place: `${place.lat},${place.lon}`,
+    type: "STOP",
+  });
+  if (language) params.set("language", language);
+  const matches = await motisFetch("/v1/reverse-geocode", params, {
+    language,
+    revalidate: 1800,
+  });
+  if (!Array.isArray(matches)) {
+    throw new TransitError("validation.viaMustBeStation");
+  }
+  const stop = matches
+    .map((item) => geocodeMatchSchema.safeParse(item))
+    .find((parsed) => parsed.success && parsed.data.type === "STOP");
+  if (!stop || !stop.success) {
+    throw new TransitError("validation.viaMustBeStation");
+  }
+  return stop.data.id;
+}
+
+function parseItineraries(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    const parsed = itinerarySchema.safeParse(item);
+    return parsed.success ? [parsed.data] : [];
+  });
+}

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Linia">
+  <style>
+    .paper { fill: #f1eadc; }
+    .mast, .lamp-mid, .lamp-low { fill: #161310; }
+    .lamp-mid { opacity: 0.28; }
+    .lamp-low { opacity: 0.16; }
+    @media (prefers-color-scheme: dark) {
+      .paper { fill: #181410; }
+      .mast, .lamp-mid, .lamp-low { fill: #f4eadc; }
+    }
+  </style>
+  <rect class="paper" width="32" height="32" rx="7" />
+  <rect class="mast" x="14" y="4" width="4" height="24" rx="1" />
+  <circle cx="16" cy="10" r="5" fill="#c8102e" />
+  <circle class="lamp-mid" cx="16" cy="18.5" r="3.2" />
+  <circle class="lamp-low" cx="16" cy="24.5" r="2.4" />
+</svg>
