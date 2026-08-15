@@ -11,8 +11,11 @@ export {
   type Place,
   type PlanResponse,
   type SelectedPlace,
+  type StopTimeEvent,
+  type StopTimesResponse,
   type TransferFilter,
+  type TransitAlert,
   type TransitMode,
 } from "./types";
 export { MOTIS_BASE, motisFetch, placeQueryParam, transitModesFor } from "./client";
-export { fetchTrip, planJourney, reverseGeocodePlace, searchPlaces } from "./queries";
+export { fetchStopTimes, fetchTrip, planJourney, reverseGeocodePlace, searchPlaces } from "./queries";

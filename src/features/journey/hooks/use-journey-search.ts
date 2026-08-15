@@ -9,14 +9,16 @@ import {
   journeySearchFormSchema,
   type JourneyFormFieldErrors,
 } from "@/lib/schemas";
-import { coordPlace, matchToPlace, MAX_VIA_STOPS } from "@/lib/transit/place";
+import { coordPlace, matchToPlace, MAX_VIA_STOPS, placeToSelected } from "@/lib/transit/place";
 import {
   type Itinerary,
   type ModeFilter,
+  type Place,
   type SelectedPlace,
+  type StopTimeEvent,
   type TransferFilter,
 } from "@/lib/transit/types";
-import { planJourney, reverseGeocodePlace } from "@/lib/transit/queries";
+import { fetchStopTimes, fetchTrip, planJourney, reverseGeocodePlace } from "@/lib/transit/queries";
 import {
   countTransferKinds,
   emptyBoardCopy,
@@ -28,10 +30,10 @@ import {
   findItineraryIndex,
   itineraryKey,
   parseShareQuery,
-  shareUrlFromSnapshot,
   snapshotForShare,
   type ShareSnapshot,
 } from "../lib/share";
+import { addDaysToDateTime } from "../lib/datetime";
 import {
   nextPickAfter,
   placesAfterPin,
@@ -48,7 +50,8 @@ import {
 
 export type { MapPickMode } from "../lib/pins";
 export type PlaceSource = "form" | "map";
-export type RouteMode = "point" | "via";
+export type RouteMode = "point" | "via" | "board";
+export type HallLeg = "outbound" | "inbound";
 
 function planKey(input: {
   from: SelectedPlace | null;
@@ -60,8 +63,26 @@ function planKey(input: {
   allDay: boolean;
   modeFilter: ModeFilter;
   transferFilter: TransferFilter;
+  accessible?: boolean;
+  board?: boolean;
+  wantReturn?: boolean;
+  returnDatetime?: string;
 }) {
-  if (!input.from || !input.to) return "";
+  if (!input.from) return "";
+  if (input.board) {
+    return [
+      "board",
+      input.from.id,
+      input.allDay
+        ? `day:${input.datetime.slice(0, 10)}`
+        : input.leaveNow
+          ? "now"
+          : input.datetime,
+      input.arriveBy ? "1" : "0",
+      input.modeFilter,
+    ].join("|");
+  }
+  if (!input.to) return "";
   if (input.via.some((stop) => !stop)) return "";
   return [
     input.from.id,
@@ -75,6 +96,8 @@ function planKey(input: {
     input.arriveBy ? "1" : "0",
     input.modeFilter,
     input.transferFilter,
+    input.accessible ? "1" : "0",
+    input.wantReturn ? input.returnDatetime ?? "1" : "0",
   ].join("|");
 }
 
@@ -107,6 +130,20 @@ export function useJourneySearch() {
   const [refreshing, setRefreshing] = useState(false);
   const [liveAt, setLiveAt] = useState<number | null>(null);
   const [recents, setRecents] = useState<RecentSearch[]>([]);
+  const [accessible, setAccessible] = useState(false);
+  const [wantReturn, setWantReturn] = useState(false);
+  const [returnDatetime, setReturnDatetime] = useState(() =>
+    addDaysToDateTime(toLocalDateTimeValue(), 1),
+  );
+  const [hallLeg, setHallLeg] = useState<HallLeg>("outbound");
+  const [inboundItineraries, setInboundItineraries] = useState<Itinerary[]>([]);
+  const [inboundSelectedIndex, setInboundSelectedIndex] = useState(0);
+  const [stopTimes, setStopTimes] = useState<StopTimeEvent[]>([]);
+  const [boardTrip, setBoardTrip] = useState<Itinerary | null>(null);
+  const [boardCursors, setBoardCursors] = useState<{
+    prev?: string;
+    next?: string;
+  }>({});
   const hydratedShare = useRef(false);
   const lastPlan = useRef<ShareSnapshot | null>(null);
   const selectedRef = useRef<Itinerary | null>(null);
@@ -114,17 +151,22 @@ export function useJourneySearch() {
   const pinBusyRef = useRef(false);
   const planGen = useRef(0);
 
+  const activeItineraries =
+    hallLeg === "inbound" ? inboundItineraries : itineraries;
+  const activeSelectedIndex =
+    hallLeg === "inbound" ? inboundSelectedIndex : selectedIndex;
+
   const transferCounts = useMemo(
-    () => countTransferKinds(itineraries),
-    [itineraries],
+    () => countTransferKinds(activeItineraries),
+    [activeItineraries],
   );
 
   const afterTransfers = useMemo(
     () =>
-      indexItineraries(itineraries).filter(({ itinerary }) =>
+      indexItineraries(activeItineraries).filter(({ itinerary }) =>
         itineraryMatchesTransfers(itinerary, transferFilter),
       ),
-    [itineraries, transferFilter],
+    [activeItineraries, transferFilter],
   );
 
   const filtered = useMemo(
@@ -136,30 +178,36 @@ export function useJourneySearch() {
   );
 
   const selected =
-    filtered.find((item) => item.index === selectedIndex)?.itinerary ??
-    filtered[0]?.itinerary ??
-    null;
+    routeMode === "board"
+      ? boardTrip
+      : filtered.find((item) => item.index === activeSelectedIndex)?.itinerary ??
+        filtered[0]?.itinerary ??
+        null;
   selectedRef.current = selected;
+
+  const returnSelected =
+    inboundItineraries[inboundSelectedIndex] ?? inboundItineraries[0] ?? null;
+  const outboundSelected =
+    itineraries[selectedIndex] ?? itineraries[0] ?? null;
 
   useEffect(() => {
     if (filtered.length === 0) return;
-    if (!filtered.some((item) => item.index === selectedIndex)) {
-      setSelectedIndex(filtered[0].index);
+    if (!filtered.some((item) => item.index === activeSelectedIndex)) {
+      const next = filtered[0].index;
+      if (hallLeg === "inbound") setInboundSelectedIndex(next);
+      else setSelectedIndex(next);
     }
-  }, [filtered, selectedIndex]);
+  }, [filtered, activeSelectedIndex, hallLeg]);
 
   const emptyCopy = useMemo(
     () => emptyBoardCopy(hasSearched),
     [hasSearched],
   );
 
-  const shareUrl = useMemo(() => {
-    if (typeof window === "undefined" || itineraries.length === 0) return "";
-    const base = lastPlan.current;
-    if (!base) return "";
-    const snapshot = snapshotForShare({ ...base, selected });
-    return snapshot ? shareUrlFromSnapshot(snapshot) : "";
-  }, [itineraries, selected]);
+  const shareUrl =
+    typeof window === "undefined" || !shareQuery
+      ? ""
+      : `${window.location.origin}${window.location.pathname}${shareQuery}`;
 
   function bumpFit() {
     setMapFitKey((key) => key + 1);
@@ -171,8 +219,13 @@ export function useJourneySearch() {
 
   function resetResults() {
     setItineraries([]);
+    setInboundItineraries([]);
     setSelectedIndex(0);
+    setInboundSelectedIndex(0);
     setSelectedCarriers([]);
+    setStopTimes([]);
+    setBoardTrip(null);
+    setBoardCursors({});
     setHasSearched(false);
     setError(null);
   }
@@ -223,7 +276,8 @@ export function useJourneySearch() {
       });
     }
     setPendingPick(null);
-    const nextMode = nextPickAfter(role, next);
+    const nextMode =
+      routeMode === "board" ? "idle" : nextPickAfter(role, next);
     setPickMode(nextMode);
     if (nextMode === "idle") bumpFit();
   }
@@ -256,8 +310,14 @@ export function useJourneySearch() {
         delete next["via.1"];
         return next;
       });
-    } else if (via.length === 0) {
+    } else if (mode === "via" && via.length === 0) {
       setVia([null]);
+    } else if (mode === "board") {
+      setVia([]);
+      setWantReturn(false);
+      setInboundItineraries([]);
+      setHallLeg("outbound");
+      if (pickMode === "via" || pickMode === "to") setPickMode("idle");
     }
   }
 
@@ -282,21 +342,16 @@ export function useJourneySearch() {
     if (from || to) bumpFit();
   }
 
-  function handleReturn() {
-    const current = selectedRef.current;
-    setFrom(to);
-    setTo(from);
-    setVia((currentVia) => [...currentVia].reverse());
-    clearPlaceErrors();
-    if (from || to) bumpFit();
-    if (current) {
-      const leave = new Date(
-        new Date(current.endTime).getTime() + 30 * 60 * 1000,
+  function handleWantReturnChange(value: boolean) {
+    setWantReturn(value);
+    if (value) {
+      setReturnDatetime(
+        addDaysToDateTime(leaveNow ? toLocalDateTimeValue() : datetime, 1),
       );
-      setLeaveNow(false);
-      setArriveBy(false);
-      setAllDay(false);
-      setDatetime(toLocalDateTimeValue(leave));
+      setHallLeg("outbound");
+    } else {
+      setInboundItineraries([]);
+      setHallLeg("outbound");
     }
   }
 
@@ -314,13 +369,138 @@ export function useJourneySearch() {
     setFrom(snapshot.from);
     setTo(snapshot.to);
     setVia(snapshot.via);
-    setRouteMode(snapshot.via.length > 0 ? "via" : "point");
+    setRouteMode(
+      snapshot.board ? "board" : snapshot.via.length > 0 ? "via" : "point",
+    );
     setLeaveNow(snapshot.leaveNow);
     setDatetime(snapshot.datetime);
     setArriveBy(snapshot.arriveBy);
     setAllDay(snapshot.allDay);
     setModeFilter(snapshot.modeFilter);
     setTransferFilter(snapshot.transferFilter);
+    setAccessible(Boolean(snapshot.accessible));
+    setWantReturn(Boolean(snapshot.returnDatetime));
+    if (snapshot.returnDatetime) setReturnDatetime(snapshot.returnDatetime);
+  }
+
+  function planTime(parsed: {
+    leaveNow: boolean;
+    allDay: boolean;
+    time?: string;
+  }, fallback: string) {
+    if (parsed.leaveNow) return undefined;
+    if (parsed.allDay) return startOfLocalDay(parsed.time ?? fallback);
+    return parsed.time;
+  }
+
+  async function runBoard(
+    snapshot: {
+      from: SelectedPlace | null;
+      datetime: string;
+      leaveNow: boolean;
+      arriveBy: boolean;
+      allDay: boolean;
+      modeFilter: ModeFilter;
+      pageCursor?: string;
+      tripKey?: string;
+    },
+    options?: { silent?: boolean; fresh?: boolean },
+  ) {
+    if (!snapshot.from) {
+      setFieldErrors({ from: "validation.originRequired" });
+      return;
+    }
+    const key = planKey({
+      from: snapshot.from,
+      to: null,
+      via: [],
+      leaveNow: snapshot.leaveNow,
+      datetime: snapshot.datetime,
+      arriveBy: snapshot.arriveBy,
+      allDay: snapshot.allDay,
+      modeFilter: snapshot.modeFilter,
+      transferFilter: "all",
+      board: true,
+    });
+    if (key) claimedPlan.current = key;
+    const silent = Boolean(options?.silent);
+    const gen = ++planGen.current;
+    setFieldErrors({});
+    if (silent) setRefreshing(true);
+    else setLoading(true);
+    setError(null);
+    setHasSearched(true);
+    setPendingPick(null);
+    try {
+      const result = await fetchStopTimes(
+        {
+          stop: snapshot.from,
+          time: snapshot.leaveNow
+            ? undefined
+            : snapshot.allDay
+              ? startOfLocalDay(snapshot.datetime)
+              : snapshot.datetime,
+          arriveBy: snapshot.arriveBy,
+          modeFilter: snapshot.modeFilter,
+          pageCursor: snapshot.pageCursor,
+          language: locale,
+        },
+        { fresh: options?.fresh },
+      );
+      if (gen !== planGen.current) return;
+      lastPlan.current = {
+        from: snapshot.from,
+        to: null,
+        via: [],
+        leaveNow: snapshot.leaveNow,
+        datetime: snapshot.datetime,
+        arriveBy: snapshot.arriveBy,
+        allDay: snapshot.allDay,
+        modeFilter: snapshot.modeFilter,
+        transferFilter: "all",
+        board: true,
+        tripKey: snapshot.tripKey,
+      };
+      setStopTimes(result.stopTimes);
+      setBoardCursors({
+        prev: result.previousPageCursor,
+        next: result.nextPageCursor,
+      });
+      setItineraries([]);
+      setInboundItineraries([]);
+      if (snapshot.tripKey) {
+        const match = result.stopTimes.find(
+          (event) => event.tripId && snapshot.tripKey?.includes(event.tripId),
+        );
+        if (match?.tripId) {
+          const trip = await fetchTrip(match.tripId);
+          if (gen !== planGen.current) return;
+          setBoardTrip(trip);
+        }
+      } else if (!silent) {
+        setBoardTrip(null);
+      }
+      setLiveAt(Date.now());
+      bumpFit();
+    } catch (err) {
+      if (gen !== planGen.current) return;
+      if (!silent) {
+        setStopTimes([]);
+        setBoardTrip(null);
+        setError(
+          err instanceof Error &&
+            (err.message.startsWith("errors.") ||
+              err.message.startsWith("validation."))
+            ? err.message
+            : "errors.searchFailed",
+        );
+      }
+    } finally {
+      if (gen === planGen.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    }
   }
 
   async function runPlan(
@@ -334,10 +514,19 @@ export function useJourneySearch() {
       allDay: boolean;
       modeFilter: ModeFilter;
       transferFilter: TransferFilter;
+      accessible?: boolean;
+      wantReturn?: boolean;
+      returnDatetime?: string;
       tripKey?: string;
+      returnTripKey?: string;
+      board?: boolean;
     },
     options?: { silent?: boolean; fresh?: boolean },
   ) {
+    if (snapshot.board) {
+      await runBoard(snapshot, options);
+      return;
+    }
     const key = planKey(snapshot);
     if (key) claimedPlan.current = key;
 
@@ -351,6 +540,9 @@ export function useJourneySearch() {
       allDay: snapshot.allDay,
       modeFilter: snapshot.modeFilter,
       transferFilter: snapshot.transferFilter,
+      accessible: snapshot.accessible,
+      wantReturn: snapshot.wantReturn,
+      returnTime: snapshot.returnDatetime,
     });
 
     if (!parsed.success) {
@@ -367,6 +559,8 @@ export function useJourneySearch() {
     );
     const silent = Boolean(options?.silent);
     const gen = ++planGen.current;
+    const access = Boolean(parsed.data.accessible);
+    const returning = Boolean(parsed.data.wantReturn && parsed.data.returnTime);
 
     setFieldErrors({});
     if (silent) setRefreshing(true);
@@ -374,30 +568,49 @@ export function useJourneySearch() {
     setError(null);
     setHasSearched(true);
     setPendingPick(null);
+    setStopTimes([]);
     try {
-      const result = await planJourney(
-        {
-          from: origin,
-          to: destination,
-          via: vias,
-          time: parsed.data.leaveNow
-            ? undefined
-            : parsed.data.allDay
-              ? startOfLocalDay(parsed.data.time ?? snapshot.datetime)
-              : parsed.data.time,
-          arriveBy: parsed.data.allDay ? false : parsed.data.arriveBy,
-          allDay: parsed.data.allDay,
-          modeFilter: parsed.data.modeFilter,
-          transferFilter: parsed.data.transferFilter,
-          language: locale,
-        },
-        { fresh: options?.fresh },
-      );
+      const outboundInput = {
+        from: origin,
+        to: destination,
+        via: vias,
+        time: planTime(parsed.data, snapshot.datetime),
+        arriveBy: parsed.data.allDay ? false : parsed.data.arriveBy,
+        allDay: parsed.data.allDay,
+        modeFilter: parsed.data.modeFilter,
+        transferFilter: parsed.data.transferFilter,
+        accessible: access,
+        language: locale,
+      };
+      const outbound = planJourney(outboundInput, { fresh: options?.fresh });
+      const inbound = returning
+        ? planJourney(
+            {
+              from: destination,
+              to: origin,
+              via: [...vias].reverse(),
+              time: parsed.data.allDay
+                ? startOfLocalDay(parsed.data.returnTime!)
+                : parsed.data.returnTime,
+              arriveBy: false,
+              allDay: parsed.data.allDay,
+              modeFilter: parsed.data.modeFilter,
+              transferFilter: parsed.data.transferFilter,
+              accessible: access,
+              language: locale,
+            },
+            { fresh: options?.fresh },
+          )
+        : Promise.resolve(null);
+      const [outResult, inResult] = await Promise.all([outbound, inbound]);
       if (gen !== planGen.current) return;
       const journeys = [
-        ...(result.itineraries ?? []),
-        ...(result.direct ?? []),
+        ...(outResult.itineraries ?? []),
+        ...(outResult.direct ?? []),
       ];
+      const backJourneys = inResult
+        ? [...(inResult.itineraries ?? []), ...(inResult.direct ?? [])]
+        : [];
       lastPlan.current = {
         from: origin,
         to: destination,
@@ -409,9 +622,16 @@ export function useJourneySearch() {
         modeFilter: parsed.data.modeFilter,
         transferFilter: parsed.data.transferFilter,
         tripKey: snapshot.tripKey,
+        accessible: access,
+        returnDatetime: returning ? parsed.data.returnTime : undefined,
+        returnTripKey: snapshot.returnTripKey,
       };
       setItineraries(journeys);
+      setInboundItineraries(backJourneys);
       setSelectedIndex(findItineraryIndex(journeys, snapshot.tripKey));
+      setInboundSelectedIndex(
+        findItineraryIndex(backJourneys, snapshot.returnTripKey),
+      );
       if (!silent) {
         setSelectedCarriers([]);
         setRecents(
@@ -424,6 +644,7 @@ export function useJourneySearch() {
       if (gen !== planGen.current) return;
       if (!silent) {
         setItineraries([]);
+        setInboundItineraries([]);
         setError(
           err instanceof Error &&
             (err.message.startsWith("errors.") ||
@@ -450,14 +671,19 @@ export function useJourneySearch() {
     }
     applySnapshot(snapshot);
     setShareQuery(window.location.search);
-    void runPlan(snapshot);
+    void runPlan({
+      ...snapshot,
+      wantReturn: Boolean(snapshot.returnDatetime),
+      board: snapshot.board,
+    });
     // Restore a public link once on first paint.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only share restore
   }, []);
 
   useEffect(() => {
     const base = lastPlan.current;
-    if (!base || itineraries.length === 0) return;
+    if (!base) return;
+    if (routeMode !== "board" && itineraries.length === 0) return;
     const snapshot = snapshotForShare({
       from: base.from,
       to: base.to,
@@ -468,11 +694,25 @@ export function useJourneySearch() {
       allDay: base.allDay,
       modeFilter: base.modeFilter,
       transferFilter: base.transferFilter,
-      selected,
+      selected: hallLeg === "inbound" ? returnSelected : selected,
+      board: routeMode === "board",
+      accessible,
+      returnDatetime: wantReturn ? returnDatetime : undefined,
+      returnSelected,
     });
     if (!snapshot) return;
     writeShareUrl(encodeShareQuery(snapshot));
-  }, [itineraries, selected]);
+  }, [
+    itineraries,
+    selected,
+    returnSelected,
+    routeMode,
+    hallLeg,
+    accessible,
+    wantReturn,
+    returnDatetime,
+    stopTimes,
+  ]);
 
   function handleClearForm() {
     setFrom(null);
@@ -485,6 +725,10 @@ export function useJourneySearch() {
     setAllDay(false);
     setModeFilter("all");
     setTransferFilter("all");
+    setAccessible(false);
+    setWantReturn(false);
+    setHallLeg("outbound");
+    setReturnDatetime(addDaysToDateTime(toLocalDateTimeValue(), 1));
     setFieldErrors({});
     setPickMode("idle");
     setPendingPick(null);
@@ -516,7 +760,10 @@ export function useJourneySearch() {
     pinBusyRef.current = true;
     setPinBusy(true);
     try {
-      const role = roleForMapClick(pickMode, { from, to, via });
+      const role =
+        routeMode === "board" && pickMode === "idle"
+          ? "from"
+          : roleForMapClick(pickMode, { from, to, via });
       const place = await lookupPlace(lat, lon, role === "via");
       if (role === "pending") {
         setPendingPick(place);
@@ -556,6 +803,10 @@ export function useJourneySearch() {
       allDay,
       modeFilter,
       transferFilter,
+      accessible,
+      wantReturn: routeMode !== "board" && wantReturn,
+      returnDatetime,
+      board: routeMode === "board",
     });
   }
 
@@ -570,6 +821,10 @@ export function useJourneySearch() {
       allDay,
       modeFilter,
       transferFilter,
+      accessible,
+      wantReturn: routeMode !== "board" && wantReturn,
+      returnDatetime,
+      board: routeMode === "board",
     };
     const key = planKey(snapshot);
     if (!key || key === claimedPlan.current) return;
@@ -591,6 +846,9 @@ export function useJourneySearch() {
     allDay,
     modeFilter,
     transferFilter,
+    accessible,
+    wantReturn,
+    returnDatetime,
     pickMode,
   ]);
 
@@ -608,7 +866,7 @@ export function useJourneySearch() {
   }, []);
 
   useEffect(() => {
-    if (!hasSearched || itineraries.length === 0) return;
+    if (!hasSearched || (itineraries.length === 0 && stopTimes.length === 0)) return;
     const id = window.setInterval(() => {
       const base = lastPlan.current;
       if (!base) return;
@@ -622,6 +880,8 @@ export function useJourneySearch() {
               ? toLocalDateTimeValue()
               : base.datetime,
           tripKey: current ? itineraryKey(current) : base.tripKey,
+          wantReturn: Boolean(base.returnDatetime),
+          board: base.board,
         },
         { silent: true, fresh: true },
       );
@@ -629,7 +889,7 @@ export function useJourneySearch() {
     return () => window.clearInterval(id);
     // Interval is tied to an open result set; runPlan reads latest lastPlan/selected via refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasSearched, itineraries.length]);
+  }, [hasSearched, itineraries.length, stopTimes.length]);
 
   function handleRefresh() {
     const base = lastPlan.current;
@@ -644,6 +904,8 @@ export function useJourneySearch() {
             ? toLocalDateTimeValue()
             : base.datetime,
         tripKey: current ? itineraryKey(current) : base.tripKey,
+        wantReturn: Boolean(base.returnDatetime),
+        board: base.board,
       },
       { silent: true, fresh: true },
     );
@@ -651,8 +913,31 @@ export function useJourneySearch() {
 
   function handleTimeShift(direction: "earlier" | "later") {
     const base = lastPlan.current;
-    if (!base || itineraries.length === 0) return;
-    const stamps = itineraries
+    if (!base) return;
+    if (routeMode === "board") {
+      const cursor =
+        direction === "later" ? boardCursors.next : boardCursors.prev;
+      if (!cursor) return;
+      void runBoard(
+        {
+          from: base.from,
+          datetime: base.datetime,
+          leaveNow: base.leaveNow,
+          arriveBy: base.arriveBy,
+          allDay: base.allDay,
+          modeFilter: base.modeFilter,
+          pageCursor: cursor,
+          tripKey: selectedRef.current
+            ? itineraryKey(selectedRef.current)
+            : base.tripKey,
+        },
+        { silent: true, fresh: true },
+      );
+      return;
+    }
+    const pool = hallLeg === "inbound" ? inboundItineraries : itineraries;
+    if (pool.length === 0) return;
+    const stamps = pool
       .map((item) =>
         new Date(base.arriveBy ? item.endTime : item.startTime).getTime(),
       )
@@ -664,6 +949,17 @@ export function useJourneySearch() {
         ? stamps[stamps.length - 1]! + 60_000
         : stamps[0]! - 60_000;
     const nextTime = toLocalDateTimeValue(new Date(pivot));
+    if (hallLeg === "inbound") {
+      setReturnDatetime(nextTime);
+      void runPlan({
+        ...base,
+        wantReturn: true,
+        returnDatetime: nextTime,
+        tripKey: undefined,
+        returnTripKey: undefined,
+      });
+      return;
+    }
     setLeaveNow(false);
     setArriveBy(base.arriveBy);
     setAllDay(false);
@@ -673,8 +969,44 @@ export function useJourneySearch() {
       leaveNow: false,
       datetime: nextTime,
       allDay: false,
+      wantReturn: Boolean(base.returnDatetime),
       tripKey: undefined,
     });
+  }
+
+  async function handleSelectStopTime(event: StopTimeEvent) {
+    if (!event.tripId) return;
+    try {
+      const trip = await fetchTrip(event.tripId);
+      setBoardTrip(trip);
+      bumpFit();
+    } catch {
+      setBoardTrip(null);
+    }
+  }
+
+  function handleOpenStation(place: Place) {
+    const station = placeToSelected(place);
+    setFrom(station);
+    setRouteMode("board");
+    setWantReturn(false);
+    setHallLeg("outbound");
+    setLeaveNow(true);
+    setArriveBy(false);
+    setAllDay(false);
+    void runBoard({
+      from: station,
+      datetime: toLocalDateTimeValue(),
+      leaveNow: true,
+      arriveBy: false,
+      allDay: false,
+      modeFilter,
+    });
+  }
+
+  function handleSelectedIndexChange(index: number) {
+    if (hallLeg === "inbound") setInboundSelectedIndex(index);
+    else setSelectedIndex(index);
   }
 
   async function handleUseMyLocation() {
@@ -723,6 +1055,9 @@ export function useJourneySearch() {
     setDatetime(toLocalDateTimeValue());
     setModeFilter("all");
     setTransferFilter("all");
+    setAccessible(false);
+    setWantReturn(false);
+    setHallLeg("outbound");
     void runPlan({
       from: item.from,
       to: item.to,
@@ -751,17 +1086,26 @@ export function useJourneySearch() {
     allDay,
     modeFilter,
     transferFilter,
+    accessible,
+    wantReturn,
+    returnDatetime,
+    hallLeg,
+    inboundItineraries,
+    stopTimes,
+    boardTrip,
     loading,
     error,
     hasSearched,
-    itineraries,
-    selectedIndex,
+    itineraries: activeItineraries,
+    selectedIndex: activeSelectedIndex,
     selectedCarriers,
     fieldErrors,
     transferCounts,
     afterTransfers,
     filtered,
     selected,
+    returnSelected,
+    outboundSelected,
     emptyCopy,
     mapFitKey,
     pickMode,
@@ -777,8 +1121,10 @@ export function useJourneySearch() {
     setArriveBy,
     setModeFilter,
     setTransferFilter,
-    setSelectedIndex,
+    setSelectedIndex: handleSelectedIndexChange,
     setSelectedCarriers,
+    setAccessible,
+    setHallLeg,
     setPickMode: handlePickModeChange,
     handlePickModeChange,
     handleFromChange,
@@ -788,13 +1134,15 @@ export function useJourneySearch() {
     handleRemoveVia,
     handleRouteModeChange,
     handleSwap,
-    handleReturn,
+    handleWantReturnChange,
     handleClearForm,
     handleSearch,
     handleRefresh,
     handleTimeShift,
     handleUseMyLocation,
     handleRecentSelect,
+    handleSelectStopTime,
+    handleOpenStation,
     revealMap,
     handleMapClick,
     handleMarkerDrag,
@@ -802,6 +1150,7 @@ export function useJourneySearch() {
     setLeaveNow,
     setDatetime,
     setAllDay,
+    setReturnDatetime,
     setFieldErrors,
   };
 }

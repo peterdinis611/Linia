@@ -22,12 +22,15 @@ import {
   type Place,
 } from "@/lib/transit/types";
 import { fetchTrip } from "@/lib/transit/queries";
+import { alertsFromItinerary, uniqueAlerts } from "../lib/alerts";
+import { AlertStrip } from "./AlertStrip";
 
 type ItineraryDetailProps = {
   itinerary: Itinerary;
+  onOpenStation?: (place: Place) => void;
 };
 
-export function ItineraryDetail({ itinerary }: ItineraryDetailProps) {
+export function ItineraryDetail({ itinerary, onOpenStation }: ItineraryDetailProps) {
   const { t, tp } = useI18n();
 
   return (
@@ -46,12 +49,14 @@ export function ItineraryDetail({ itinerary }: ItineraryDetailProps) {
             : tp("transfersShort", itinerary.transfers)}
         </p>
       </div>
+      <AlertStrip alerts={alertsFromItinerary(itinerary)} />
       <ol>
         {itinerary.legs.map((leg, index) => (
           <LegBlock
             key={`${leg.startTime}-${index}`}
             leg={leg}
             isLast={index === itinerary.legs.length - 1}
+            onOpenStation={onOpenStation}
           />
         ))}
       </ol>
@@ -59,7 +64,15 @@ export function ItineraryDetail({ itinerary }: ItineraryDetailProps) {
   );
 }
 
-function LegBlock({ leg, isLast }: { leg: Leg; isLast: boolean }) {
+function LegBlock({
+  leg,
+  isLast,
+  onOpenStation,
+}: {
+  leg: Leg;
+  isLast: boolean;
+  onOpenStation?: (place: Place) => void;
+}) {
   const { locale, t, tp } = useI18n();
   const color = legColor(leg);
   const transit = isTransitMode(leg.mode);
@@ -89,7 +102,9 @@ function LegBlock({ leg, isLast }: { leg: Leg; isLast: boolean }) {
           />
         </div>
         <div className={isLast ? "pb-2" : "pb-5"}>
-          <p className="text-sm font-semibold tracking-tight">{leg.from.name}</p>
+          <p className="text-sm font-semibold tracking-tight">
+            <StationName place={leg.from} onOpenStation={onOpenStation} />
+          </p>
           <p className="mt-1 text-xs text-ink-muted">
             {t(`modes.${leg.mode}`)} · {formatDuration(leg.duration, t)}
             {formatDistance(leg.distance) ? ` · ${formatDistance(leg.distance)}` : ""}
@@ -98,7 +113,9 @@ function LegBlock({ leg, isLast }: { leg: Leg; isLast: boolean }) {
             <span className="font-mono text-[11px] text-ink-muted">
               {formatTime(leg.endTime, locale)}
             </span>
-            <p className="text-sm text-ink-soft">{leg.to.name}</p>
+            <p className="text-sm text-ink-soft">
+              <StationName place={leg.to} onOpenStation={onOpenStation} />
+            </p>
           </div>
         </div>
       </li>
@@ -119,7 +136,9 @@ function LegBlock({ leg, isLast }: { leg: Leg; isLast: boolean }) {
           <span className="w-[3px] flex-1" style={{ background: color }} />
         </div>
         <div className="pb-3">
-          <p className="text-sm font-semibold tracking-tight">{leg.from.name}</p>
+          <p className="text-sm font-semibold tracking-tight">
+            <StationName place={leg.from} onOpenStation={onOpenStation} />
+          </p>
           <div className="mt-1.5 flex flex-wrap items-center gap-2">
             <span
               className="px-1.5 py-0.5 font-mono text-[10px] font-medium tracking-wide uppercase"
@@ -144,6 +163,7 @@ function LegBlock({ leg, isLast }: { leg: Leg; isLast: boolean }) {
             {leg.agencyName ? ` · ${leg.agencyName}` : ""}
             {leg.from.track ? ` · ${t("detail.platform", { track: leg.from.track })}` : ""}
           </p>
+          <AlertStrip alerts={uniqueAlerts([...(leg.alerts ?? []), ...(leg.from.alerts ?? [])])} />
         </div>
       </div>
 
@@ -190,6 +210,7 @@ function LegBlock({ leg, isLast }: { leg: Leg; isLast: boolean }) {
                 key={`${stop.name}-${stop.lat}-${stopIndex}`}
                 stop={stop}
                 color={color}
+                onOpenStation={onOpenStation}
               />
             ))}
           </ol>
@@ -213,7 +234,9 @@ function LegBlock({ leg, isLast }: { leg: Leg; isLast: boolean }) {
           )}
         </div>
         <div className={isLast ? "pb-2" : "pb-6"}>
-          <p className="text-sm font-semibold tracking-tight">{leg.to.name}</p>
+          <p className="text-sm font-semibold tracking-tight">
+            <StationName place={leg.to} onOpenStation={onOpenStation} />
+          </p>
           <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
             {leg.to.track ? t("detail.platform", { track: leg.to.track }) : null}
             {arriveDelay != null && <DelayLabel minutes={arriveDelay} />}
@@ -273,7 +296,15 @@ function useIntermediateStops(leg: Leg): {
   };
 }
 
-function IntermediateStop({ stop, color }: { stop: Place; color: string }) {
+function IntermediateStop({
+  stop,
+  color,
+  onOpenStation,
+}: {
+  stop: Place;
+  color: string;
+  onOpenStation?: (place: Place) => void;
+}) {
   const { locale, t } = useI18n();
   return (
     <li className="grid grid-cols-[3.4rem_14px_1fr] gap-x-3">
@@ -288,7 +319,9 @@ function IntermediateStop({ stop, color }: { stop: Place; color: string }) {
         <span className="w-[3px] flex-1" style={{ background: color }} />
       </div>
       <div className="pb-2.5">
-        <p className="text-[13px] leading-snug text-ink-soft">{stop.name}</p>
+        <p className="text-[13px] leading-snug text-ink-soft">
+          <StationName place={stop} onOpenStation={onOpenStation} />
+        </p>
         {stop.track && (
           <p className="text-[11px] text-ink-muted">
             {t("detail.platform", { track: stop.track })}
@@ -296,6 +329,29 @@ function IntermediateStop({ stop, color }: { stop: Place; color: string }) {
         )}
       </div>
     </li>
+  );
+}
+
+function StationName({
+  place,
+  onOpenStation,
+}: {
+  place: Place;
+  onOpenStation?: (place: Place) => void;
+}) {
+  const { t } = useI18n();
+  if (!onOpenStation || !place.stopId) {
+    return <>{place.name}</>;
+  }
+  return (
+    <button
+      type="button"
+      className="station-name"
+      onClick={() => onOpenStation(place)}
+      aria-label={`${place.name}. ${t("board.openStation")}`}
+    >
+      {place.name}
+    </button>
   );
 }
 

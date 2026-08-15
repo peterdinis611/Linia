@@ -4,15 +4,14 @@ import { TransitError } from "@/lib/errors";
 import { isoOnLocalDate, startOfLocalDay } from "@/lib/format";
 import { actionClient } from "@/lib/safe-action";
 import {
-  geocodeMatchSchema,
   itinerarySchema,
   planJourneyInputSchema,
   planResponseSchema,
   placeSchema,
 } from "@/lib/schemas";
 import { motisFetch, placeQueryParam, transitModesFor } from "@/lib/transit/client";
-import { isRoutableStop } from "@/lib/transit/place";
-import type { Itinerary, SelectedPlace } from "@/lib/transit/types";
+import { resolveStopId } from "@/lib/transit/resolve-stop";
+import type { Itinerary } from "@/lib/transit/types";
 
 const DAY_SECONDS = 86_400;
 const DAY_ITINERARIES = 20;
@@ -35,6 +34,10 @@ export const planJourneyAction = actionClient
     if (transitModes) {
       params.set("transitModes", transitModes);
     }
+    if (parsedInput.accessible) {
+      params.set("pedestrianProfile", "WHEELCHAIR");
+      params.set("useRoutedTransfers", "true");
+    }
 
     if (parsedInput.transferFilter === "direct") {
       params.set("maxTransfers", "0");
@@ -55,7 +58,7 @@ export const planJourneyAction = actionClient
     if (parsedInput.via.length > 0) {
       const viaIds: string[] = [];
       for (const stop of parsedInput.via) {
-        viaIds.push(await stopIdForVia(stop, parsedInput.language));
+        viaIds.push(await resolveStopId(stop, parsedInput.language));
       }
       params.set("via", viaIds.join(","));
       params.set("viaMinimumStay", viaIds.map(() => "0").join(","));
@@ -140,32 +143,6 @@ function uniqueJourneys(items: Itinerary[]) {
     out.push(item);
   }
   return out;
-}
-
-async function stopIdForVia(place: SelectedPlace, language?: string) {
-  if (isRoutableStop(place)) {
-    return place.id;
-  }
-
-  const params = new URLSearchParams({
-    place: `${place.lat},${place.lon}`,
-    type: "STOP",
-  });
-  if (language) params.set("language", language);
-  const matches = await motisFetch("/v1/reverse-geocode", params, {
-    language,
-    revalidate: 1800,
-  });
-  if (!Array.isArray(matches)) {
-    throw new TransitError("validation.viaMustBeStation");
-  }
-  const stop = matches
-    .map((item) => geocodeMatchSchema.safeParse(item))
-    .find((parsed) => parsed.success && parsed.data.type === "STOP");
-  if (!stop || !stop.success) {
-    throw new TransitError("validation.viaMustBeStation");
-  }
-  return stop.data.id;
 }
 
 function parseItineraries(value: unknown) {

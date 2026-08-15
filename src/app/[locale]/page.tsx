@@ -24,6 +24,36 @@ export async function generateMetadata({
   const snapshot = parseShareQuery(flattenSearchParams(await searchParams));
   if (!snapshot) return {};
 
+  if (snapshot.board) {
+    const title = interpolate(dict.meta.shareBoardTitle, {
+      from: snapshot.from.name,
+    });
+    const description = interpolate(dict.meta.shareBoardDescription, {
+      from: snapshot.from.name,
+    });
+    const image = `/${locale}/ticket-og?${encodeShareQuery(snapshot)}`;
+    return {
+      title,
+      description,
+      robots: { index: false, follow: true },
+      openGraph: {
+        title,
+        description,
+        type: "website",
+        locale: localeOg[locale],
+        images: [{ url: image, width: 1200, height: 630, alt: title }],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [image],
+      },
+    };
+  }
+
+  if (!snapshot.to) return {};
+
   const title = interpolate(dict.meta.shareTitle, {
     from: snapshot.from.name,
     to: snapshot.to.name,

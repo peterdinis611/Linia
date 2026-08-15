@@ -29,6 +29,21 @@ export function coordPlace(
   };
 }
 
+export function placeToSelected(place: {
+  name: string;
+  stopId?: string;
+  lat: number;
+  lon: number;
+}): SelectedPlace {
+  return {
+    id: place.stopId ?? `coord:${place.lat.toFixed(5)},${place.lon.toFixed(5)}`,
+    name: place.name,
+    type: place.stopId ? "STOP" : "PLACE",
+    lat: place.lat,
+    lon: place.lon,
+  };
+}
+
 export function isRoutableStop(place: SelectedPlace): boolean {
   return (
     place.type === "STOP" &&

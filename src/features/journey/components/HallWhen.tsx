@@ -23,6 +23,7 @@ type HallWhenProps = {
   allDay?: boolean;
   invalid?: boolean;
   describedBy?: string;
+  idPrefix?: string;
   onChange: (value: string) => void;
 };
 
@@ -32,6 +33,7 @@ export function HallWhen({
   allDay = false,
   invalid = false,
   describedBy,
+  idPrefix = "journey",
   onChange,
 }: HallWhenProps) {
   const { locale, t } = useI18n();
@@ -79,8 +81,8 @@ export function HallWhen({
         <Popover.Trigger asChild>
           <button
             type="button"
-            id="journey-date"
-            data-testid="journey-date"
+            id={`${idPrefix}-date`}
+            data-testid={`${idPrefix}-date`}
             className="hall-when-date"
             aria-label={t("search.date")}
             aria-invalid={invalid}
@@ -137,8 +139,8 @@ export function HallWhen({
         <Popover.Trigger asChild>
           <button
             type="button"
-            id="journey-time"
-            data-testid="journey-time"
+            id={`${idPrefix}-time`}
+            data-testid={`${idPrefix}-time`}
             className="hall-when-time"
             aria-label={t("search.time")}
             aria-invalid={invalid}

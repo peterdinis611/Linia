@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Itinerary, TransferFilter } from "@/lib/transit/types";
+import type { Itinerary, Place, TransferFilter } from "@/lib/transit/types";
 import { useI18n } from "@/i18n/provider";
 import {
   emptyFilterCopy,
@@ -32,6 +32,7 @@ type JourneyResultsProps = {
   onTransferFilterChange?: (value: TransferFilter) => void;
   onRefresh?: () => void;
   onTimeShift?: (direction: "earlier" | "later") => void;
+  onOpenStation?: (place: Place) => void;
 };
 
 const SORTS: ResultSort[] = ["depart", "fastest", "transfers"];
@@ -54,6 +55,7 @@ export function JourneyResults({
   onTransferFilterChange,
   onRefresh,
   onTimeShift,
+  onOpenStation,
 }: JourneyResultsProps) {
   const { locale, t, tp } = useI18n();
   const [sort, setSort] = useState<ResultSort>("depart");
@@ -202,7 +204,9 @@ export function JourneyResults({
           }
         />
       )}
-      {selected && <ItineraryDetail itinerary={selected} />}
+      {selected && (
+        <ItineraryDetail itinerary={selected} onOpenStation={onOpenStation} />
+      )}
     </div>
   );
 }

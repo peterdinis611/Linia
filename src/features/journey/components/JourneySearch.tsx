@@ -8,10 +8,12 @@ import { useI18n } from "@/i18n/provider";
 import { splitDateTime } from "../lib/datetime";
 import { EmptyBoard, SearchingBoard, StationClock } from "./Board";
 import { HowToButton } from "./HowToUse";
+import { ItineraryDetail } from "./ItineraryDetail";
 import { JourneyResults } from "./JourneyResults";
 import { PrintTicket } from "./PrintTicket";
 import { RouteMap } from "./RouteMap";
 import { SearchForm } from "./SearchForm";
+import { StationBoard } from "./StationBoard";
 import { useHallTour } from "../hooks/use-hall-tour";
 import { useJourneySearch } from "../hooks/use-journey-search";
 
@@ -80,6 +82,9 @@ export function JourneySearch() {
             allDay={search.allDay}
             modeFilter={search.modeFilter}
             transferFilter={search.transferFilter}
+            accessible={search.accessible}
+            wantReturn={search.wantReturn}
+            returnDatetime={search.returnDatetime}
             loading={search.loading}
             hasSearched={search.hasSearched}
             transferCounts={search.transferCounts}
@@ -134,9 +139,17 @@ export function JourneySearch() {
             }}
             onModeFilterChange={search.setModeFilter}
             onTransferFilterChange={search.setTransferFilter}
+            onAccessibleChange={search.setAccessible}
+            onWantReturnChange={search.handleWantReturnChange}
+            onReturnDatetimeChange={(value) => {
+              search.setReturnDatetime(value);
+              search.setFieldErrors((errors) => ({
+                ...errors,
+                returnTime: undefined,
+              }));
+            }}
             onSearch={search.handleSearch}
             onClear={search.handleClearForm}
-            onReturn={search.handleReturn}
             geoBusy={search.geoBusy}
             geoError={search.geoError}
             onUseMyLocation={search.handleUseMyLocation}
@@ -151,11 +164,14 @@ export function JourneySearch() {
             </p>
           )}
 
-          {search.loading && search.itineraries.length === 0 && (
-            <SearchingBoard />
-          )}
+          {search.loading &&
+            search.itineraries.length === 0 &&
+            search.stopTimes.length === 0 && <SearchingBoard />}
 
-          {!search.loading && search.itineraries.length === 0 && !search.error && (
+          {!search.loading &&
+            search.itineraries.length === 0 &&
+            search.stopTimes.length === 0 &&
+            !search.error && (
             <EmptyBoard
               hasSearched={search.hasSearched}
               kicker={t(search.emptyCopy.kicker)}
@@ -167,26 +183,114 @@ export function JourneySearch() {
             />
           )}
 
-          {search.itineraries.length > 0 && (
-            <JourneyResults
-              loading={search.loading}
-              itineraries={search.itineraries}
-              afterTransfers={search.afterTransfers}
-              filtered={search.filtered}
-              selected={search.selected}
-              selectedIndex={search.selectedIndex}
-              selectedCarriers={search.selectedCarriers}
-              transferFilter={search.transferFilter}
-              shareUrl={search.shareUrl}
-              refreshing={search.refreshing}
-              liveAt={search.liveAt}
-              liveFresh={liveFresh}
-              onSelectedCarriersChange={search.setSelectedCarriers}
-              onSelectedIndexChange={search.setSelectedIndex}
-              onTransferFilterChange={search.setTransferFilter}
-              onRefresh={search.handleRefresh}
-              onTimeShift={search.allDay ? undefined : search.handleTimeShift}
-            />
+          {search.routeMode === "board" && search.stopTimes.length > 0 && (
+            <div
+              data-testid="station-board-panel"
+              data-tour="board"
+              className="space-y-4"
+            >
+              <div className="flex items-end justify-between gap-3">
+                <div>
+                  <p className="kicker">{t("board.stationKicker")}</p>
+                  <p className="font-display mt-1 text-xl italic">
+                    {search.arriveBy
+                      ? t("board.stationArrivals")
+                      : t("board.stationDepartures")}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="stamp"
+                  data-testid="refresh-live"
+                  onClick={search.handleRefresh}
+                  disabled={search.refreshing || search.loading}
+                >
+                  {t("results.refresh")}
+                </button>
+              </div>
+              <div className="mode-switch" data-cols="2" role="group">
+                <button
+                  type="button"
+                  data-testid="earlier-connections"
+                  disabled={search.loading || search.refreshing}
+                  onClick={() => search.handleTimeShift("earlier")}
+                >
+                  {t("results.earlier")}
+                </button>
+                <button
+                  type="button"
+                  data-testid="later-connections"
+                  disabled={search.loading || search.refreshing}
+                  onClick={() => search.handleTimeShift("later")}
+                >
+                  {t("results.later")}
+                </button>
+              </div>
+              <StationBoard
+                stopTimes={search.stopTimes}
+                arriveBy={search.arriveBy}
+                selectedTripId={search.boardTrip?.legs.find((leg) => leg.tripId)?.tripId}
+                onSelect={search.handleSelectStopTime}
+              />
+              {search.boardTrip ? (
+                <ItineraryDetail
+                  itinerary={search.boardTrip}
+                  onOpenStation={search.handleOpenStation}
+                />
+              ) : null}
+            </div>
+          )}
+
+          {search.routeMode !== "board" && search.itineraries.length > 0 && (
+            <>
+              {search.wantReturn && search.inboundItineraries.length > 0 ? (
+                <div
+                  className="mode-switch"
+                  data-cols="2"
+                  role="group"
+                  aria-label={t("search.returnTrip")}
+                >
+                  <button
+                    type="button"
+                    data-on={search.hallLeg === "outbound"}
+                    aria-pressed={search.hallLeg === "outbound"}
+                    data-testid="hall-leg-outbound"
+                    onClick={() => search.setHallLeg("outbound")}
+                  >
+                    {t("search.outbound")}
+                  </button>
+                  <button
+                    type="button"
+                    data-on={search.hallLeg === "inbound"}
+                    aria-pressed={search.hallLeg === "inbound"}
+                    data-testid="hall-leg-inbound"
+                    onClick={() => search.setHallLeg("inbound")}
+                  >
+                    {t("search.inbound")}
+                  </button>
+                </div>
+              ) : null}
+              <JourneyResults
+                loading={search.loading}
+                itineraries={search.itineraries}
+                afterTransfers={search.afterTransfers}
+                filtered={search.filtered}
+                selected={search.selected}
+                selectedIndex={search.selectedIndex}
+                selectedCarriers={search.selectedCarriers}
+                transferFilter={search.transferFilter}
+                shareUrl={search.shareUrl}
+                refreshing={search.refreshing}
+                liveAt={search.liveAt}
+                liveFresh={liveFresh}
+                onSelectedCarriersChange={search.setSelectedCarriers}
+                onSelectedIndexChange={search.setSelectedIndex}
+                onTransferFilterChange={search.setTransferFilter}
+                onRefresh={search.handleRefresh}
+                onTimeShift={search.allDay ? undefined : search.handleTimeShift}
+                onOpenStation={search.handleOpenStation}
+              />
+            </>
           )}
           </div>
         </section>
@@ -237,11 +341,27 @@ export function JourneySearch() {
         {t("footer.contributors")}
       </footer>
     </div>
-    {search.selected ? (
+    {search.routeMode === "board" && search.selected ? (
       <PrintTicket
         itinerary={search.selected}
         from={search.from}
         to={search.to}
+      />
+    ) : null}
+    {search.routeMode !== "board" && search.outboundSelected ? (
+      <PrintTicket
+        itinerary={search.outboundSelected}
+        from={search.from}
+        to={search.to}
+      />
+    ) : null}
+    {search.routeMode !== "board" &&
+    search.wantReturn &&
+    search.returnSelected ? (
+      <PrintTicket
+        itinerary={search.returnSelected}
+        from={search.to}
+        to={search.from}
       />
     ) : null}
     </>

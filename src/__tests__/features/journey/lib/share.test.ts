@@ -40,6 +40,28 @@ describe("share", () => {
     });
   });
 
+  it("round-trips a station board and an accessible return", () => {
+    const query = encodeShareQuery({
+      ...base,
+      board: true,
+      to: null,
+      accessible: true,
+      returnDatetime: "2026-08-16T14:00",
+    });
+    expect(query).toContain("board=1");
+    expect(query).toContain("access=1");
+    expect(query).toContain("back=2026-08-16T14%3A00");
+    expect(query).not.toContain("to=");
+    const parsed = parseShareQuery(`?${query}`);
+    expect(parsed).toMatchObject({
+      from: { name: "Berlin Hbf" },
+      to: null,
+      board: true,
+      accessible: true,
+      returnDatetime: "2026-08-16T14:00",
+    });
+  });
+
   it("finds a selected trip by key", () => {
     const first = railItinerary();
     const second = railItinerary({

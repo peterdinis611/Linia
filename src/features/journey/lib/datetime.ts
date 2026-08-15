@@ -67,6 +67,10 @@ export function weekdayLabels(locale: string) {
   );
 }
 
+export function addDaysToDateTime(value: string, days: number) {
+  return joinDateTime(shiftDate(splitDateTime(value), days));
+}
+
 export function sameDay(
   left: Pick<DateTimeParts, "year" | "month" | "day">,
   right: Pick<DateTimeParts, "year" | "month" | "day">,

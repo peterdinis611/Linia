@@ -38,7 +38,7 @@ export async function motisFetch(
 ) {
   const url = new URL(`${MOTIS_BASE}${path}`);
   params.forEach((value, key) => {
-    url.searchParams.set(key, value);
+    url.searchParams.append(key, value);
   });
 
   let response: Response;

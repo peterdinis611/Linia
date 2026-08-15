@@ -41,8 +41,14 @@ describe("SearchForm stress", () => {
         onAllDayChange={onAllDayChange}
         onModeFilterChange={onModeFilterChange}
         onTransferFilterChange={onTransferFilterChange}
+        onAccessibleChange={vi.fn()}
+        onWantReturnChange={vi.fn()}
+        onReturnDatetimeChange={vi.fn()}
         onSearch={onSearch}
         onClear={vi.fn()}
+        accessible={false}
+        wantReturn={false}
+        returnDatetime="2026-08-15T08:30"
       />,
     );
 

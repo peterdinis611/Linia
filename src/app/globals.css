@@ -1795,6 +1795,91 @@ body::before {
   background: color-mix(in srgb, var(--signal) 14%, transparent);
 }
 
+.alert-ribbon {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 0.65rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--signal-text);
+}
+
+.alert-ribbon-stamp {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+
+.alert-ribbon-copy {
+  color: var(--ink-soft);
+}
+
+.alert-ribbon-count {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  color: var(--ink-muted);
+}
+
+.alert-notice {
+  margin-top: 0.65rem;
+  border: 1px dashed color-mix(in srgb, var(--signal) 38%, var(--rule));
+  background: color-mix(in srgb, var(--signal) 7%, transparent);
+  padding: 0.55rem 0.7rem;
+}
+
+.alert-notice summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem 0.65rem;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.8rem;
+}
+
+.alert-notice summary::-webkit-details-marker {
+  display: none;
+}
+
+.alert-notice-body {
+  margin-top: 0.55rem;
+  display: grid;
+  gap: 0.7rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.alert-notice-head {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.alert-notice a {
+  color: var(--signal);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.station-name {
+  text-align: inherit;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 0.18em;
+  text-decoration-color: var(--rule-strong);
+}
+
+.station-name:hover {
+  color: var(--signal);
+  text-decoration-color: var(--signal);
+}
+
 .reveal {
   animation: rise 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

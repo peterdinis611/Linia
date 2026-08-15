@@ -53,6 +53,7 @@ export const planJourneyInputSchema = z
     allDay: z.boolean().optional().default(false),
     modeFilter: modeFilterSchema,
     transferFilter: transferFilterSchema,
+    accessible: z.boolean().optional().default(false),
     fresh: z.boolean().optional(),
   })
   .refine((value) => isValidDateTime(value.time), {
@@ -97,6 +98,10 @@ export const journeySearchFormSchema = z
     allDay: z.boolean().optional().default(false),
     modeFilter: modeFilterSchema,
     transferFilter: transferFilterSchema,
+    board: z.boolean().optional().default(false),
+    accessible: z.boolean().optional().default(false),
+    wantReturn: z.boolean().optional().default(false),
+    returnTime: z.string().trim().optional(),
   })
   .superRefine((value, ctx) => {
     if (!value.from) {
@@ -106,22 +111,24 @@ export const journeySearchFormSchema = z
         message: "validation.originRequired",
       });
     }
-    if (!value.to) {
+    if (!value.board && !value.to) {
       ctx.addIssue({
         code: "custom",
         path: ["to"],
         message: "validation.destinationRequired",
       });
     }
-    value.via.forEach((stop, index) => {
-      if (!stop) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["via", index],
-          message: "validation.viaRequired",
-        });
-      }
-    });
+    if (!value.board) {
+      value.via.forEach((stop, index) => {
+        if (!stop) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["via", index],
+            message: "validation.viaRequired",
+          });
+        }
+      });
+    }
     if (!value.leaveNow && !value.allDay) {
       if (!value.time) {
         ctx.addIssue({
@@ -137,26 +144,61 @@ export const journeySearchFormSchema = z
         });
       }
     }
-    if (!isDifferentPlace(value.from, value.to)) {
+    if (!value.board && !isDifferentPlace(value.from, value.to)) {
       ctx.addIssue({
         code: "custom",
         path: ["to"],
         message: "validation.placesDifferent",
       });
     }
-    value.via.forEach((stop, index) => {
-      if (!stop) return;
-      if (!isDifferentPlace(value.from, stop) || !isDifferentPlace(value.to, stop)) {
+    if (!value.board) {
+      value.via.forEach((stop, index) => {
+        if (!stop) return;
+        if (!isDifferentPlace(value.from, stop) || !isDifferentPlace(value.to, stop)) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["via", index],
+            message: "validation.viaDifferentEnds",
+          });
+        }
+      });
+    }
+    if (value.wantReturn && !value.board) {
+      if (!value.returnTime) {
         ctx.addIssue({
           code: "custom",
-          path: ["via", index],
-          message: "validation.viaDifferentEnds",
+          path: ["returnTime"],
+          message: "validation.returnTimeRequired",
         });
+      } else if (!isValidDateTime(value.returnTime)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["returnTime"],
+          message: "validation.timeInvalid",
+        });
+      } else {
+        const outboundStamp = value.leaveNow
+          ? Date.now()
+          : value.time
+            ? new Date(value.time).getTime()
+            : Number.NaN;
+        const returnStamp = new Date(value.returnTime).getTime();
+        if (
+          Number.isFinite(outboundStamp) &&
+          Number.isFinite(returnStamp) &&
+          returnStamp < outboundStamp
+        ) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["returnTime"],
+            message: "validation.returnAfterOutbound",
+          });
+        }
       }
-    });
+    }
   });
 
-export type JourneyFormField = "from" | "to" | "time" | "via";
+export type JourneyFormField = "from" | "to" | "time" | "via" | "returnTime";
 export type JourneyFormFieldErrors = Partial<
   Record<JourneyFormField, string> & Record<`via.${number}`, string>
 >;
@@ -167,7 +209,7 @@ export function fieldErrorsFromZod(error: {
   const next: JourneyFormFieldErrors = {};
   for (const issue of error.issues) {
     const key = issue.path[0];
-    if (key === "from" || key === "to" || key === "time") {
+    if (key === "from" || key === "to" || key === "time" || key === "returnTime") {
       if (!next[key]) next[key] = issue.message;
       continue;
     }
@@ -206,6 +248,15 @@ export const geocodeMatchSchema = z.looseObject({
 
 export const geocodeOutputSchema = z.array(geocodeMatchSchema);
 
+export const transitAlertSchema = z.looseObject({
+  headerText: z.string().optional().default(""),
+  descriptionText: z.string().optional().default(""),
+  effect: z.string().optional(),
+  severityLevel: z.string().optional(),
+  cause: z.string().optional(),
+  url: z.string().optional(),
+});
+
 export const placeSchema = z.looseObject({
   name: z.string(),
   stopId: z.string().optional(),
@@ -218,6 +269,7 @@ export const placeSchema = z.looseObject({
   departure: z.string().optional(),
   scheduledArrival: z.string().optional(),
   scheduledDeparture: z.string().optional(),
+  alerts: z.array(transitAlertSchema).optional(),
 });
 
 export const encodedPolylineSchema = z.looseObject({
@@ -249,6 +301,7 @@ export const legSchema = z.looseObject({
   tripId: z.string().optional(),
   cancelled: z.boolean().optional(),
   intermediateStops: z.array(placeSchema).nullable().optional(),
+  alerts: z.array(transitAlertSchema).optional(),
   legGeometry: encodedPolylineSchema.optional().default({
     points: "",
     precision: 6,
@@ -271,6 +324,41 @@ export const planResponseSchema = z.looseObject({
   direct: z.array(itinerarySchema).optional().default([]),
 });
 
+export const stopTimesInputSchema = z.object({
+  stop: selectedPlaceSchema,
+  time: z.string().trim().min(1).optional(),
+  arriveBy: z.boolean().optional().default(false),
+  modeFilter: modeFilterSchema.optional().default("all"),
+  pageCursor: z.string().trim().max(2000).optional(),
+  language: z.string().trim().min(2).max(8).optional(),
+  n: z.number().int().min(1).max(50).optional().default(20),
+});
+
+export const stopTimeEventSchema = z.looseObject({
+  place: placeSchema,
+  mode: z.string(),
+  realTime: z.boolean().optional().default(false),
+  headsign: z.string().nullable().optional(),
+  tripTo: placeSchema.optional(),
+  agencyName: z.string().optional(),
+  routeColor: z.string().optional(),
+  routeTextColor: z.string().optional(),
+  tripId: z.string().optional(),
+  routeShortName: z.string().optional(),
+  routeLongName: z.string().optional(),
+  displayName: z.string().optional(),
+  cancelled: z.boolean().optional().default(false),
+  tripCancelled: z.boolean().optional().default(false),
+  alerts: z.array(transitAlertSchema).optional(),
+});
+
+export const stopTimesResponseSchema = z.looseObject({
+  place: placeSchema.optional(),
+  stopTimes: z.array(stopTimeEventSchema).optional().default([]),
+  previousPageCursor: z.string().optional(),
+  nextPageCursor: z.string().optional(),
+});
+
 export type ModeFilter = z.infer<typeof modeFilterSchema>;
 export type TransferFilter = z.infer<typeof transferFilterSchema>;
 export type SelectedPlace = z.infer<typeof selectedPlaceSchema>;
@@ -279,3 +367,4 @@ export type ReverseGeocodeInput = z.infer<typeof reverseGeocodeInputSchema>;
 export type PlanJourneyInput = z.infer<typeof planJourneyInputSchema>;
 export type JourneySearchForm = z.infer<typeof journeySearchFormSchema>;
 export type TripInput = z.infer<typeof tripInputSchema>;
+export type StopTimesInput = z.infer<typeof stopTimesInputSchema>;

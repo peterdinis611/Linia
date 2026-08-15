@@ -11,6 +11,8 @@ import {
   legColor,
 } from "@/lib/format";
 import type { Itinerary, Leg } from "@/lib/transit/types";
+import { alertsFromItinerary } from "../lib/alerts";
+import { AlertStrip } from "./AlertStrip";
 
 type ItineraryListProps = {
   itineraries: Itinerary[];
@@ -35,6 +37,7 @@ export function ItineraryList({
         const transitLegs = itinerary.legs.filter((leg) => isTransitMode(leg.mode));
         const delayed = itinerary.legs.some((leg) => (delayMinutes(leg) ?? 0) > 0);
         const carriers = transitAgencies(itinerary);
+        const alerts = alertsFromItinerary(itinerary);
 
         return (
           <li key={`${itinerary.startTime}-${itinerary.endTime}-${index}`} role="none">
@@ -79,6 +82,11 @@ export function ItineraryList({
                   ),
                 )}
               </div>
+              {alerts.length > 0 ? (
+                <div className="mt-2">
+                  <AlertStrip alerts={alerts} compact />
+                </div>
+              ) : null}
             </button>
           </li>
         );

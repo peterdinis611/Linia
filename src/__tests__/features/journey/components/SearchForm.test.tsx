@@ -32,8 +32,14 @@ function renderForm(overrides: Partial<Props> = {}) {
     onAllDayChange: vi.fn(),
     onModeFilterChange: vi.fn(),
     onTransferFilterChange: vi.fn(),
+    onAccessibleChange: vi.fn(),
+    onWantReturnChange: vi.fn(),
+    onReturnDatetimeChange: vi.fn(),
     onSearch: vi.fn(),
     onClear: vi.fn(),
+    accessible: false,
+    wantReturn: false,
+    returnDatetime: "2026-08-15T08:30",
     ...overrides,
   };
   return { ...renderHall(<SearchForm {...props} />), props };
@@ -77,6 +83,22 @@ describe("SearchForm", () => {
     const { props } = renderForm();
     await user.click(screen.getByRole("button", { name: "Via stops" }));
     expect(props.onRouteModeChange).toHaveBeenCalledWith("via");
+  });
+
+  it("stamps the station board", async () => {
+    const user = userEvent.setup();
+    const { props } = renderForm();
+    await user.click(screen.getByTestId("station-board-mode"));
+    expect(props.onRouteModeChange).toHaveBeenCalledWith("board");
+  });
+
+  it("stamps accessible and return", async () => {
+    const user = userEvent.setup();
+    const { props } = renderForm();
+    await user.click(screen.getByTestId("accessible"));
+    expect(props.onAccessibleChange).toHaveBeenCalledWith(true);
+    await user.click(screen.getByTestId("return-trip"));
+    expect(props.onWantReturnChange).toHaveBeenCalledWith(true);
   });
 
   it("asks to find connections", async () => {

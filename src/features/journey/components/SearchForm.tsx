@@ -20,6 +20,9 @@ type SearchFormProps = {
   allDay: boolean;
   modeFilter: ModeFilter;
   transferFilter: TransferFilter;
+  accessible: boolean;
+  wantReturn: boolean;
+  returnDatetime: string;
   loading: boolean;
   hasSearched?: boolean;
   transferCounts?: { direct: number; transfers: number } | null;
@@ -37,9 +40,11 @@ type SearchFormProps = {
   onAllDayChange: (value: boolean) => void;
   onModeFilterChange: (value: ModeFilter) => void;
   onTransferFilterChange: (value: TransferFilter) => void;
+  onAccessibleChange: (value: boolean) => void;
+  onWantReturnChange: (value: boolean) => void;
+  onReturnDatetimeChange: (value: string) => void;
   onSearch: () => void;
   onClear: () => void;
-  onReturn?: () => void;
   geoBusy?: boolean;
   geoError?: string | null;
   onUseMyLocation?: () => void;
@@ -56,6 +61,9 @@ export function SearchForm({
   allDay,
   modeFilter,
   transferFilter,
+  accessible,
+  wantReturn,
+  returnDatetime,
   loading,
   hasSearched = false,
   transferCounts,
@@ -73,26 +81,31 @@ export function SearchForm({
   onAllDayChange,
   onModeFilterChange,
   onTransferFilterChange,
+  onAccessibleChange,
+  onWantReturnChange,
+  onReturnDatetimeChange,
   onSearch,
   onClear,
-  onReturn,
   geoBusy = false,
   geoError = null,
   onUseMyLocation,
 }: SearchFormProps) {
   const { t } = useI18n();
   const [fieldsKey, setFieldsKey] = useState(0);
+  const board = routeMode === "board";
   const canClear = Boolean(
     hasSearched ||
       from ||
       to ||
       via.length > 0 ||
-      routeMode === "via" ||
+      routeMode !== "point" ||
       !leaveNow ||
       arriveBy ||
       allDay ||
       modeFilter !== "all" ||
-      transferFilter !== "all",
+      transferFilter !== "all" ||
+      accessible ||
+      wantReturn,
   );
   const modeOptions: { value: Exclude<ModeFilter, "all">; label: string }[] = [
     { value: "train", label: t("search.modeRail") },
@@ -161,26 +174,30 @@ export function SearchForm({
           </div>
         ) : null}
       </div>
-      <div className="flex justify-end">
-          <button
-            type="button"
-            aria-label={t("search.swap")}
-            onClick={onSwap}
-            className="swap-knob -my-1"
-          >
-            <SwapIcon />
-          </button>
-      </div>
-      <div data-tour="destination">
-        <PlaceAutocomplete
-          key={`destination-${fieldsKey}`}
-          label={t("search.destination")}
-          placeholder={t("search.destinationPlaceholder")}
-          value={to}
-          error={fieldErrors?.to ? t(fieldErrors.to) : undefined}
-          onChange={onToChange}
-        />
-      </div>
+      {!board ? (
+        <>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              aria-label={t("search.swap")}
+              onClick={onSwap}
+              className="swap-knob -my-1"
+            >
+              <SwapIcon />
+            </button>
+          </div>
+          <div data-tour="destination">
+            <PlaceAutocomplete
+              key={`destination-${fieldsKey}`}
+              label={t("search.destination")}
+              placeholder={t("search.destinationPlaceholder")}
+              value={to}
+              error={fieldErrors?.to ? t(fieldErrors.to) : undefined}
+              onChange={onToChange}
+            />
+          </div>
+        </>
+      ) : null}
       <div className="space-y-3">
         <div data-tour="route">
           <p className="kicker mb-2">{t("search.route")}</p>
@@ -200,6 +217,15 @@ export function SearchForm({
               onClick={() => onRouteModeChange("via")}
             >
               {t("search.viaStops")}
+            </button>
+            <button
+              type="button"
+              data-on={board}
+              aria-pressed={board}
+              data-testid="station-board-mode"
+              onClick={() => onRouteModeChange("board")}
+            >
+              {t("search.stationBoard")}
             </button>
           </div>
         </div>
@@ -276,6 +302,18 @@ export function SearchForm({
       >
         {t("search.allDay")}
       </button>
+      {!board ? (
+        <button
+          type="button"
+          data-on={wantReturn}
+          data-testid="return-trip"
+          className="stamp w-full"
+          onClick={() => onWantReturnChange(!wantReturn)}
+          aria-pressed={wantReturn}
+        >
+          {t("search.returnTrip")}
+        </button>
+      ) : null}
 
       <div>
         <p className="kicker mb-2">
@@ -299,6 +337,25 @@ export function SearchForm({
           </p>
         )}
       </div>
+      {wantReturn && !board ? (
+        <div>
+          <p className="kicker mb-2">{t("search.returnKicker")}</p>
+          <HallWhen
+            datetime={returnDatetime}
+            leaveNow={false}
+            allDay={allDay}
+            invalid={Boolean(fieldErrors?.returnTime)}
+            describedBy={fieldErrors?.returnTime ? "return-time-error" : undefined}
+            idPrefix="return"
+            onChange={onReturnDatetimeChange}
+          />
+          {fieldErrors?.returnTime && (
+            <p id="return-time-error" role="alert" className="field-error">
+              {t(fieldErrors.returnTime)}
+            </p>
+          )}
+        </div>
+      ) : null}
       </div>
 
       <div className="ticket-line" data-tour="line">
@@ -322,25 +379,39 @@ export function SearchForm({
             );
           })}
         </div>
-        <div className="ticket-line-row" role="group" aria-label={t("search.connectionsGroup")}>
-          {transferOptions.map((option) => {
-            const selected = transferFilter === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                className="stamp"
-                data-on={selected}
-                aria-pressed={selected}
-                onClick={() =>
-                  onTransferFilterChange(selected ? "all" : option.value)
-                }
-              >
-                {option.label}
-              </button>
-            );
-          })}
-        </div>
+        {!board ? (
+          <div className="ticket-line-row" role="group" aria-label={t("search.connectionsGroup")}>
+            {transferOptions.map((option) => {
+              const selected = transferFilter === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  className="stamp"
+                  data-on={selected}
+                  aria-pressed={selected}
+                  onClick={() =>
+                    onTransferFilterChange(selected ? "all" : option.value)
+                  }
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+        {!board ? (
+          <button
+            type="button"
+            className="stamp w-full"
+            data-on={accessible}
+            data-testid="accessible"
+            aria-pressed={accessible}
+            onClick={() => onAccessibleChange(!accessible)}
+          >
+            {t("search.accessible")}
+          </button>
+        ) : null}
       </div>
 
       <div className="space-y-2">
@@ -352,7 +423,11 @@ export function SearchForm({
           aria-busy={loading}
         >
           {loading ? <span className="search-cta-spin" aria-hidden="true" /> : null}
-          {loading ? t("search.submitting") : t("search.submit")}
+          {loading
+            ? t("search.submitting")
+            : board
+              ? t("search.submitBoard")
+              : t("search.submit")}
         </button>
         {canClear && (
           <button
@@ -367,17 +442,6 @@ export function SearchForm({
             {t("search.clearTicket")}
           </button>
         )}
-        {onReturn && from && to ? (
-          <button
-            type="button"
-            className="stamp w-full"
-            data-testid="return-trip"
-            onClick={onReturn}
-            disabled={loading}
-          >
-            {t("search.returnTrip")}
-          </button>
-        ) : null}
       </div>
     </form>
   );

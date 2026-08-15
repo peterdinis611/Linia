@@ -12,12 +12,14 @@ export async function GET(
   const { locale } = await context.params;
   const dict = getDictionary(isLocale(locale) ? locale : "en");
   const snapshot = parseShareQuery(new URL(request.url).searchParams);
-  const headline = snapshot
-    ? interpolate(dict.meta.shareTitle, {
-        from: snapshot.from.name,
-        to: snapshot.to.name,
-      })
-    : dict.meta.title;
+  const headline = snapshot?.board
+    ? interpolate(dict.meta.shareBoardTitle, { from: snapshot.from.name })
+    : snapshot?.to
+      ? interpolate(dict.meta.shareTitle, {
+          from: snapshot.from.name,
+          to: snapshot.to.name,
+        })
+      : dict.meta.title;
 
   return new ImageResponse(
     (
@@ -25,7 +27,7 @@ export async function GET(
         kicker={dict.brand.kicker}
         headline={headline}
         from={snapshot?.from.name}
-        to={snapshot?.to.name}
+        to={snapshot?.to?.name}
       />
     ),
     OG_SIZE,

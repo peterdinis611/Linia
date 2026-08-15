@@ -1,6 +1,7 @@
 import { unwrapAction } from "@/lib/action-result";
 import { geocodeAction, reverseGeocodeAction } from "@/app/actions/geocode";
 import { planJourneyAction } from "@/app/actions/plan";
+import { getStopTimesAction } from "@/app/actions/stoptimes";
 import { getTripAction } from "@/app/actions/trip";
 import { createTtlCache } from "@/lib/ttl-cache";
 import type {
@@ -9,6 +10,7 @@ import type {
   ModeFilter,
   PlanResponse,
   SelectedPlace,
+  StopTimesResponse,
   TransferFilter,
 } from "@/lib/transit/types";
 
@@ -18,6 +20,7 @@ const geocodeCache = createTtlCache<GeocodeMatch[]>({
 });
 const planCache = createTtlCache<PlanResponse>({ ttlMs: 90_000, max: 24 });
 const tripCache = createTtlCache<Itinerary>({ ttlMs: 300_000, max: 48 });
+const stopTimesCache = createTtlCache<StopTimesResponse>({ ttlMs: 45_000, max: 24 });
 
 function placeKey(place: SelectedPlace) {
   if (place.type === "STOP" && place.id) return place.id;
@@ -33,6 +36,7 @@ function planCacheKey(input: {
   allDay?: boolean;
   modeFilter: ModeFilter;
   transferFilter: TransferFilter;
+  accessible?: boolean;
   language?: string;
 }) {
   const via = (input.via ?? []).map(placeKey).join(">");
@@ -50,6 +54,7 @@ function planCacheKey(input: {
     input.allDay ? "1" : "0",
     input.modeFilter,
     input.transferFilter,
+    input.accessible ? "1" : "0",
     input.language ?? "",
   ].join("|");
 }
@@ -87,6 +92,7 @@ export async function planJourney(
     allDay?: boolean;
     modeFilter: ModeFilter;
     transferFilter: TransferFilter;
+    accessible?: boolean;
     language?: string;
   },
   options?: { fresh?: boolean },
@@ -102,5 +108,44 @@ export async function planJourney(
 export async function fetchTrip(tripId: string): Promise<Itinerary> {
   return tripCache.get(tripId, async () =>
     unwrapAction(await getTripAction({ tripId })),
+  );
+}
+
+function stopTimesCacheKey(input: {
+  stop: SelectedPlace;
+  time?: string;
+  arriveBy?: boolean;
+  modeFilter?: ModeFilter;
+  pageCursor?: string;
+  language?: string;
+}) {
+  const when = input.time
+    ? `at:${input.time}`
+    : `now:${Math.floor(Date.now() / 25_000)}`;
+  return [
+    placeKey(input.stop),
+    when,
+    input.arriveBy ? "1" : "0",
+    input.modeFilter ?? "all",
+    input.pageCursor ?? "",
+    input.language ?? "",
+  ].join("|");
+}
+
+export async function fetchStopTimes(
+  input: {
+    stop: SelectedPlace;
+    time?: string;
+    arriveBy?: boolean;
+    modeFilter?: ModeFilter;
+    pageCursor?: string;
+    language?: string;
+  },
+  options?: { fresh?: boolean },
+): Promise<StopTimesResponse> {
+  return stopTimesCache.get(
+    stopTimesCacheKey(input),
+    async () => unwrapAction(await getStopTimesAction(input)),
+    options,
   );
 }

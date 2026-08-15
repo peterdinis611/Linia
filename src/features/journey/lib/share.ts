@@ -13,7 +13,7 @@ import type {
 
 export type ShareSnapshot = {
   from: SelectedPlace;
-  to: SelectedPlace;
+  to: SelectedPlace | null;
   via: SelectedPlace[];
   leaveNow: boolean;
   datetime: string;
@@ -22,6 +22,10 @@ export type ShareSnapshot = {
   modeFilter: ModeFilter;
   transferFilter: TransferFilter;
   tripKey?: string;
+  board?: boolean;
+  accessible?: boolean;
+  returnDatetime?: string;
+  returnTripKey?: string;
 };
 
 const PLACE_SEP = "*";
@@ -76,7 +80,7 @@ export function findItineraryIndex(itineraries: Itinerary[], key?: string) {
 export function encodeShareQuery(snapshot: ShareSnapshot) {
   const params = new URLSearchParams();
   params.set("from", encodePlace(snapshot.from));
-  params.set("to", encodePlace(snapshot.to));
+  if (snapshot.to) params.set("to", encodePlace(snapshot.to));
   for (const stop of snapshot.via) {
     params.append("via", encodePlace(stop));
   }
@@ -90,6 +94,10 @@ export function encodeShareQuery(snapshot: ShareSnapshot) {
     params.set("xfers", snapshot.transferFilter);
   }
   if (snapshot.tripKey) params.set("trip", snapshot.tripKey);
+  if (snapshot.board) params.set("board", "1");
+  if (snapshot.accessible) params.set("access", "1");
+  if (snapshot.returnDatetime) params.set("back", snapshot.returnDatetime);
+  if (snapshot.returnTripKey) params.set("rtrip", snapshot.returnTripKey);
   return params.toString();
 }
 
@@ -116,7 +124,9 @@ export function parseShareQuery(
       : search;
   const from = decodePlace(params.get("from") ?? "");
   const to = decodePlace(params.get("to") ?? "");
-  if (!from || !to) return null;
+  const board = params.get("board") === "1";
+  if (!from) return null;
+  if (!board && !to) return null;
 
   const via = params
     .getAll("via")
@@ -130,6 +140,9 @@ export function parseShareQuery(
   const mode = modeFilterSchema.safeParse(params.get("mode") ?? "all");
   const xfers = transferFilterSchema.safeParse(params.get("xfers") ?? "all");
   const tripKey = params.get("trip")?.trim() || undefined;
+  const back = params.get("back")?.trim() ?? "";
+  const returnDatetime =
+    back && !Number.isNaN(new Date(back).getTime()) ? back : undefined;
 
   return {
     from,
@@ -142,6 +155,10 @@ export function parseShareQuery(
     modeFilter: mode.success ? mode.data : "all",
     transferFilter: xfers.success ? xfers.data : "all",
     tripKey,
+    board,
+    accessible: params.get("access") === "1",
+    returnDatetime,
+    returnTripKey: params.get("rtrip")?.trim() || undefined,
   };
 }
 
@@ -156,22 +173,34 @@ export function snapshotForShare(input: {
   modeFilter: ModeFilter;
   transferFilter: TransferFilter;
   selected: Itinerary | null;
+  board?: boolean;
+  accessible?: boolean;
+  returnDatetime?: string;
+  returnSelected?: Itinerary | null;
 }): ShareSnapshot | null {
-  if (!input.from || !input.to) return null;
+  if (!input.from) return null;
+  if (!input.board && !input.to) return null;
   const selected = input.selected;
+  const pinOutbound = Boolean(selected) && !input.board && !input.returnDatetime;
   return {
     from: input.from,
     to: input.to,
     via: input.via.filter((stop): stop is SelectedPlace => Boolean(stop)),
-    leaveNow: selected ? false : input.leaveNow,
-    datetime: selected
+    leaveNow: pinOutbound ? false : input.leaveNow,
+    datetime: pinOutbound && selected
       ? toLocalDateTimeValue(new Date(selected.startTime))
       : input.datetime,
-    arriveBy: selected ? false : input.arriveBy,
-    allDay: selected ? false : input.allDay,
+    arriveBy: pinOutbound ? false : input.arriveBy,
+    allDay: pinOutbound ? false : input.allDay,
     modeFilter: input.modeFilter,
     transferFilter: input.transferFilter,
     tripKey: selected ? itineraryKey(selected) : undefined,
+    board: input.board || undefined,
+    accessible: input.accessible || undefined,
+    returnDatetime: input.returnDatetime,
+    returnTripKey: input.returnSelected
+      ? itineraryKey(input.returnSelected)
+      : undefined,
   };
 }
 

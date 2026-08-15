@@ -18,6 +18,7 @@ test.describe("home", () => {
     await expect(page.getByRole("button", { name: "Swap origin and destination" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Point to point" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Via stops" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Station board" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Pin origin" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Pin destination" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Pin via" })).toBeVisible();
@@ -401,6 +402,8 @@ test.describe("journey search", () => {
     await expect(page.getByTestId("sort-fastest")).toBeVisible();
     await expect(page.getByTestId("sort-transfers")).toBeVisible();
     await expect(page.getByTestId("return-trip")).toBeVisible();
+    await expect(page.getByTestId("accessible")).toBeVisible();
+    await expect(page.getByTestId("alert-ribbon")).toBeVisible();
     await expect(
       page.getByTestId("journey-results").getByRole("option", { selected: true }),
     ).toContainText("EC 172");
@@ -533,17 +536,28 @@ test.describe("journey search", () => {
     await expect(page.getByText("EC 172").first()).toBeVisible();
   });
 
-  test("prints a return by swapping the ends", async ({ page }) => {
+  test("prints a return as a second date on the same hall", async ({ page }) => {
     await page.goto("/");
     await searchBerlinPrague(page);
+    await expect(page.getByTestId("journey-results").getByText("EC 172").first()).toBeVisible();
     await page.getByTestId("return-trip").click();
 
-    await expect(page.getByRole("combobox", { name: "Origin" })).toHaveValue(
-      "Praha hl.n.",
-    );
-    await expect(page.getByRole("combobox", { name: "Destination" })).toHaveValue(
-      "Berlin Hbf",
-    );
+    await expect(page.getByTestId("return-date")).toBeVisible();
+    await expect(page.getByTestId("hall-leg-outbound")).toBeVisible();
+    await expect(page.getByTestId("hall-leg-inbound")).toBeVisible();
+    await page.getByTestId("hall-leg-inbound").click();
+    await expect(page.getByText("EC 173").first()).toBeVisible();
+  });
+
+  test("reads a station board from one stop", async ({ page }) => {
+    await page.goto("/");
+    await page.getByTestId("station-board-mode").click();
+    await selectPlace(page, "Origin", "Berlin", "Berlin Hbf");
+    await expect(page.getByRole("combobox", { name: "Destination" })).toHaveCount(0);
+    await expect(page.getByTestId("station-board")).toBeVisible();
+    await expect(page.getByTestId("station-row-0")).toContainText("EC 172");
+    await page.getByTestId("station-row-0").click();
+    await expect(page.getByRole("heading", { name: "The line, stop by stop" })).toBeVisible();
   });
 
   test("can remove a via stop", async ({ page }) => {

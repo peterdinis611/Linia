@@ -52,6 +52,18 @@ function isoPlusHours(iso, hours) {
 function itinerary(start = "2026-08-14T08:00:00Z", extras = {}) {
   const end = isoPlusHours(start, 4.5);
   const route = extras.routeShortName ?? "EC 172";
+  const fromPlace = extras.from ?? {
+    name: "Berlin Hbf",
+    lat: 52.525,
+    lon: 13.369,
+    stopId: "stop-berlin",
+  };
+  const toPlace = extras.to ?? {
+    name: "Praha hl.n.",
+    lat: 50.083,
+    lon: 14.435,
+    stopId: "stop-prague",
+  };
   return {
     duration: 16200,
     startTime: start,
@@ -67,18 +79,27 @@ function itinerary(start = "2026-08-14T08:00:00Z", extras = {}) {
         realTime: false,
         scheduled: true,
         duration: 16200,
-        from: { name: "Berlin Hbf", lat: 52.525, lon: 13.369 },
-        to: { name: "Praha hl.n.", lat: 50.083, lon: 14.435 },
-        agencyName: "Deutsche Bahn",
+        from: fromPlace,
+        to: toPlace,
+        agencyName: extras.agencyName ?? "Deutsche Bahn",
         routeShortName: route,
         displayName: extras.displayName ?? route,
-        headsign: "Praha hl.n.",
+        headsign: toPlace.name,
         tripId: extras.tripId ?? "trip-ec-172",
+        alerts: extras.alerts ?? [
+          {
+            headerText: "Replacement coaches Dresden–Praha",
+            descriptionText: "Rail replacement between Dresden and Praha.",
+            effect: "MODIFIED_SERVICE",
+            severityLevel: "WARNING",
+          },
+        ],
         intermediateStops: [
           {
             name: "Dresden Hbf",
             lat: 51.04,
             lon: 13.73,
+            stopId: "stop-dresden",
             arrival: isoPlusHours(start, 2),
             departure: isoPlusHours(start, 2 + 5 / 60),
           },
@@ -132,13 +153,37 @@ const server = http.createServer((request, response) => {
   if (url.pathname === "/api/v5/plan") {
     const searchWindow = url.searchParams.get("searchWindow");
     const time = url.searchParams.get("time");
+    const fromPlace = url.searchParams.get("fromPlace") ?? "";
+    const reverse = fromPlace.includes("prague") || fromPlace.includes("stop-prague");
+    const extras = reverse
+      ? {
+          from: {
+            name: "Praha hl.n.",
+            lat: 50.083,
+            lon: 14.435,
+            stopId: "stop-prague",
+          },
+          to: {
+            name: "Berlin Hbf",
+            lat: 52.525,
+            lon: 13.369,
+            stopId: "stop-berlin",
+          },
+          routeShortName: "EC 173",
+          displayName: "EC 173",
+          tripId: "trip-ec-173",
+          agencyName: "ČD",
+          alerts: [],
+        }
+      : {};
     if (searchWindow === "86400" && time) {
       send(response, 200, {
         itineraries: [
-          itinerary(isoPlusHours(time, 8)),
+          itinerary(isoPlusHours(time, 8), extras),
           itinerary(isoPlusHours(time, 16), {
-            routeShortName: "EC 178",
-            tripId: "trip-ec-178",
+            ...extras,
+            routeShortName: reverse ? "EC 179" : "EC 178",
+            tripId: reverse ? "trip-ec-179" : "trip-ec-178",
           }),
         ],
         direct: [],
@@ -146,8 +191,57 @@ const server = http.createServer((request, response) => {
       return;
     }
     send(response, 200, {
-      itineraries: [itinerary()],
+      itineraries: [itinerary(undefined, extras)],
       direct: [],
+    });
+    return;
+  }
+
+  if (url.pathname === "/api/v5/stoptimes") {
+    const arriveBy = url.searchParams.get("arriveBy") === "true";
+    const stopId = url.searchParams.get("stopId") ?? "stop-berlin";
+    const place =
+      stopId.includes("prague")
+        ? {
+            name: "Praha hl.n.",
+            lat: 50.083,
+            lon: 14.435,
+            stopId: "stop-prague",
+            track: "5",
+          }
+        : {
+            name: "Berlin Hbf",
+            lat: 52.525,
+            lon: 13.369,
+            stopId: "stop-berlin",
+            track: "12",
+          };
+    const start = "2026-08-14T08:00:00Z";
+    send(response, 200, {
+      place,
+      stopTimes: [
+        {
+          place: {
+            ...place,
+            departure: start,
+            scheduledDeparture: start,
+          },
+          mode: "RAIL",
+          realTime: false,
+          headsign: arriveBy ? "Berlin Hbf" : "Praha hl.n.",
+          tripTo: arriveBy
+            ? { name: "Berlin Hbf", lat: 52.525, lon: 13.369 }
+            : { name: "Praha hl.n.", lat: 50.083, lon: 14.435 },
+          agencyName: "Deutsche Bahn",
+          displayName: "EC 172",
+          routeShortName: "EC 172",
+          tripId: "trip-ec-172",
+          cancelled: false,
+          tripCancelled: false,
+        },
+      ],
+      previousPageCursor: "prev",
+      nextPageCursor: "next",
     });
     return;
   }

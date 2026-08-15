@@ -52,6 +52,31 @@ export type GeocodeMatch = {
   areas: Area[];
 };
 
+export type AlertEffect =
+  | "NO_SERVICE"
+  | "REDUCED_SERVICE"
+  | "SIGNIFICANT_DELAYS"
+  | "DETOUR"
+  | "ADDITIONAL_SERVICE"
+  | "MODIFIED_SERVICE"
+  | "OTHER_EFFECT"
+  | "UNKNOWN_EFFECT"
+  | "STOP_MOVED"
+  | "NO_EFFECT"
+  | "ACCESSIBILITY_ISSUE"
+  | string;
+
+export type AlertSeverity = "UNKNOWN_SEVERITY" | "INFO" | "WARNING" | "SEVERE" | string;
+
+export type TransitAlert = {
+  headerText: string;
+  descriptionText: string;
+  effect?: AlertEffect;
+  severityLevel?: AlertSeverity;
+  cause?: string;
+  url?: string;
+};
+
 export type Place = {
   name: string;
   stopId?: string;
@@ -64,6 +89,7 @@ export type Place = {
   departure?: string;
   scheduledArrival?: string;
   scheduledDeparture?: string;
+  alerts?: TransitAlert[];
 };
 
 export type EncodedPolyline = {
@@ -96,6 +122,7 @@ export type Leg = {
   cancelled?: boolean;
   intermediateStops?: Place[] | null;
   legGeometry: EncodedPolyline;
+  alerts?: TransitAlert[];
 };
 
 export type Itinerary = {
@@ -111,6 +138,31 @@ export type PlanResponse = {
   to?: Place;
   itineraries: Itinerary[];
   direct?: Itinerary[];
+};
+
+export type StopTimeEvent = {
+  place: Place;
+  mode: TransitMode;
+  realTime: boolean;
+  headsign?: string | null;
+  tripTo?: Place;
+  agencyName?: string;
+  routeColor?: string;
+  routeTextColor?: string;
+  tripId?: string;
+  routeShortName?: string;
+  routeLongName?: string;
+  displayName?: string;
+  cancelled?: boolean;
+  tripCancelled?: boolean;
+  alerts?: TransitAlert[];
+};
+
+export type StopTimesResponse = {
+  place?: Place;
+  stopTimes: StopTimeEvent[];
+  previousPageCursor?: string;
+  nextPageCursor?: string;
 };
 
 export function areaLabel(areas: Area[] | undefined): string | undefined {
