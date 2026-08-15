@@ -19,7 +19,7 @@ const RouteMapInner = dynamic(() => import("./RouteMapInner"), {
 function MapLoading() {
   const { t } = useI18n();
   return (
-    <div className="flex h-full items-center justify-center bg-muted">
+    <div className="map-loading" data-testid="map-loading">
       <HallLoader compact label={t("map.loading")} />
     </div>
   );

@@ -1,3 +1,5 @@
+import { SearchingTrack } from "./SearchingTrack";
+
 export function HallLoader({
   label,
   compact = false,
@@ -37,7 +39,7 @@ export function HallLoader({
           </>
         )}
       </div>
-      <div className="searching-track" aria-hidden="true" />
+      <SearchingTrack />
       {label ? <p className="hall-loader-label">{label}</p> : null}
     </div>
   );

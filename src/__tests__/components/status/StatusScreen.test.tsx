@@ -19,7 +19,7 @@ describe("StatusScreen", () => {
     expect(screen.getByText("The line does not stop here.")).toBeInTheDocument();
   });
 
-  it("shows the live flaps when the board is busy", () => {
+  it("shows the live flaps when the board is busy", async () => {
     render(
       <StatusScreen
         kicker="Hold the line"
@@ -32,5 +32,9 @@ describe("StatusScreen", () => {
 
     expect(screen.getByTestId("hall-loader")).toBeInTheDocument();
     expect(screen.getByText("Live board")).toBeInTheDocument();
+    expect(await screen.findByTestId("searching-vehicle")).toHaveAttribute(
+      "data-vehicle",
+      expect.stringMatching(/^(train|bus)$/),
+    );
   });
 });

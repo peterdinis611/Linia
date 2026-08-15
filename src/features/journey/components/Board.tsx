@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SearchingTrack } from "@/components/status/SearchingTrack";
 import { localizePlaceName } from "@/i18n/place-name";
 import { useI18n } from "@/i18n/provider";
 import { HowToGuide } from "./HowToUse";
@@ -65,7 +66,7 @@ export function SearchingBoard() {
         <span />
         <span />
       </div>
-      <div className="searching-track" aria-hidden="true" />
+      <SearchingTrack />
     </div>
   );
 }

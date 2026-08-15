@@ -1591,8 +1591,17 @@ body::before {
 
 .searching-track {
   position: relative;
-  height: 3px;
+  height: 1.45rem;
   overflow: hidden;
+}
+
+.searching-track::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 3px;
+  left: 0;
+  height: 3px;
   background: repeating-linear-gradient(
     90deg,
     color-mix(in srgb, var(--amber) 38%, transparent) 0 8px,
@@ -1600,16 +1609,35 @@ body::before {
   );
 }
 
-.searching-track::after {
-  content: "";
+.searching-vehicle {
   position: absolute;
-  top: -3px;
-  left: -32px;
-  width: 28px;
-  height: 9px;
-  background: var(--signal);
-  box-shadow: 0 0 12px var(--signal-glow);
-  animation: searching-train 1.35s linear infinite;
+  bottom: 2px;
+  left: -3.4rem;
+  display: block;
+  width: 3.25rem;
+  height: 1.1rem;
+  color: var(--signal);
+  filter: drop-shadow(0 0 8px var(--signal-glow));
+  animation: searching-train 1.7s linear infinite;
+}
+
+.searching-vehicle svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hall-loader-compact .searching-vehicle {
+  width: 2.85rem;
+  height: 1rem;
+}
+
+.map-loading {
+  display: grid;
+  height: 100%;
+  place-items: center;
+  background: var(--muted);
+  padding: 1.25rem;
 }
 
 .hall-loader {
@@ -1622,8 +1650,17 @@ body::before {
 
 .hall-loader-compact {
   justify-items: center;
-  width: auto;
+  width: min(17rem, 100%);
   margin-top: 0;
+}
+
+.hall-loader-compact .searching-track {
+  justify-self: stretch;
+  width: 100%;
+}
+
+.hall-loader-compact .hall-loader-label {
+  text-align: center;
 }
 
 .hall-loader-dial {
@@ -2068,10 +2105,10 @@ body::before {
 
 @keyframes searching-train {
   from {
-    left: -32px;
+    left: -3.4rem;
   }
   to {
-    left: calc(100% + 8px);
+    left: calc(100% + 0.4rem);
   }
 }
 
@@ -2214,10 +2251,14 @@ body::before {
   .hall-loader-ring,
   .searching-flaps span,
   .searching-signal span,
-  .searching-track::after,
+  .searching-vehicle,
   .searching-ribbon::after {
     animation: none !important;
     transition: none !important;
+  }
+
+  .searching-vehicle {
+    left: 0.35rem;
   }
 
   .searching-signal span:first-child {
