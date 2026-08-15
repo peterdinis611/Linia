@@ -21,6 +21,8 @@ type SearchFormProps = {
   modeFilter: ModeFilter;
   transferFilter: TransferFilter;
   accessible: boolean;
+  bike: boolean;
+  night: boolean;
   wantReturn: boolean;
   returnDatetime: string;
   loading: boolean;
@@ -41,6 +43,8 @@ type SearchFormProps = {
   onModeFilterChange: (value: ModeFilter) => void;
   onTransferFilterChange: (value: TransferFilter) => void;
   onAccessibleChange: (value: boolean) => void;
+  onBikeChange: (value: boolean) => void;
+  onNightChange: (value: boolean) => void;
   onWantReturnChange: (value: boolean) => void;
   onReturnDatetimeChange: (value: string) => void;
   onSearch: () => void;
@@ -48,6 +52,7 @@ type SearchFormProps = {
   geoBusy?: boolean;
   geoError?: string | null;
   onUseMyLocation?: () => void;
+  onNearbyBoard?: () => void;
 };
 
 export function SearchForm({
@@ -62,6 +67,8 @@ export function SearchForm({
   modeFilter,
   transferFilter,
   accessible,
+  bike,
+  night,
   wantReturn,
   returnDatetime,
   loading,
@@ -82,6 +89,8 @@ export function SearchForm({
   onModeFilterChange,
   onTransferFilterChange,
   onAccessibleChange,
+  onBikeChange,
+  onNightChange,
   onWantReturnChange,
   onReturnDatetimeChange,
   onSearch,
@@ -89,6 +98,7 @@ export function SearchForm({
   geoBusy = false,
   geoError = null,
   onUseMyLocation,
+  onNearbyBoard,
 }: SearchFormProps) {
   const { t } = useI18n();
   const [fieldsKey, setFieldsKey] = useState(0);
@@ -105,6 +115,8 @@ export function SearchForm({
       modeFilter !== "all" ||
       transferFilter !== "all" ||
       accessible ||
+      bike ||
+      night ||
       wantReturn,
   );
   const modeOptions: { value: Exclude<ModeFilter, "all">; label: string }[] = [
@@ -155,17 +167,32 @@ export function SearchForm({
           error={fieldErrors?.from ? t(fieldErrors.from) : undefined}
           onChange={onFromChange}
         />
-        {onUseMyLocation ? (
-          <div className="-mt-1">
-            <button
-              type="button"
-              className="stamp"
-              data-testid="use-location"
-              disabled={geoBusy || loading}
-              onClick={onUseMyLocation}
-            >
-              {geoBusy ? t("search.locating") : t("search.useLocation")}
-            </button>
+        {onUseMyLocation || onNearbyBoard ? (
+          <div className="-mt-1 space-y-1">
+            <div className="flex flex-wrap gap-2">
+              {onUseMyLocation ? (
+                <button
+                  type="button"
+                  className="stamp"
+                  data-testid="use-location"
+                  disabled={geoBusy || loading}
+                  onClick={onUseMyLocation}
+                >
+                  {geoBusy ? t("search.locating") : t("search.useLocation")}
+                </button>
+              ) : null}
+              {onNearbyBoard ? (
+                <button
+                  type="button"
+                  className="stamp"
+                  data-testid="nearby-board"
+                  disabled={geoBusy || loading}
+                  onClick={onNearbyBoard}
+                >
+                  {geoBusy ? t("search.locating") : t("search.nearbyBoard")}
+                </button>
+              ) : null}
+            </div>
             {geoError ? (
               <p role="alert" className="field-error">
                 {t(geoError)}
@@ -401,16 +428,38 @@ export function SearchForm({
           </div>
         ) : null}
         {!board ? (
-          <button
-            type="button"
-            className="stamp w-full"
-            data-on={accessible}
-            data-testid="accessible"
-            aria-pressed={accessible}
-            onClick={() => onAccessibleChange(!accessible)}
-          >
-            {t("search.accessible")}
-          </button>
+          <>
+            <button
+              type="button"
+              className="stamp w-full"
+              data-on={accessible}
+              data-testid="accessible"
+              aria-pressed={accessible}
+              onClick={() => onAccessibleChange(!accessible)}
+            >
+              {t("search.accessible")}
+            </button>
+            <button
+              type="button"
+              className="stamp w-full"
+              data-on={bike}
+              data-testid="bike"
+              aria-pressed={bike}
+              onClick={() => onBikeChange(!bike)}
+            >
+              {t("search.bike")}
+            </button>
+            <button
+              type="button"
+              className="stamp w-full"
+              data-on={night}
+              data-testid="night-rail"
+              aria-pressed={night}
+              onClick={() => onNightChange(!night)}
+            >
+              {t("search.nightRail")}
+            </button>
+          </>
         ) : null}
       </div>
 

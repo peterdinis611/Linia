@@ -23,6 +23,7 @@ import {
 } from "@/lib/transit/types";
 import { fetchTrip } from "@/lib/transit/queries";
 import { alertsFromItinerary, uniqueAlerts } from "../lib/alerts";
+import { currentStopIndex, itineraryIsLive, legPhase } from "../lib/progress";
 import { AlertStrip } from "./AlertStrip";
 
 type ItineraryDetailProps = {
@@ -32,6 +33,7 @@ type ItineraryDetailProps = {
 
 export function ItineraryDetail({ itinerary, onOpenStation }: ItineraryDetailProps) {
   const { t, tp } = useI18n();
+  const now = useNow(itineraryIsLive(itinerary));
 
   return (
     <section className="journey-sheet">
@@ -56,6 +58,7 @@ export function ItineraryDetail({ itinerary, onOpenStation }: ItineraryDetailPro
             key={`${leg.startTime}-${index}`}
             leg={leg}
             isLast={index === itinerary.legs.length - 1}
+            now={now}
             onOpenStation={onOpenStation}
           />
         ))}
@@ -64,18 +67,31 @@ export function ItineraryDetail({ itinerary, onOpenStation }: ItineraryDetailPro
   );
 }
 
+function useNow(live: boolean) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!live) return;
+    const id = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(id);
+  }, [live]);
+  return now;
+}
+
 function LegBlock({
   leg,
   isLast,
+  now,
   onOpenStation,
 }: {
   leg: Leg;
   isLast: boolean;
+  now: number;
   onOpenStation?: (place: Place) => void;
 }) {
   const { locale, t, tp } = useI18n();
   const color = legColor(leg);
   const transit = isTransitMode(leg.mode);
+  const phase = legPhase(leg, now);
   const {
     stops: intermediates,
     loading: loadingStops,
@@ -84,10 +100,11 @@ function LegBlock({
   } = useIntermediateStops(leg);
   const delay = delayMinutes(leg);
   const arriveDelay = arrivalDelayMinutes(leg);
+  const liveStop = phase === "current" ? currentStopIndex(intermediates, now) : -1;
 
   if (!transit) {
     return (
-      <li className="grid grid-cols-[3.4rem_14px_1fr] gap-x-3">
+      <li className="grid grid-cols-[3.4rem_14px_1fr] gap-x-3" data-progress={phase}>
         <div className="py-1 text-right font-mono text-[11px] tabular-nums text-ink-muted">
           {formatTime(leg.startTime, locale)}
         </div>
@@ -106,6 +123,7 @@ function LegBlock({
             <StationName place={leg.from} onOpenStation={onOpenStation} />
           </p>
           <p className="mt-1 text-xs text-ink-muted">
+            {phase === "current" ? `${t("detail.now")} · ` : ""}
             {t(`modes.${leg.mode}`)} · {formatDuration(leg.duration, t)}
             {formatDistance(leg.distance) ? ` · ${formatDistance(leg.distance)}` : ""}
           </p>
@@ -123,7 +141,7 @@ function LegBlock({
   }
 
   return (
-    <li>
+    <li data-progress={phase}>
       <div className="grid grid-cols-[3.4rem_14px_1fr] gap-x-3">
         <div className="py-1 text-right font-mono text-[11px] tabular-nums text-ink-soft">
           {formatTime(leg.startTime, locale)}
@@ -157,6 +175,11 @@ function LegBlock({
             {leg.cancelled && (
               <span className="text-xs font-semibold text-signal">{t("detail.cancelled")}</span>
             )}
+            {phase === "current" ? (
+              <span className="now-stamp" data-testid="leg-now">
+                {t("detail.now")}
+              </span>
+            ) : null}
           </div>
           <p className="mt-1 text-xs text-ink-muted">
             {formatDuration(leg.duration, t)}
@@ -210,6 +233,7 @@ function LegBlock({
                 key={`${stop.name}-${stop.lat}-${stopIndex}`}
                 stop={stop}
                 color={color}
+                current={stopIndex === liveStop}
                 onOpenStation={onOpenStation}
               />
             ))}
@@ -299,28 +323,33 @@ function useIntermediateStops(leg: Leg): {
 function IntermediateStop({
   stop,
   color,
+  current = false,
   onOpenStation,
 }: {
   stop: Place;
   color: string;
+  current?: boolean;
   onOpenStation?: (place: Place) => void;
 }) {
   const { locale, t } = useI18n();
   return (
-    <li className="grid grid-cols-[3.4rem_14px_1fr] gap-x-3">
+    <li className="grid grid-cols-[3.4rem_14px_1fr] gap-x-3" data-progress={current ? "current" : undefined}>
       <div className="py-1 text-right font-mono text-[11px] tabular-nums text-ink-muted">
         {stopTime(stop, locale)}
       </div>
       <div className="flex flex-col items-center">
         <span
           className="mt-2 h-1.5 w-1.5 rounded-full"
-          style={{ background: color, opacity: 0.55 }}
+          style={{ background: color, opacity: current ? 1 : 0.55 }}
         />
         <span className="w-[3px] flex-1" style={{ background: color }} />
       </div>
       <div className="pb-2.5">
         <p className="text-[13px] leading-snug text-ink-soft">
           <StationName place={stop} onOpenStation={onOpenStation} />
+          {current ? (
+            <span className="now-stamp ml-2">{t("detail.now")}</span>
+          ) : null}
         </p>
         {stop.track && (
           <p className="text-[11px] text-ink-muted">

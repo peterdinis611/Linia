@@ -12,6 +12,13 @@ describe("MOTIS query helpers", () => {
   it("narrows the line to rail or coach", () => {
     expect(transitModesFor("all")).toBeUndefined();
     expect(transitModesFor("train")).toContain("RAIL");
+    expect(transitModesFor("train")).toContain("NIGHT_RAIL");
     expect(transitModesFor("bus")).toBe("BUS,COACH");
+  });
+
+  it("stamps night rail as a filter, not a third mode", () => {
+    expect(transitModesFor("all", { night: true })).toBe("NIGHT_RAIL");
+    expect(transitModesFor("train", { night: true })).toBe("NIGHT_RAIL");
+    expect(transitModesFor("bus", { night: true })).toBe("NIGHT_RAIL");
   });
 });

@@ -111,6 +111,14 @@ export const hu: Messages = {
     outbound: "Oda",
     inbound: "Vissza",
     accessible: "Akadálymentes",
+    bike: "Kerékpár",
+    nightRail: "Éjszakai vonat",
+    nearbyBoard: "Mi indul innen",
+    pinLine: "Vonal kitűzése",
+    pinnedHome: "Haza",
+    pinnedWork: "Munkába",
+    pinnedOther: "Ez a vonal",
+    unpinLine: "Levétel",
     submitBoard: "Tábla olvasása",
     date: "Dátum",
     time: "Idő",
@@ -223,6 +231,7 @@ export const hu: Messages = {
     sortTransfers: "Legkevesebb átszállás",
     resetFilters: "Szűrők törlése",
     stale: "Az idők változhattak",
+    onTheLine: "Ezen a vonalon",
   },
   share: {
     open: "Megosztás",
@@ -244,6 +253,10 @@ export const hu: Messages = {
     kicker: "Legutóbbi jegyek",
     title: "Újra ez az út",
   },
+  pinned: {
+    kicker: "Kitűzött vonalak",
+    title: "A szokásos jegyeid",
+  },
   format: {
     minutes: "{count} perc",
     hours: "{count} ó",
@@ -261,6 +274,7 @@ export const hu: Messages = {
     delayEarly: "{minutes} perc",
     stopsFailed: "A megállók nem tölthetők.",
     retryStops: "Megállók betöltése",
+    now: "Most",
   },
   carriers: {
     compare: "Szolgáltatók összevetése",

@@ -23,7 +23,9 @@ export const getStopTimesAction = actionClient
       n: String(parsedInput.n),
       arriveBy: String(parsedInput.arriveBy),
     });
-    const transitModes = transitModesFor(parsedInput.modeFilter);
+    const transitModes = transitModesFor(parsedInput.modeFilter, {
+      night: parsedInput.night,
+    });
     if (transitModes) {
       for (const mode of transitModes.split(",")) {
         params.append("mode", mode);

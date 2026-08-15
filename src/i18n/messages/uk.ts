@@ -111,6 +111,14 @@ export const uk: Messages = {
     outbound: "Туди",
     inbound: "Назад",
     accessible: "Безбар’єрно",
+    bike: "Велосипед",
+    nightRail: "Нічний поїзд",
+    nearbyBoard: "Що відходить",
+    pinLine: "Прикріпити лінію",
+    pinnedHome: "Додому",
+    pinnedWork: "На роботу",
+    pinnedOther: "Ця лінія",
+    unpinLine: "Відкріпити",
     submitBoard: "Читати табло",
     date: "Дата",
     time: "Час",
@@ -224,6 +232,7 @@ export const uk: Messages = {
     sortTransfers: "Найменше пересадок",
     resetFilters: "Скинути фільтри",
     stale: "Час міг змінитися",
+    onTheLine: "На цій лінії",
   },
   share: {
     open: "Поділитися",
@@ -245,6 +254,10 @@ export const uk: Messages = {
     kicker: "Нещодавні квитки",
     title: "Повторити цю подорож",
   },
+  pinned: {
+    kicker: "Прикріплені лінії",
+    title: "Ваші звичні квитки",
+  },
   format: {
     minutes: "{count} хв",
     hours: "{count} год",
@@ -262,6 +275,7 @@ export const uk: Messages = {
     delayEarly: "{minutes} хв",
     stopsFailed: "Зупинки не вдалося завантажити.",
     retryStops: "Завантажити зупинки",
+    now: "Зараз",
   },
   carriers: {
     compare: "Порівняти перевізників",

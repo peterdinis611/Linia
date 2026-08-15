@@ -30,13 +30,22 @@ export const planJourneyAction = actionClient
       timetableView: "true",
     });
 
-    const transitModes = transitModesFor(parsedInput.modeFilter);
+    const transitModes = transitModesFor(parsedInput.modeFilter, {
+      night: parsedInput.night,
+    });
     if (transitModes) {
       params.set("transitModes", transitModes);
     }
     if (parsedInput.accessible) {
       params.set("pedestrianProfile", "WHEELCHAIR");
       params.set("useRoutedTransfers", "true");
+    } else if (parsedInput.bike) {
+      params.set("directModes", "BIKE");
+      params.set("preTransitModes", "BIKE");
+      params.set("postTransitModes", "BIKE");
+    }
+    if (parsedInput.bike) {
+      params.set("requireBikeTransport", "true");
     }
 
     if (parsedInput.transferFilter === "direct") {

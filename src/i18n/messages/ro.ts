@@ -111,6 +111,14 @@ export const ro: Messages = {
     outbound: "Dus",
     inbound: "Întors",
     accessible: "Accesibil",
+    bike: "Bicicletă",
+    nightRail: "Tren de noapte",
+    nearbyBoard: "Ce pleacă",
+    pinLine: "Fixează linia",
+    pinnedHome: "Acasă",
+    pinnedWork: "La muncă",
+    pinnedOther: "Linia aceasta",
+    unpinLine: "Scoate",
     submitBoard: "Citește panoul",
     date: "Dată",
     time: "Oră",
@@ -224,6 +232,7 @@ export const ro: Messages = {
     sortTransfers: "Cele mai puține transbordări",
     resetFilters: "Resetează filtrele",
     stale: "Orele s-ar putea să se fi schimbat",
+    onTheLine: "Pe această linie",
   },
   share: {
     open: "Distribuie",
@@ -245,6 +254,10 @@ export const ro: Messages = {
     kicker: "Bilete recente",
     title: "Fă din nou această călătorie",
   },
+  pinned: {
+    kicker: "Linii fixate",
+    title: "Biletele tale obișnuite",
+  },
   format: {
     minutes: "{count} min",
     hours: "{count} h",
@@ -262,6 +275,7 @@ export const ro: Messages = {
     delayEarly: "{minutes} min",
     stopsFailed: "Opririle nu au putut fi încărcate.",
     retryStops: "Încarcă opririle",
+    now: "Acum",
   },
   carriers: {
     compare: "Compară operatori",

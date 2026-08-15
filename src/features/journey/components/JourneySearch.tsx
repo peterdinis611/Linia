@@ -10,6 +10,7 @@ import { EmptyBoard, SearchingBoard, StationClock } from "./Board";
 import { HowToButton } from "./HowToUse";
 import { ItineraryDetail } from "./ItineraryDetail";
 import { JourneyResults } from "./JourneyResults";
+import { PinLine } from "./PinLine";
 import { PrintTicket } from "./PrintTicket";
 import { RouteMap } from "./RouteMap";
 import { SearchForm } from "./SearchForm";
@@ -83,6 +84,8 @@ export function JourneySearch() {
             modeFilter={search.modeFilter}
             transferFilter={search.transferFilter}
             accessible={search.accessible}
+            bike={search.bike}
+            night={search.night}
             wantReturn={search.wantReturn}
             returnDatetime={search.returnDatetime}
             loading={search.loading}
@@ -140,6 +143,8 @@ export function JourneySearch() {
             onModeFilterChange={search.setModeFilter}
             onTransferFilterChange={search.setTransferFilter}
             onAccessibleChange={search.setAccessible}
+            onBikeChange={search.setBike}
+            onNightChange={search.setNight}
             onWantReturnChange={search.handleWantReturnChange}
             onReturnDatetimeChange={(value) => {
               search.setReturnDatetime(value);
@@ -153,6 +158,7 @@ export function JourneySearch() {
             geoBusy={search.geoBusy}
             geoError={search.geoError}
             onUseMyLocation={search.handleUseMyLocation}
+            onNearbyBoard={search.handleNearbyBoard}
           />
 
           {search.error && (
@@ -178,7 +184,9 @@ export function JourneySearch() {
               title={t(search.emptyCopy.title)}
               body={t(search.emptyCopy.body)}
               recents={search.recents}
+              pins={search.pins}
               onRecentSelect={search.handleRecentSelect}
+              onPinnedSelect={search.handlePinnedSelect}
               onTour={startTour}
             />
           )}
@@ -243,6 +251,18 @@ export function JourneySearch() {
 
           {search.routeMode !== "board" && search.itineraries.length > 0 && (
             <>
+              {search.from && search.to ? (
+                <PinLine
+                  from={search.from}
+                  to={search.to}
+                  via={(search.routeMode === "via" ? search.via : []).filter(
+                    (stop): stop is NonNullable<typeof stop> => Boolean(stop),
+                  )}
+                  pins={search.pins}
+                  onPin={search.handlePinSearch}
+                  onUnpin={search.handleUnpinSearch}
+                />
+              ) : null}
               {search.wantReturn && search.inboundItineraries.length > 0 ? (
                 <div
                   className="mode-switch"

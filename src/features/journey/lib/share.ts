@@ -24,6 +24,8 @@ export type ShareSnapshot = {
   tripKey?: string;
   board?: boolean;
   accessible?: boolean;
+  bike?: boolean;
+  night?: boolean;
   returnDatetime?: string;
   returnTripKey?: string;
 };
@@ -96,6 +98,8 @@ export function encodeShareQuery(snapshot: ShareSnapshot) {
   if (snapshot.tripKey) params.set("trip", snapshot.tripKey);
   if (snapshot.board) params.set("board", "1");
   if (snapshot.accessible) params.set("access", "1");
+  if (snapshot.bike) params.set("bike", "1");
+  if (snapshot.night) params.set("night", "1");
   if (snapshot.returnDatetime) params.set("back", snapshot.returnDatetime);
   if (snapshot.returnTripKey) params.set("rtrip", snapshot.returnTripKey);
   return params.toString();
@@ -157,6 +161,8 @@ export function parseShareQuery(
     tripKey,
     board,
     accessible: params.get("access") === "1",
+    bike: params.get("bike") === "1",
+    night: params.get("night") === "1",
     returnDatetime,
     returnTripKey: params.get("rtrip")?.trim() || undefined,
   };
@@ -175,6 +181,8 @@ export function snapshotForShare(input: {
   selected: Itinerary | null;
   board?: boolean;
   accessible?: boolean;
+  bike?: boolean;
+  night?: boolean;
   returnDatetime?: string;
   returnSelected?: Itinerary | null;
 }): ShareSnapshot | null {
@@ -197,6 +205,8 @@ export function snapshotForShare(input: {
     tripKey: selected ? itineraryKey(selected) : undefined,
     board: input.board || undefined,
     accessible: input.accessible || undefined,
+    bike: input.bike || undefined,
+    night: input.night || undefined,
     returnDatetime: input.returnDatetime,
     returnTripKey: input.returnSelected
       ? itineraryKey(input.returnSelected)

@@ -111,6 +111,14 @@ export const nl: Messages = {
     outbound: "Heen",
     inbound: "Terug",
     accessible: "Toegankelijk",
+    bike: "Fiets",
+    nightRail: "Nachttrein",
+    nearbyBoard: "Wat vertrekt",
+    pinLine: "Lijn vastzetten",
+    pinnedHome: "Thuis",
+    pinnedWork: "Naar werk",
+    pinnedOther: "Deze lijn",
+    unpinLine: "Losmaken",
     submitBoard: "Lees het bord",
     date: "Datum",
     time: "Tijd",
@@ -224,6 +232,7 @@ export const nl: Messages = {
     sortTransfers: "Minste overstappen",
     resetFilters: "Filters wissen",
     stale: "Tijden kunnen zijn veranderd",
+    onTheLine: "Op deze lijn",
   },
   share: {
     open: "Delen",
@@ -245,6 +254,10 @@ export const nl: Messages = {
     kicker: "Recente kaartjes",
     title: "Maak deze reis opnieuw",
   },
+  pinned: {
+    kicker: "Vastgezette lijnen",
+    title: "Je gebruikelijke kaartjes",
+  },
   format: {
     minutes: "{count} min",
     hours: "{count} u",
@@ -262,6 +275,7 @@ export const nl: Messages = {
     delayEarly: "{minutes} min",
     stopsFailed: "Haltes konden niet worden geladen.",
     retryStops: "Haltes laden",
+    now: "Nu",
   },
   carriers: {
     compare: "Vergelijk vervoerders",

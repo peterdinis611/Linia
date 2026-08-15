@@ -15,6 +15,7 @@ test.describe("home", () => {
     await expect(page.getByRole("combobox", { name: "Origin" })).toBeVisible();
     await expect(page.getByRole("combobox", { name: "Destination" })).toBeVisible();
     await expect(page.getByTestId("use-location")).toBeVisible();
+    await expect(page.getByTestId("nearby-board")).toBeVisible();
     await expect(page.getByRole("button", { name: "Swap origin and destination" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Point to point" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Via stops" })).toBeVisible();
@@ -434,6 +435,9 @@ test.describe("journey search", () => {
     await expect(page.getByTestId("sort-transfers")).toBeVisible();
     await expect(page.getByTestId("return-trip")).toBeVisible();
     await expect(page.getByTestId("accessible")).toBeVisible();
+    await expect(page.getByTestId("bike")).toBeVisible();
+    await expect(page.getByTestId("night-rail")).toBeVisible();
+    await expect(page.getByTestId("pin-line")).toBeVisible();
     await expect(page.getByTestId("alert-ribbon")).toBeVisible();
     await expect(
       page.getByTestId("journey-results").getByRole("option", { selected: true }),

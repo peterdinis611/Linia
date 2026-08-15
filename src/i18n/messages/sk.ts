@@ -111,6 +111,14 @@ export const sk: Messages = {
     outbound: "Tam",
     inbound: "Späť",
     accessible: "Bezbariérové",
+    bike: "Bicykel",
+    nightRail: "Nočný vlak",
+    nearbyBoard: "Čo ide odtiaľto",
+    pinLine: "Pripnúť trať",
+    pinnedHome: "Domov",
+    pinnedWork: "Do práce",
+    pinnedOther: "Táto trať",
+    unpinLine: "Odopnúť",
     submitBoard: "Čítať tabuľu",
     date: "Dátum",
     time: "Čas",
@@ -222,6 +230,7 @@ export const sk: Messages = {
     sortTransfers: "Najmenej prestupov",
     resetFilters: "Zrušiť filtre",
     stale: "Časy sa mohli zmeniť",
+    onTheLine: "Na tejto trati",
   },
   share: {
     open: "Zdieľať",
@@ -243,6 +252,10 @@ export const sk: Messages = {
     kicker: "Nedávne lístky",
     title: "Znova túto cestu",
   },
+  pinned: {
+    kicker: "Pripnuté trate",
+    title: "Vaše obvyklé lístky",
+  },
   format: {
     minutes: "{count} min",
     hours: "{count} h",
@@ -260,6 +273,7 @@ export const sk: Messages = {
     delayEarly: "{minutes} min",
     stopsFailed: "Zastávky sa nepodarilo načítať.",
     retryStops: "Načítať zastávky",
+    now: "Teraz",
   },
   carriers: {
     compare: "Porovnať dopravcov",

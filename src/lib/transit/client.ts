@@ -10,6 +10,11 @@ export const USER_AGENT =
 
 const TRAIN_MODES = [
   "RAIL",
+  "HIGHSPEED_RAIL",
+  "LONG_DISTANCE",
+  "NIGHT_RAIL",
+  "REGIONAL_RAIL",
+  "REGIONAL_FAST_RAIL",
   "SUBURBAN",
   "SUBWAY",
   "TRAM",
@@ -25,7 +30,11 @@ export function placeQueryParam(place: SelectedPlace): string {
   return `${place.lat},${place.lon}`;
 }
 
-export function transitModesFor(filter: ModeFilter): string | undefined {
+export function transitModesFor(
+  filter: ModeFilter,
+  options?: { night?: boolean },
+): string | undefined {
+  if (options?.night) return "NIGHT_RAIL";
   if (filter === "train") return TRAIN_MODES.join(",");
   if (filter === "bus") return BUS_MODES.join(",");
   return undefined;

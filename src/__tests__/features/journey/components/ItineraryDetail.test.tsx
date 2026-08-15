@@ -69,4 +69,21 @@ describe("ItineraryDetail", () => {
     ).not.toBeInTheDocument();
     expect(screen.getByText("Berlin Hbf")).toBeInTheDocument();
   });
+
+  it("stamps now on the live stretch of the strip", () => {
+    const origin = Date.now() - 30 * 60_000;
+    const itinerary = railItinerary({
+      startTime: new Date(origin).toISOString(),
+      endTime: new Date(origin + 90 * 60_000).toISOString(),
+      legs: [
+        {
+          ...railItinerary().legs[0]!,
+          startTime: new Date(origin).toISOString(),
+          endTime: new Date(origin + 90 * 60_000).toISOString(),
+        },
+      ],
+    });
+    renderHall(<ItineraryDetail itinerary={itinerary} />);
+    expect(screen.getByTestId("leg-now")).toHaveTextContent("Now");
+  });
 });

@@ -12,6 +12,7 @@ import {
 } from "@/lib/format";
 import type { Itinerary, Leg } from "@/lib/transit/types";
 import { alertsFromItinerary } from "../lib/alerts";
+import { itineraryIsLive, legPhase } from "../lib/progress";
 import { AlertStrip } from "./AlertStrip";
 
 type ItineraryListProps = {
@@ -38,6 +39,7 @@ export function ItineraryList({
         const delayed = itinerary.legs.some((leg) => (delayMinutes(leg) ?? 0) > 0);
         const carriers = transitAgencies(itinerary);
         const alerts = alertsFromItinerary(itinerary);
+        const live = itineraryIsLive(itinerary);
 
         return (
           <li key={`${itinerary.startTime}-${itinerary.endTime}-${index}`} role="none">
@@ -61,6 +63,7 @@ export function ItineraryList({
                 {itinerary.transfers === 0
                   ? t("results.direct")
                   : tp("transfers", itinerary.transfers)}
+                {live ? ` · ${t("results.onTheLine")}` : ""}
                 {delayed ? ` · ${t("results.liveDelay")}` : ""}
                 {carriers.length > 0 ? ` · ${carriers.join(" · ")}` : ""}
               </p>
@@ -68,6 +71,7 @@ export function ItineraryList({
                 {itinerary.legs.map((leg, legIndex) => (
                   <span
                     key={`${leg.startTime}-${legIndex}`}
+                    data-progress={legPhase(leg)}
                     style={{
                       flexGrow: Math.max(leg.duration, 60),
                       background: legColor(leg),

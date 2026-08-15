@@ -5,6 +5,7 @@ import { localizePlaceName } from "@/i18n/place-name";
 import { useI18n } from "@/i18n/provider";
 import { HowToGuide } from "./HowToUse";
 import type { RecentSearch } from "../lib/recent";
+import type { PinnedSearch } from "../lib/pinned";
 
 export function StationClock() {
   const { locale, t } = useI18n();
@@ -75,7 +76,9 @@ export function EmptyBoard({
   title,
   body,
   recents = [],
+  pins = [],
   onRecentSelect,
+  onPinnedSelect,
   onTour,
 }: {
   hasSearched: boolean;
@@ -83,7 +86,9 @@ export function EmptyBoard({
   title: string;
   body: string;
   recents?: RecentSearch[];
+  pins?: PinnedSearch[];
   onRecentSelect?: (item: RecentSearch) => void;
+  onPinnedSelect?: (item: PinnedSearch) => void;
   onTour?: () => void;
 }) {
   const { locale, t } = useI18n();
@@ -102,6 +107,40 @@ export function EmptyBoard({
       <p className="mt-3 max-w-prose text-sm leading-relaxed text-ink-muted">
         {body}
       </p>
+      {!hasSearched && pins.length > 0 && onPinnedSelect ? (
+        <div className="mt-5" data-testid="pinned-searches">
+          <p className="kicker">{t("pinned.kicker")}</p>
+          <p className="mt-1 text-sm font-semibold tracking-tight">{t("pinned.title")}</p>
+          <ul className="mt-3 space-y-2">
+            {pins.map((item) => {
+              const viaLabel =
+                item.via.length > 0
+                  ? ` · ${item.via.map((stop) => localizePlaceName(stop.name, locale)).join(" · ")}`
+                  : "";
+              const roleLabel =
+                item.role === "home"
+                  ? t("search.pinnedHome")
+                  : item.role === "work"
+                    ? t("search.pinnedWork")
+                    : t("search.pinnedOther");
+              return (
+                <li key={`${item.role}-${item.from.id}-${item.to.id}-${item.savedAt}`}>
+                  <button
+                    type="button"
+                    className="stamp stamp-plain w-full text-left"
+                    data-testid={`pinned-${item.role}`}
+                    onClick={() => onPinnedSelect(item)}
+                  >
+                    {roleLabel} · {localizePlaceName(item.from.name, locale)} →{" "}
+                    {localizePlaceName(item.to.name, locale)}
+                    {viaLabel}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ) : null}
       {!hasSearched && recents.length > 0 && onRecentSelect ? (
         <div className="mt-5" data-testid="recent-searches">
           <p className="kicker">{t("recent.kicker")}</p>

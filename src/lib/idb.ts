@@ -1,11 +1,12 @@
 const DB_NAME = "linia";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const CHANNEL = "linia-hall";
 
 export const RECENT_STORE = "recent";
 export const PREFS_STORE = "prefs";
+export const PINNED_STORE = "pinned";
 
-export type HallTopic = "recent" | "prefs";
+export type HallTopic = "recent" | "prefs" | "pinned";
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 let channel: BroadcastChannel | null = null;
@@ -31,6 +32,9 @@ export function openLiniaDb(): Promise<IDBDatabase> {
         }
         if (!db.objectStoreNames.contains(PREFS_STORE)) {
           db.createObjectStore(PREFS_STORE);
+        }
+        if (!db.objectStoreNames.contains(PINNED_STORE)) {
+          db.createObjectStore(PINNED_STORE, { keyPath: "id" });
         }
       };
       request.onsuccess = () => {

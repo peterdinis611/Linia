@@ -111,6 +111,14 @@ export const pl: Messages = {
     outbound: "Tam",
     inbound: "Powrót",
     accessible: "Bez barier",
+    bike: "Rower",
+    nightRail: "Pociąg nocny",
+    nearbyBoard: "Co odjeżdża",
+    pinLine: "Przypnij linię",
+    pinnedHome: "Dom",
+    pinnedWork: "Do pracy",
+    pinnedOther: "Ta linia",
+    unpinLine: "Odepnij",
     submitBoard: "Czytaj tablicę",
     date: "Data",
     time: "Godzina",
@@ -223,6 +231,7 @@ export const pl: Messages = {
     sortTransfers: "Najmniej przesiadek",
     resetFilters: "Wyczyść filtry",
     stale: "Godziny mogły się zmienić",
+    onTheLine: "Na tej linii",
   },
   share: {
     open: "Udostępnij",
@@ -244,6 +253,10 @@ export const pl: Messages = {
     kicker: "Ostatnie bilety",
     title: "Znów tę podróż",
   },
+  pinned: {
+    kicker: "Przypięte linie",
+    title: "Twoje zwykłe bilety",
+  },
   format: {
     minutes: "{count} min",
     hours: "{count} h",
@@ -261,6 +274,7 @@ export const pl: Messages = {
     delayEarly: "{minutes} min",
     stopsFailed: "Przystanków nie udało się wczytać.",
     retryStops: "Wczytaj przystanki",
+    now: "Teraz",
   },
   carriers: {
     compare: "Porównaj przewoźników",

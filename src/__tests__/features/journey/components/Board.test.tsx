@@ -88,4 +88,29 @@ describe("EmptyBoard", () => {
     await user.click(screen.getByRole("button", { name: /Berlin Hbf → Praha hl\.n\./ }));
     expect(onRecentSelect).toHaveBeenCalledWith(recent);
   });
+
+  it("prints pinned home and work stamps on the idle board", async () => {
+    const user = userEvent.setup();
+    const onPinnedSelect = vi.fn();
+    const home = {
+      role: "home" as const,
+      from: berlin,
+      to: prague,
+      via: [],
+      savedAt: 1,
+    };
+    renderHall(
+      <EmptyBoard
+        hasSearched={false}
+        kicker="The board is open"
+        title="Name a station."
+        body="Live European times."
+        pins={[home]}
+        onPinnedSelect={onPinnedSelect}
+      />,
+    );
+
+    await user.click(screen.getByTestId("pinned-home"));
+    expect(onPinnedSelect).toHaveBeenCalledWith(home);
+  });
 });

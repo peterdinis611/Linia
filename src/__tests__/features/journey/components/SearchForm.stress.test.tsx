@@ -42,11 +42,15 @@ describe("SearchForm stress", () => {
         onModeFilterChange={onModeFilterChange}
         onTransferFilterChange={onTransferFilterChange}
         onAccessibleChange={vi.fn()}
+        onBikeChange={vi.fn()}
+        onNightChange={vi.fn()}
         onWantReturnChange={vi.fn()}
         onReturnDatetimeChange={vi.fn()}
         onSearch={onSearch}
         onClear={vi.fn()}
         accessible={false}
+        bike={false}
+        night={false}
         wantReturn={false}
         returnDatetime="2026-08-15T08:30"
       />,

@@ -103,6 +103,19 @@ describe("journeySearchFormSchema", () => {
     expect(parsed.success).toBe(true);
   });
 
+  it("accepts bike and night stamps", () => {
+    const parsed = journeySearchFormSchema.safeParse({
+      ...base,
+      bike: true,
+      night: true,
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.bike).toBe(true);
+      expect(parsed.data.night).toBe(true);
+    }
+  });
+
   it("ignores a missing return time on the station board", () => {
     const parsed = journeySearchFormSchema.safeParse({
       ...base,

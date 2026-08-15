@@ -65,4 +65,23 @@ describe("ItineraryList", () => {
     expect(screen.getByTestId("alert-ribbon")).toHaveTextContent("Changed service");
     expect(screen.getByTestId("alert-ribbon")).toHaveTextContent("Replacement bus");
   });
+
+  it("marks a ticket that is on the line right now", () => {
+    const origin = Date.now() - 20 * 60_000;
+    const live = railItinerary({
+      startTime: new Date(origin).toISOString(),
+      endTime: new Date(origin + 80 * 60_000).toISOString(),
+      legs: [
+        {
+          ...railItinerary().legs[0]!,
+          startTime: new Date(origin).toISOString(),
+          endTime: new Date(origin + 80 * 60_000).toISOString(),
+        },
+      ],
+    });
+    renderHall(
+      <ItineraryList itineraries={[live]} selectedIndex={0} onSelect={vi.fn()} />,
+    );
+    expect(screen.getByRole("option")).toHaveTextContent("On this line");
+  });
 });

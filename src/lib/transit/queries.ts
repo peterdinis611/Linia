@@ -37,6 +37,8 @@ function planCacheKey(input: {
   modeFilter: ModeFilter;
   transferFilter: TransferFilter;
   accessible?: boolean;
+  bike?: boolean;
+  night?: boolean;
   language?: string;
 }) {
   const via = (input.via ?? []).map(placeKey).join(">");
@@ -55,6 +57,8 @@ function planCacheKey(input: {
     input.modeFilter,
     input.transferFilter,
     input.accessible ? "1" : "0",
+    input.bike ? "1" : "0",
+    input.night ? "1" : "0",
     input.language ?? "",
   ].join("|");
 }
@@ -93,6 +97,8 @@ export async function planJourney(
     modeFilter: ModeFilter;
     transferFilter: TransferFilter;
     accessible?: boolean;
+    bike?: boolean;
+    night?: boolean;
     language?: string;
   },
   options?: { fresh?: boolean },
@@ -116,6 +122,7 @@ function stopTimesCacheKey(input: {
   time?: string;
   arriveBy?: boolean;
   modeFilter?: ModeFilter;
+  night?: boolean;
   pageCursor?: string;
   language?: string;
 }) {
@@ -127,6 +134,7 @@ function stopTimesCacheKey(input: {
     when,
     input.arriveBy ? "1" : "0",
     input.modeFilter ?? "all",
+    input.night ? "1" : "0",
     input.pageCursor ?? "",
     input.language ?? "",
   ].join("|");
@@ -138,6 +146,7 @@ export async function fetchStopTimes(
     time?: string;
     arriveBy?: boolean;
     modeFilter?: ModeFilter;
+    night?: boolean;
     pageCursor?: string;
     language?: string;
   },

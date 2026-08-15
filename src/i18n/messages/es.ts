@@ -111,6 +111,14 @@ export const es: Messages = {
     outbound: "Ida",
     inbound: "Vuelta",
     accessible: "Accesible",
+    bike: "Bici",
+    nightRail: "Tren nocturno",
+    nearbyBoard: "Qué sale",
+    pinLine: "Fijar la línea",
+    pinnedHome: "Casa",
+    pinnedWork: "Al trabajo",
+    pinnedOther: "Esta línea",
+    unpinLine: "Quitar",
     submitBoard: "Leer el panel",
     date: "Fecha",
     time: "Hora",
@@ -225,6 +233,7 @@ export const es: Messages = {
     sortTransfers: "Menos transbordos",
     resetFilters: "Quitar filtros",
     stale: "Los horarios pueden haber cambiado",
+    onTheLine: "En esta línea",
   },
   share: {
     open: "Compartir",
@@ -246,6 +255,10 @@ export const es: Messages = {
     kicker: "Billetes recientes",
     title: "Haz este viaje otra vez",
   },
+  pinned: {
+    kicker: "Líneas fijadas",
+    title: "Tus billetes habituales",
+  },
   format: {
     minutes: "{count} min",
     hours: "{count} h",
@@ -263,6 +276,7 @@ export const es: Messages = {
     delayEarly: "{minutes} min",
     stopsFailed: "No se pudieron cargar las paradas.",
     retryStops: "Cargar paradas",
+    now: "Ahora",
   },
   carriers: {
     compare: "Comparar operadores",

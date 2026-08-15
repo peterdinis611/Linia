@@ -109,6 +109,14 @@ export const en = {
     outbound: "There",
     inbound: "Back",
     accessible: "Accessible",
+    bike: "Bike",
+    nightRail: "Night train",
+    nearbyBoard: "What's leaving",
+    pinLine: "Pin this line",
+    pinnedHome: "Home",
+    pinnedWork: "Work",
+    pinnedOther: "This line",
+    unpinLine: "Unpin",
     submitBoard: "Read the board",
     date: "Date",
     time: "Time",
@@ -220,6 +228,7 @@ export const en = {
     sortTransfers: "Fewest transfers",
     resetFilters: "Reset filters",
     stale: "Times may have changed",
+    onTheLine: "On this line",
   },
   share: {
     open: "Share",
@@ -241,6 +250,10 @@ export const en = {
     kicker: "Recent tickets",
     title: "Travel this again",
   },
+  pinned: {
+    kicker: "Pinned lines",
+    title: "Your usual tickets",
+  },
   format: {
     minutes: "{count} min",
     hours: "{count} h",
@@ -258,6 +271,7 @@ export const en = {
     delayEarly: "{minutes} min",
     stopsFailed: "Stops could not be loaded.",
     retryStops: "Load stops",
+    now: "Now",
   },
   carriers: {
     compare: "Compare operators",

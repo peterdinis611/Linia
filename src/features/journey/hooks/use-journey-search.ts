@@ -47,6 +47,14 @@ import {
   subscribeRecentSearches,
   type RecentSearch,
 } from "../lib/recent";
+import {
+  pinSearch,
+  readPinnedSearches,
+  subscribePinnedSearches,
+  unpinSearch,
+  type PinnedRole,
+  type PinnedSearch,
+} from "../lib/pinned";
 
 export type { MapPickMode } from "../lib/pins";
 export type PlaceSource = "form" | "map";
@@ -64,6 +72,8 @@ function planKey(input: {
   modeFilter: ModeFilter;
   transferFilter: TransferFilter;
   accessible?: boolean;
+  bike?: boolean;
+  night?: boolean;
   board?: boolean;
   wantReturn?: boolean;
   returnDatetime?: string;
@@ -97,6 +107,8 @@ function planKey(input: {
     input.modeFilter,
     input.transferFilter,
     input.accessible ? "1" : "0",
+    input.bike ? "1" : "0",
+    input.night ? "1" : "0",
     input.wantReturn ? input.returnDatetime ?? "1" : "0",
   ].join("|");
 }
@@ -130,7 +142,10 @@ export function useJourneySearch() {
   const [refreshing, setRefreshing] = useState(false);
   const [liveAt, setLiveAt] = useState<number | null>(null);
   const [recents, setRecents] = useState<RecentSearch[]>([]);
+  const [pins, setPins] = useState<PinnedSearch[]>([]);
   const [accessible, setAccessible] = useState(false);
+  const [bike, setBike] = useState(false);
+  const [night, setNight] = useState(false);
   const [wantReturn, setWantReturn] = useState(false);
   const [returnDatetime, setReturnDatetime] = useState(() =>
     addDaysToDateTime(toLocalDateTimeValue(), 1),
@@ -389,6 +404,8 @@ export function useJourneySearch() {
     setModeFilter(snapshot.modeFilter);
     setTransferFilter(snapshot.transferFilter);
     setAccessible(Boolean(snapshot.accessible));
+    setBike(Boolean(snapshot.bike));
+    setNight(Boolean(snapshot.night));
     setWantReturn(Boolean(snapshot.returnDatetime));
     if (snapshot.returnDatetime) setReturnDatetime(snapshot.returnDatetime);
   }
@@ -525,6 +542,8 @@ export function useJourneySearch() {
       modeFilter: ModeFilter;
       transferFilter: TransferFilter;
       accessible?: boolean;
+      bike?: boolean;
+      night?: boolean;
       wantReturn?: boolean;
       returnDatetime?: string;
       tripKey?: string;
@@ -551,6 +570,8 @@ export function useJourneySearch() {
       modeFilter: snapshot.modeFilter,
       transferFilter: snapshot.transferFilter,
       accessible: snapshot.accessible,
+      bike: snapshot.bike,
+      night: snapshot.night,
       wantReturn: snapshot.wantReturn,
       returnTime: snapshot.returnDatetime,
     });
@@ -570,6 +591,8 @@ export function useJourneySearch() {
     const silent = Boolean(options?.silent);
     const gen = ++planGen.current;
     const access = Boolean(parsed.data.accessible);
+    const withBike = Boolean(parsed.data.bike);
+    const nightRail = Boolean(parsed.data.night);
     const returning = Boolean(parsed.data.wantReturn && parsed.data.returnTime);
 
     setFieldErrors({});
@@ -590,6 +613,8 @@ export function useJourneySearch() {
         modeFilter: parsed.data.modeFilter,
         transferFilter: parsed.data.transferFilter,
         accessible: access,
+        bike: withBike,
+        night: nightRail,
         language: locale,
       };
       const outbound = planJourney(outboundInput, { fresh: options?.fresh });
@@ -607,6 +632,8 @@ export function useJourneySearch() {
               modeFilter: parsed.data.modeFilter,
               transferFilter: parsed.data.transferFilter,
               accessible: access,
+              bike: withBike,
+              night: nightRail,
               language: locale,
             },
             { fresh: options?.fresh },
@@ -633,6 +660,8 @@ export function useJourneySearch() {
         transferFilter: parsed.data.transferFilter,
         tripKey: snapshot.tripKey,
         accessible: access,
+        bike: withBike,
+        night: nightRail,
         returnDatetime: returning ? parsed.data.returnTime : undefined,
         returnTripKey: snapshot.returnTripKey,
       };
@@ -707,6 +736,8 @@ export function useJourneySearch() {
       selected: hallLeg === "inbound" ? returnSelected : selected,
       board: routeMode === "board",
       accessible,
+      bike,
+      night,
       returnDatetime: wantReturn ? returnDatetime : undefined,
       returnSelected,
     });
@@ -719,6 +750,8 @@ export function useJourneySearch() {
     routeMode,
     hallLeg,
     accessible,
+    bike,
+    night,
     wantReturn,
     returnDatetime,
     stopTimes,
@@ -736,6 +769,8 @@ export function useJourneySearch() {
     setModeFilter("all");
     setTransferFilter("all");
     setAccessible(false);
+    setBike(false);
+    setNight(false);
     setWantReturn(false);
     setHallLeg("outbound");
     setReturnDatetime(addDaysToDateTime(toLocalDateTimeValue(), 1));
@@ -811,6 +846,8 @@ export function useJourneySearch() {
       modeFilter,
       transferFilter,
       accessible,
+      bike,
+      night,
       wantReturn: routeMode !== "board" && wantReturn,
       returnDatetime,
       board: routeMode === "board",
@@ -829,6 +866,8 @@ export function useJourneySearch() {
       modeFilter,
       transferFilter,
       accessible,
+      bike,
+      night,
       wantReturn: routeMode !== "board" && wantReturn,
       returnDatetime,
       board: routeMode === "board",
@@ -854,6 +893,8 @@ export function useJourneySearch() {
     modeFilter,
     transferFilter,
     accessible,
+    bike,
+    night,
     wantReturn,
     returnDatetime,
     pickMode,
@@ -866,6 +907,19 @@ export function useJourneySearch() {
     };
     void readRecentSearches().then(apply);
     const stop = subscribeRecentSearches(apply);
+    return () => {
+      cancelled = true;
+      stop();
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const apply = (items: PinnedSearch[]) => {
+      if (!cancelled) setPins(items);
+    };
+    void readPinnedSearches().then(apply);
+    const stop = subscribePinnedSearches(apply);
     return () => {
       cancelled = true;
       stop();
@@ -1017,38 +1071,68 @@ export function useJourneySearch() {
   }
 
   async function handleUseMyLocation() {
+    await withDevicePlace((place) => {
+      handleFromChange(place, "map");
+    });
+  }
+
+  async function handleNearbyBoard() {
+    await withDevicePlace(async (place) => {
+      setFrom(place);
+      setRouteMode("board");
+      setWantReturn(false);
+      setHallLeg("outbound");
+      setLeaveNow(true);
+      setArriveBy(false);
+      setAllDay(false);
+      clearPlaceErrors();
+      await runBoard({
+        from: place,
+        datetime: toLocalDateTimeValue(),
+        leaveNow: true,
+        arriveBy: false,
+        allDay: false,
+        modeFilter,
+      });
+    });
+  }
+
+  async function withDevicePlace(
+    apply: (place: SelectedPlace) => void | Promise<void>,
+  ) {
     if (!navigator.geolocation) {
       setGeoError("errors.geoUnsupported");
       return;
     }
     setGeoBusy(true);
     setGeoError(null);
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const place = await lookupPlace(
-            position.coords.latitude,
-            position.coords.longitude,
-            true,
-          );
-          handleFromChange(place, "map");
-          bumpFit();
-        } catch {
-          setGeoError("errors.geoFailed");
-        } finally {
-          setGeoBusy(false);
-        }
-      },
-      (error) => {
-        setGeoBusy(false);
-        setGeoError(
-          error.code === error.PERMISSION_DENIED
-            ? "errors.geoDenied"
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10_000,
+          maximumAge: 60_000,
+        });
+      });
+      const place = await lookupPlace(
+        position.coords.latitude,
+        position.coords.longitude,
+        true,
+      );
+      await apply(place);
+      bumpFit();
+    } catch (error) {
+      const geo = error as GeolocationPositionError;
+      setGeoError(
+        geo && typeof geo.code === "number" && geo.code === geo.PERMISSION_DENIED
+          ? "errors.geoDenied"
+          : error instanceof Error && error.message.startsWith("errors.")
+            ? error.message
             : "errors.geoFailed",
-        );
-      },
-      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
-    );
+      );
+    } finally {
+      setGeoBusy(false);
+    }
   }
 
   function handleRecentSelect(item: RecentSearch) {
@@ -1063,6 +1147,8 @@ export function useJourneySearch() {
     setModeFilter("all");
     setTransferFilter("all");
     setAccessible(false);
+    setBike(false);
+    setNight(false);
     setWantReturn(false);
     setHallLeg("outbound");
     void runPlan({
@@ -1076,6 +1162,22 @@ export function useJourneySearch() {
       modeFilter: "all",
       transferFilter: "all",
     });
+  }
+
+  function handlePinnedSelect(item: PinnedSearch) {
+    handleRecentSelect(item);
+  }
+
+  async function handlePinSearch(role: PinnedRole) {
+    if (!from || !to) return;
+    const vias = (routeMode === "via" ? via : []).filter(
+      (stop): stop is SelectedPlace => Boolean(stop),
+    );
+    setPins(await pinSearch({ role, from, to, via: vias }));
+  }
+
+  async function handleUnpinSearch(role: PinnedRole) {
+    setPins(await unpinSearch(role));
   }
 
   function revealMap() {
@@ -1094,6 +1196,8 @@ export function useJourneySearch() {
     modeFilter,
     transferFilter,
     accessible,
+    bike,
+    night,
     wantReturn,
     returnDatetime,
     hallLeg,
@@ -1123,6 +1227,7 @@ export function useJourneySearch() {
     refreshing,
     liveAt,
     recents,
+    pins,
     shareQuery,
     shareUrl,
     setArriveBy,
@@ -1131,6 +1236,8 @@ export function useJourneySearch() {
     setSelectedIndex: handleSelectedIndexChange,
     setSelectedCarriers,
     setAccessible,
+    setBike,
+    setNight,
     setHallLeg,
     setPickMode: handlePickModeChange,
     handlePickModeChange,
@@ -1147,7 +1254,11 @@ export function useJourneySearch() {
     handleRefresh,
     handleTimeShift,
     handleUseMyLocation,
+    handleNearbyBoard,
     handleRecentSelect,
+    handlePinnedSelect,
+    handlePinSearch,
+    handleUnpinSearch,
     handleSelectStopTime,
     handleOpenStation,
     revealMap,

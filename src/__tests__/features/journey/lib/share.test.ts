@@ -62,6 +62,20 @@ describe("share", () => {
     });
   });
 
+  it("round-trips a bike night stamp", () => {
+    const query = encodeShareQuery({
+      ...base,
+      bike: true,
+      night: true,
+    });
+    expect(query).toContain("bike=1");
+    expect(query).toContain("night=1");
+    expect(parseShareQuery(`?${query}`)).toMatchObject({
+      bike: true,
+      night: true,
+    });
+  });
+
   it("finds a selected trip by key", () => {
     const first = railItinerary();
     const second = railItinerary({

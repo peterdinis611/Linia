@@ -111,6 +111,14 @@ export const hr: Messages = {
     outbound: "Tamo",
     inbound: "Natrag",
     accessible: "Pristupačno",
+    bike: "Bicikl",
+    nightRail: "Noćni vlak",
+    nearbyBoard: "Što kreće",
+    pinLine: "Prikvači prugu",
+    pinnedHome: "Dom",
+    pinnedWork: "Na posao",
+    pinnedOther: "Ova pruga",
+    unpinLine: "Otkvači",
     submitBoard: "Čitaj ploču",
     date: "Datum",
     time: "Vrijeme",
@@ -224,6 +232,7 @@ export const hr: Messages = {
     sortTransfers: "Najmanje presjedanja",
     resetFilters: "Poništi filtre",
     stale: "Vremena su se mogla promijeniti",
+    onTheLine: "Na ovoj pruzi",
   },
   share: {
     open: "Podijeli",
@@ -245,6 +254,10 @@ export const hr: Messages = {
     kicker: "Nedavne karte",
     title: "Ponovi ovo putovanje",
   },
+  pinned: {
+    kicker: "Prikvačene pruge",
+    title: "Tvoje uobičajene karte",
+  },
   format: {
     minutes: "{count} min",
     hours: "{count} h",
@@ -262,6 +275,7 @@ export const hr: Messages = {
     delayEarly: "{minutes} min",
     stopsFailed: "Stajališta se nisu mogla učitati.",
     retryStops: "Učitaj stajališta",
+    now: "Sada",
   },
   carriers: {
     compare: "Usporedi prijevoznike",

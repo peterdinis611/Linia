@@ -54,6 +54,8 @@ export const planJourneyInputSchema = z
     modeFilter: modeFilterSchema,
     transferFilter: transferFilterSchema,
     accessible: z.boolean().optional().default(false),
+    bike: z.boolean().optional().default(false),
+    night: z.boolean().optional().default(false),
     fresh: z.boolean().optional(),
   })
   .refine((value) => isValidDateTime(value.time), {
@@ -100,6 +102,8 @@ export const journeySearchFormSchema = z
     transferFilter: transferFilterSchema,
     board: z.boolean().optional().default(false),
     accessible: z.boolean().optional().default(false),
+    bike: z.boolean().optional().default(false),
+    night: z.boolean().optional().default(false),
     wantReturn: z.boolean().optional().default(false),
     returnTime: z.string().trim().optional(),
   })
@@ -329,6 +333,7 @@ export const stopTimesInputSchema = z.object({
   time: z.string().trim().min(1).optional(),
   arriveBy: z.boolean().optional().default(false),
   modeFilter: modeFilterSchema.optional().default("all"),
+  night: z.boolean().optional().default(false),
   pageCursor: z.string().trim().max(2000).optional(),
   language: z.string().trim().min(2).max(8).optional(),
   n: z.number().int().min(1).max(50).optional().default(20),

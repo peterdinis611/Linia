@@ -33,11 +33,15 @@ function renderForm(overrides: Partial<Props> = {}) {
     onModeFilterChange: vi.fn(),
     onTransferFilterChange: vi.fn(),
     onAccessibleChange: vi.fn(),
+    onBikeChange: vi.fn(),
+    onNightChange: vi.fn(),
     onWantReturnChange: vi.fn(),
     onReturnDatetimeChange: vi.fn(),
     onSearch: vi.fn(),
     onClear: vi.fn(),
     accessible: false,
+    bike: false,
+    night: false,
     wantReturn: false,
     returnDatetime: "2026-08-15T08:30",
     ...overrides,
@@ -92,11 +96,15 @@ describe("SearchForm", () => {
     expect(props.onRouteModeChange).toHaveBeenCalledWith("board");
   });
 
-  it("stamps accessible and return", async () => {
+  it("stamps accessible, bike, night and return", async () => {
     const user = userEvent.setup();
     const { props } = renderForm();
     await user.click(screen.getByTestId("accessible"));
     expect(props.onAccessibleChange).toHaveBeenCalledWith(true);
+    await user.click(screen.getByTestId("bike"));
+    expect(props.onBikeChange).toHaveBeenCalledWith(true);
+    await user.click(screen.getByTestId("night-rail"));
+    expect(props.onNightChange).toHaveBeenCalledWith(true);
     await user.click(screen.getByTestId("return-trip"));
     expect(props.onWantReturnChange).toHaveBeenCalledWith(true);
   });
@@ -109,6 +117,8 @@ describe("SearchForm", () => {
     ).not.toBeInTheDocument();
     expect(screen.queryByTestId("return-trip")).not.toBeInTheDocument();
     expect(screen.queryByTestId("accessible")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("bike")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("night-rail")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Read the board" })).toBeInTheDocument();
     expect(screen.getByTestId("station-board-mode")).toHaveAttribute(
       "aria-pressed",
@@ -145,5 +155,13 @@ describe("SearchForm", () => {
     expect(find).toHaveAttribute("data-busy", "true");
     expect(find).toHaveAttribute("aria-busy", "true");
     expect(find.querySelector(".search-cta-spin")).toBeTruthy();
+  });
+
+  it("stamps a nearby board from this stop", async () => {
+    const user = userEvent.setup();
+    const onNearbyBoard = vi.fn();
+    renderForm({ onUseMyLocation: vi.fn(), onNearbyBoard });
+    await user.click(screen.getByTestId("nearby-board"));
+    expect(onNearbyBoard).toHaveBeenCalledOnce();
   });
 });

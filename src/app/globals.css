@@ -1461,6 +1461,32 @@ body::before {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.32);
 }
 
+.journey-sheet [data-progress="past"] {
+  opacity: 0.42;
+}
+
+.journey-sheet [data-progress="current"] {
+  opacity: 1;
+}
+
+.now-stamp {
+  display: inline-block;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+
+.spine > span[data-progress="past"] {
+  opacity: 0.35;
+}
+
+.spine > span[data-progress="current"] {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--paper-raised) 55%, transparent);
+}
+
 .flaps {
   display: flex;
   gap: 6px;

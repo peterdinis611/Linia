@@ -12,6 +12,9 @@ test.describe("hall stamps", () => {
     );
     await expect(page.getByTestId("return-trip")).toHaveCount(0);
     await expect(page.getByTestId("accessible")).toHaveCount(0);
+    await expect(page.getByTestId("bike")).toHaveCount(0);
+    await expect(page.getByTestId("night-rail")).toHaveCount(0);
+    await expect(page.getByTestId("nearby-board")).toBeVisible();
     await expect(page.getByRole("button", { name: "Read the board" })).toBeVisible();
   });
 
@@ -61,6 +64,18 @@ test.describe("hall stamps", () => {
     await page.getByTestId("share-open").click();
     const shareUrl = await page.getByTestId("share-url").inputValue();
     expect(shareUrl).toContain("access=1");
+  });
+
+  test("stamps bike and night train onto the public ticket", async ({ page }) => {
+    await page.goto("/");
+    await searchBerlinPrague(page);
+    await expect(page.getByTestId("journey-results")).toBeVisible();
+    await page.getByTestId("bike").click();
+    await page.getByTestId("night-rail").click();
+    await expect(page.getByTestId("bike")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("night-rail")).toHaveAttribute("aria-pressed", "true");
+    await expect(page).toHaveURL(/bike=1/);
+    await expect(page).toHaveURL(/night=1/);
   });
 
   test("keeps the outbound ticket when the return tab is open", async ({ page }) => {
