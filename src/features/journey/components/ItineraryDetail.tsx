@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n/provider";
-import { ChevronDown } from "lucide-react";
 import {
   arrivalDelayMinutes,
   contrastText,
@@ -254,7 +253,7 @@ function LegBlock({
               <span className="w-[3px] flex-1" style={{ background: color }} />
             </span>
             <span className="flex items-center gap-1 py-1 text-xs font-medium text-ink-muted">
-              <ChevronDown className="size-3.5 transition group-open:rotate-180" />
+              <span className="stops-chevron" aria-hidden="true" />
               {tp("stops", intermediates.length)}
             </span>
           </summary>

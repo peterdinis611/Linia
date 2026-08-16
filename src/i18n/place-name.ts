@@ -1,5 +1,3 @@
-import { defaultLocale, isLocale, type Locale } from "./config";
-import { getDictionary } from "./dictionaries";
 import type { Messages } from "./messages/en";
 
 const KIND_KEYS: Record<string, keyof Messages["placeKind"]> = {
@@ -30,9 +28,10 @@ function kindFor(label: string): keyof Messages["placeKind"] | undefined {
   return KIND_KEYS[label.trim().toLowerCase()];
 }
 
-export function localizePlaceName(name: string, locale: string): string {
-  const resolved: Locale = isLocale(locale) ? locale : defaultLocale;
-  const kinds = getDictionary(resolved).placeKind;
+export function localizePlaceName(
+  name: string,
+  kinds: Messages["placeKind"],
+): string {
   return name
     .replace(/\s*\(([^)]+)\)\s*$/, (_, raw: string) => {
       const key = kindFor(raw);

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Popover } from "radix-ui";
+import { FloatSheet } from "@/components/FloatSheet";
 import {
   localeCookie,
   localeFlags,
@@ -30,6 +30,8 @@ export function LanguageSwitcher({ search = "" }: { search?: string }) {
   const pathname = usePathname() || `/${locale}`;
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const close = useCallback(() => setOpen(false), []);
 
   function choose(next: Locale) {
     setOpen(false);
@@ -40,29 +42,32 @@ export function LanguageSwitcher({ search = "" }: { search?: string }) {
   }
 
   return (
-    <Popover.Root open={open} onOpenChange={setOpen}>
-      <Popover.Trigger asChild>
-        <button
-          type="button"
-          className="lang-switch"
-          aria-label={t("language.label")}
-          title={localeNames[locale]}
-          data-testid="language-switcher"
-          data-locale={locale}
-        >
-          <span className="lang-switch-flag" aria-hidden="true">
-            {localeFlags[locale]}
-          </span>
-          <span className="lang-switch-code">{locale}</span>
-        </button>
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content
-          className="lang-sheet"
+    <div className="lang-picker">
+      <button
+        ref={buttonRef}
+        type="button"
+        className="lang-switch"
+        aria-label={t("language.label")}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        title={localeNames[locale]}
+        data-testid="language-switcher"
+        data-locale={locale}
+        onClick={() => setOpen((value) => !value)}
+      >
+        <span className="lang-switch-flag" aria-hidden="true">
+          {localeFlags[locale]}
+        </span>
+        <span className="lang-switch-code">{locale}</span>
+      </button>
+      {open ? (
+        <FloatSheet
+          anchorRef={buttonRef}
           align="end"
-          sideOffset={6}
-          collisionPadding={12}
-          data-testid="lang-sheet"
+          className="lang-sheet"
+          testId="lang-sheet"
+          label={t("language.label")}
+          onDismiss={close}
         >
           <p className="kicker">{t("language.label")}</p>
           <div role="listbox" aria-label={t("language.label")}>
@@ -86,8 +91,8 @@ export function LanguageSwitcher({ search = "" }: { search?: string }) {
               </button>
             ))}
           </div>
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
+        </FloatSheet>
+      ) : null}
+    </div>
   );
 }

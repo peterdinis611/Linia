@@ -16,12 +16,8 @@ export function HowToGuide({ onTour }: { onTour?: () => void }) {
               {step}
             </span>
             <div>
-              <p className="text-sm font-semibold tracking-tight">
-                {t(`guide.step${step}Title`)}
-              </p>
-              <p className="mt-0.5 text-sm leading-relaxed text-ink-muted">
-                {t(`guide.step${step}Body`)}
-              </p>
+              <p className="howto-step-title">{t(`guide.step${step}Title`)}</p>
+              <p className="howto-step-body">{t(`guide.step${step}Body`)}</p>
             </div>
           </li>
         ))}

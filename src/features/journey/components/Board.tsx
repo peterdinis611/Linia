@@ -77,7 +77,8 @@ export function EmptyBoard({
   onPinnedSelect?: (item: PinnedSearch) => void;
   onTour?: () => void;
 }) {
-  const { locale, t } = useI18n();
+  const { messages, t } = useI18n();
+  const kinds = messages.placeKind;
   return (
     <div
       data-testid="empty-board"
@@ -101,7 +102,7 @@ export function EmptyBoard({
             {pins.map((item) => {
               const viaLabel =
                 item.via.length > 0
-                  ? ` · ${item.via.map((stop) => localizePlaceName(stop.name, locale)).join(" · ")}`
+                  ? ` · ${item.via.map((stop) => localizePlaceName(stop.name, kinds)).join(" · ")}`
                   : "";
               const roleLabel =
                 item.role === "home"
@@ -117,8 +118,8 @@ export function EmptyBoard({
                     data-testid={`pinned-${item.role}`}
                     onClick={() => onPinnedSelect(item)}
                   >
-                    {roleLabel} · {localizePlaceName(item.from.name, locale)} →{" "}
-                    {localizePlaceName(item.to.name, locale)}
+                    {roleLabel} · {localizePlaceName(item.from.name, kinds)} →{" "}
+                    {localizePlaceName(item.to.name, kinds)}
                     {viaLabel}
                   </button>
                 </li>
@@ -135,7 +136,7 @@ export function EmptyBoard({
             {recents.map((item) => {
               const viaLabel =
                 item.via.length > 0
-                  ? ` · ${item.via.map((stop) => localizePlaceName(stop.name, locale)).join(" · ")}`
+                  ? ` · ${item.via.map((stop) => localizePlaceName(stop.name, kinds)).join(" · ")}`
                   : "";
               return (
                 <li key={`${item.from.id}-${item.to.id}-${item.savedAt}`}>
@@ -144,8 +145,8 @@ export function EmptyBoard({
                     className="stamp stamp-plain w-full text-left"
                     onClick={() => onRecentSelect(item)}
                   >
-                    {localizePlaceName(item.from.name, locale)} →{" "}
-                    {localizePlaceName(item.to.name, locale)}
+                    {localizePlaceName(item.from.name, kinds)} →{" "}
+                    {localizePlaceName(item.to.name, kinds)}
                     {viaLabel}
                   </button>
                 </li>

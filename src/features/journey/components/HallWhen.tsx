@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import { format } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Popover } from "radix-ui";
+import { FloatSheet } from "@/components/FloatSheet";
+import { IconChevronLeft, IconChevronRight } from "@/components/icons";
 import { useI18n } from "@/i18n/provider";
 import {
   joinDateTime,
@@ -61,6 +61,10 @@ export function HallWhen({
     setOpen(pane);
   }
 
+  const dateRef = useRef<HTMLButtonElement>(null);
+  const timeRef = useRef<HTMLButtonElement>(null);
+  const close = useCallback(() => setOpen(null), []);
+
   const weekday = new Intl.DateTimeFormat(locale, { weekday: "short" }).format(
     new Date(parts.year, parts.month - 1, parts.day),
   );
@@ -78,103 +82,100 @@ export function HallWhen({
 
   return (
     <div className="hall-when" data-day={allDay}>
-      <Popover.Root
-        open={open === "date"}
-        onOpenChange={(next) => (next ? openPane("date") : setOpen(null))}
+      <button
+        ref={dateRef}
+        type="button"
+        id={`${idPrefix}-date`}
+        data-testid={`${idPrefix}-date`}
+        className="hall-when-date"
+        aria-label={t("search.date")}
+        aria-expanded={open === "date"}
+        aria-haspopup="dialog"
+        aria-invalid={invalid}
+        onClick={() => (open === "date" ? setOpen(null) : openPane("date"))}
       >
-        <Popover.Trigger asChild>
-          <button
-            type="button"
-            id={`${idPrefix}-date`}
-            data-testid={`${idPrefix}-date`}
-            className="hall-when-date"
-            aria-label={t("search.date")}
-            aria-invalid={invalid}
-          >
-            <span className="kicker">{weekday}</span>
-            <span className="hall-when-date-line">
-              <span className="hall-when-day">{parts.day}</span>
-              <span>
-                {monthShort} {parts.year}
-              </span>
-            </span>
-          </button>
-        </Popover.Trigger>
-        <Popover.Portal>
-          <Popover.Content
-            className="hall-cal"
-            align="start"
-            sideOffset={6}
-            collisionPadding={12}
-          >
-            <CalendarSheet
-              locale={locale}
-              title={monthTitle}
-              view={view}
-              selected={parts}
-              prevLabel={t("search.prevMonth")}
-              nextLabel={t("search.nextMonth")}
-              todayLabel={t("search.today")}
-              onView={setView}
-              onSelect={(cell) => {
-                commit({ ...parts, ...cell });
-                setOpen(null);
-              }}
-              onToday={() => {
-                const now = new Date();
-                commit({
-                  ...parts,
-                  year: now.getFullYear(),
-                  month: now.getMonth() + 1,
-                  day: now.getDate(),
-                });
-                setOpen(null);
-              }}
-            />
-          </Popover.Content>
-        </Popover.Portal>
-      </Popover.Root>
+        <span className="kicker">{weekday}</span>
+        <span className="hall-when-date-line">
+          <span className="hall-when-day">{parts.day}</span>
+          <span>
+            {monthShort} {parts.year}
+          </span>
+        </span>
+      </button>
+      {open === "date" ? (
+        <FloatSheet
+          anchorRef={dateRef}
+          className="hall-cal"
+          label={monthTitle}
+          onDismiss={close}
+        >
+          <CalendarSheet
+            locale={locale}
+            title={monthTitle}
+            view={view}
+            selected={parts}
+            prevLabel={t("search.prevMonth")}
+            nextLabel={t("search.nextMonth")}
+            todayLabel={t("search.today")}
+            onView={setView}
+            onSelect={(cell) => {
+              commit({ ...parts, ...cell });
+              setOpen(null);
+            }}
+            onToday={() => {
+              const now = new Date();
+              commit({
+                ...parts,
+                year: now.getFullYear(),
+                month: now.getMonth() + 1,
+                day: now.getDate(),
+              });
+              setOpen(null);
+            }}
+          />
+        </FloatSheet>
+      ) : null}
 
       {!allDay ? (
-      <Popover.Root
-        open={open === "time"}
-        onOpenChange={(next) => (next ? openPane("time") : setOpen(null))}
-      >
-        <Popover.Trigger asChild>
+        <>
           <button
+            ref={timeRef}
             type="button"
             id={`${idPrefix}-time`}
             data-testid={`${idPrefix}-time`}
             className="hall-when-time"
             aria-label={t("search.time")}
+            aria-expanded={open === "time"}
+            aria-haspopup="dialog"
             aria-invalid={invalid}
             aria-describedby={describedBy}
+            onClick={() => (open === "time" ? setOpen(null) : openPane("time"))}
           >
             <span className="kicker">{t("search.time")}</span>
             <span className="hall-when-time-value">{timeLabel}</span>
           </button>
-        </Popover.Trigger>
-        <Popover.Portal>
-          <Popover.Content
-            className="hall-clock"
-            align="end"
-            sideOffset={6}
-            collisionPadding={12}
-          >
-            <ClockSheet
-              hour={parts.hour}
-              minute={parts.minute}
-              hourLabel={t("search.hour")}
-              minuteLabel={t("search.minute")}
-              onHour={(hour) => commit({ ...parts, hour })}
-              onMinute={(minute) => {
-                commit({ ...parts, minute });
-                setOpen(null);
-              }}
-            />
-          </Popover.Content>
-        </Popover.Portal>
-      </Popover.Root>
+          {open === "time" ? (
+            <FloatSheet
+              anchorRef={timeRef}
+              align="end"
+              className="hall-clock"
+              label={t("search.time")}
+              onDismiss={close}
+            >
+              <ClockSheet
+                hour={parts.hour}
+                minute={parts.minute}
+                hourLabel={t("search.hour")}
+                minuteLabel={t("search.minute")}
+                onHour={(hour) => commit({ ...parts, hour })}
+                onMinute={(minute) => {
+                  commit({ ...parts, minute });
+                  setOpen(null);
+                }}
+              />
+            </FloatSheet>
+          ) : null}
+        </>
       ) : null}
     </div>
   );
@@ -229,8 +230,6 @@ function CalendarSheet({
 
   return (
     <div
-      role="dialog"
-      aria-label={title}
       data-testid="hall-cal"
       onKeyDown={(event) => {
         if (event.key === "ArrowLeft") {
@@ -259,11 +258,11 @@ function CalendarSheet({
     >
       <div className="hall-cal-nav">
         <button type="button" className="hall-cal-nav-btn" aria-label={prevLabel} onClick={() => moveView(-1)}>
-          <ChevronLeft className="size-4" aria-hidden="true" />
+          <IconChevronLeft />
         </button>
         <p className="hall-cal-title">{title}</p>
         <button type="button" className="hall-cal-nav-btn" aria-label={nextLabel} onClick={() => moveView(1)}>
-          <ChevronRight className="size-4" aria-hidden="true" />
+          <IconChevronRight />
         </button>
       </div>
       <div className="hall-cal-week">

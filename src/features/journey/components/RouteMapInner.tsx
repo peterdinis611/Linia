@@ -8,14 +8,14 @@ import {
   type ReactNode,
 } from "react";
 import {
-  Layers2,
-  LocateFixed,
-  Maximize2,
-  Minimize2,
-  Minus,
-  Plus,
-  Satellite,
-} from "lucide-react";
+  IconCollapse,
+  IconExpand,
+  IconLayers,
+  IconLocate,
+  IconMinus,
+  IconPlus,
+  IconSatellite,
+} from "@/components/icons";
 import L from "leaflet";
 import {
   Marker,
@@ -29,11 +29,6 @@ import type { LatLngBoundsExpression, LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useI18n } from "@/i18n/provider";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { carrierName } from "@/lib/carriers";
 import { isTransitMode, legColor, legName } from "@/lib/format";
 import type { Itinerary, SelectedPlace } from "@/lib/transit/types";
@@ -371,21 +366,21 @@ function MapToolbar({
         pressed={basemap === "map"}
         onClick={() => onBasemapChange("map")}
       >
-        <Layers2 />
+        <IconLayers />
       </ChromeButton>
       <ChromeButton
         label={t("map.satelliteLabel")}
         pressed={basemap === "satellite"}
         onClick={() => onBasemapChange("satellite")}
       >
-        <Satellite />
+        <IconSatellite />
       </ChromeButton>
       <ChromeButton
         label={t("map.here")}
         testId="map-here"
         onClick={locateHere}
       >
-        <LocateFixed />
+        <IconLocate />
       </ChromeButton>
       {onToggleFull ? (
         <ChromeButton
@@ -394,14 +389,14 @@ function MapToolbar({
           pressed={full}
           onClick={onToggleFull}
         >
-          {full ? <Minimize2 /> : <Maximize2 />}
+          {full ? <IconCollapse /> : <IconExpand />}
         </ChromeButton>
       ) : null}
       <ChromeButton label={t("map.zoomIn")} onClick={() => map.zoomIn()}>
-        <Plus />
+        <IconPlus />
       </ChromeButton>
       <ChromeButton label={t("map.zoomOut")} onClick={() => map.zoomOut()}>
-        <Minus />
+        <IconMinus />
       </ChromeButton>
     </div>
   );
@@ -421,21 +416,17 @@ function ChromeButton({
   children: ReactNode;
 }) {
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          aria-label={label}
-          aria-pressed={pressed}
-          data-on={pressed || undefined}
-          data-testid={testId}
-          onClick={onClick}
-        >
-          {children}
-        </button>
-      </TooltipTrigger>
-      <TooltipContent side="left">{label}</TooltipContent>
-    </Tooltip>
+    <button
+      type="button"
+      aria-label={label}
+      aria-pressed={pressed}
+      title={label}
+      data-on={pressed || undefined}
+      data-testid={testId}
+      onClick={onClick}
+    >
+      {children}
+    </button>
   );
 }
 

@@ -105,6 +105,26 @@ test.describe("home", () => {
     const types = (jsonLd["@graph"] ?? []).map((node) => node["@type"]);
     expect(types).toContain("WebApplication");
     expect(types).toContain("WebSite");
+    expect(types).toContain("WebPage");
+    expect(types).toContain("Organization");
+
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      "content",
+      "Search live bus and train itineraries across Europe using open Transitous data.",
+    );
+    await expect(page.locator('meta[property="og:description"]')).toHaveAttribute(
+      "content",
+      "Search live bus and train itineraries across Europe using open Transitous data.",
+    );
+    await expect(page.locator('meta[property="og:image"]').first()).toHaveAttribute(
+      "content",
+      /\/en\/opengraph-image/,
+    );
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.locator('link[rel="sitemap"]')).toHaveAttribute(
+      "href",
+      /sitemap\.xml/,
+    );
 
     const robots = await request.get("/robots.txt");
     expect(robots.ok()).toBeTruthy();
@@ -129,6 +149,15 @@ test.describe("home", () => {
     expect(sitemapText).toContain("/en/opengraph-image");
     expect(sitemapText).not.toContain("ticket-og");
 
+    const llms = await request.get("/llms.txt");
+    expect(llms.ok()).toBeTruthy();
+    expect(llms.headers()["content-type"]).toMatch(/text\/plain/);
+    const llmsText = await llms.text();
+    expect(llmsText).toContain("# Linia");
+    expect(llmsText).toContain("/en");
+    expect(llmsText).toContain("/sk");
+    expect(llmsText).toContain("sitemap.xml");
+
     const manifest = await request.get("/manifest.webmanifest");
     expect(manifest.ok()).toBeTruthy();
     const manifestJson = (await manifest.json()) as { name?: string };
@@ -139,6 +168,10 @@ test.describe("home", () => {
     await page.goto("/sk");
     await expect(page).toHaveTitle("Linia — vyhľadávanie autobusov a vlakov v Európe");
     await expect(page.locator("html")).toHaveAttribute("lang", "sk");
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      "content",
+      "Hľadajte živé autobusové a vlakové spojenia po Európe z otvorených dát Transitous.",
+    );
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
       /\/sk\/?$/,

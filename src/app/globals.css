@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -21,25 +20,7 @@
   --rule: #d4cbb8;
   --rule-strong: #b9ae97;
   --walk: #8a8378;
-  --background: var(--paper);
-  --foreground: var(--ink);
-  --card: var(--paper-raised);
-  --card-foreground: var(--ink);
-  --popover: var(--paper-raised);
-  --popover-foreground: var(--ink);
-  --primary: var(--signal);
-  --primary-foreground: #fff8f4;
-  --secondary: var(--paper-sunken);
-  --secondary-foreground: var(--ink);
-  --muted: var(--paper-sunken);
-  --muted-foreground: var(--ink-muted);
-  --accent: #efe6d4;
-  --accent-foreground: var(--ink);
-  --destructive: var(--signal);
-  --border: var(--rule);
-  --input: var(--rule-strong);
-  --ring: var(--signal);
-  --radius: 0.75rem;
+  --ticket: #fff8f4;
   color-scheme: light;
 }
 
@@ -61,24 +42,7 @@ html.dark {
   --rule: #2c3848;
   --rule-strong: #4e6074;
   --walk: #8b9aab;
-  --background: var(--paper);
-  --foreground: var(--ink);
-  --card: var(--paper-raised);
-  --card-foreground: var(--ink);
-  --popover: var(--paper-raised);
-  --popover-foreground: var(--ink);
-  --primary: var(--signal);
-  --primary-foreground: #fff4ea;
-  --secondary: var(--paper-sunken);
-  --secondary-foreground: var(--ink);
-  --muted: var(--paper-sunken);
-  --muted-foreground: var(--ink-muted);
-  --accent: #243040;
-  --accent-foreground: var(--ink);
-  --destructive: var(--signal);
-  --border: var(--rule);
-  --input: var(--rule-strong);
-  --ring: var(--signal);
+  --ticket: #fff4ea;
   --color-paper: var(--paper);
   --color-paper-raised: var(--paper-raised);
   --color-paper-sunken: var(--paper-sunken);
@@ -94,24 +58,7 @@ html.dark {
   --color-amber: var(--amber);
   --color-rule: var(--rule);
   --color-rule-strong: var(--rule-strong);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  --color-ticket: var(--ticket);
   color-scheme: dark;
 }
 
@@ -131,28 +78,7 @@ html.dark {
   --color-amber: var(--amber);
   --color-rule: var(--rule);
   --color-rule-strong: var(--rule-strong);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --color-ticket: var(--ticket);
   --font-display: var(--font-fraunces), "Iowan Old Style", "Palatino Linotype", serif;
   --font-sans: var(--font-schibsted), "Schibsted Grotesk", ui-sans-serif, sans-serif;
   --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, monospace;
@@ -211,7 +137,7 @@ html.dark body::before {
 
 ::selection {
   background: var(--signal);
-  color: var(--primary-foreground);
+  color: var(--ticket);
 }
 
 :focus-visible {
@@ -741,6 +667,10 @@ html:not(.dark) .board-clock .kicker {
   box-shadow: 0 8px 18px color-mix(in srgb, var(--board) 10%, transparent);
 }
 
+.lang-picker {
+  display: contents;
+}
+
 .lang-switch {
   position: relative;
   display: grid;
@@ -789,12 +719,13 @@ html:not(.dark) .board-clock .kicker {
 }
 
 .lang-switch:focus-visible,
-.lang-switch:focus-within,
-.lang-switch[data-state="open"] {
+.lang-switch[aria-expanded="true"] {
   background: color-mix(in srgb, var(--signal) 8%, transparent);
 }
 
 .lang-sheet {
+  position: fixed;
+  margin: 0;
   z-index: 80;
   width: min(16.75rem, calc(100vw - 1.5rem));
   max-height: min(28rem, calc(100dvh - 5rem));
@@ -869,6 +800,11 @@ html:not(.dark) .board-clock .kicker {
   padding: 0.45rem 0;
   color: var(--ink-muted);
   transition: background 160ms ease, color 160ms ease;
+}
+
+.theme-switch button svg {
+  width: 0.875rem;
+  height: 0.875rem;
 }
 
 .theme-switch button + button {
@@ -1002,6 +938,8 @@ html:not(.dark) .board-clock .kicker {
 
 .hall-cal,
 .hall-clock {
+  position: fixed;
+  margin: 0;
   z-index: 60;
   border-radius: 0;
   outline: none;
@@ -1041,6 +979,11 @@ html:not(.dark) .board-clock .kicker {
   width: 2rem;
   height: 2rem;
   color: var(--ink-muted);
+}
+
+.hall-cal-nav-btn svg {
+  width: 1rem;
+  height: 1rem;
 }
 
 .hall-cal-nav-btn:hover {
@@ -1254,7 +1197,7 @@ html:not(.dark) .board-clock .kicker {
   gap: 0.65rem;
   width: 100%;
   background: var(--signal);
-  color: var(--primary-foreground);
+  color: var(--ticket);
   padding: 0.85rem 1rem;
   font-size: 0.82rem;
   font-weight: 700;
@@ -1295,8 +1238,8 @@ html:not(.dark) .board-clock .kicker {
   height: 0.85rem;
   flex-shrink: 0;
   border-radius: 999px;
-  border: 2px solid color-mix(in srgb, var(--primary-foreground) 32%, transparent);
-  border-top-color: var(--primary-foreground);
+  border: 2px solid color-mix(in srgb, var(--ticket) 32%, transparent);
+  border-top-color: var(--ticket);
   animation: spin 0.7s linear infinite;
 }
 
@@ -1334,7 +1277,7 @@ html:not(.dark) .board-clock .kicker {
 
 .badge-stop {
   background: var(--signal);
-  color: var(--primary-foreground);
+  color: var(--ticket);
 }
 
 .badge-place {
@@ -1349,7 +1292,7 @@ html:not(.dark) .board-clock .kicker {
   width: 100%;
   overflow: hidden;
   isolation: isolate;
-  background: var(--muted);
+  background: var(--paper-sunken);
 }
 
 html.dark .map-stage,
@@ -1485,6 +1428,11 @@ html.dark .leaflet-container {
   color: var(--ink-soft);
 }
 
+.map-chrome button svg {
+  width: 1rem;
+  height: 1rem;
+}
+
 .map-chrome button:last-child {
   border-bottom: 0;
 }
@@ -1516,6 +1464,39 @@ html.dark .leaflet-container {
 .dark .map-pin-bar .stamp[data-on="true"] {
   color: var(--amber);
   background: color-mix(in srgb, var(--amber) 14%, transparent);
+}
+
+.map-chip {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0.12rem 0.45rem;
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+  background: var(--paper-sunken);
+  border: 1px solid var(--rule);
+}
+
+.map-chip-line {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  background: transparent;
+}
+
+.stops-chevron {
+  display: inline-block;
+  width: 0.34rem;
+  height: 0.34rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-1px) rotate(45deg);
+  transition: transform 160ms ease;
+}
+
+details[open] .stops-chevron {
+  transform: translateY(1px) rotate(225deg);
 }
 
 .map-plaque {
@@ -1762,7 +1743,7 @@ html.dark .leaflet-container {
   display: grid;
   height: 100%;
   place-items: center;
-  background: var(--muted);
+  background: var(--paper-sunken);
   padding: 1.25rem;
 }
 
@@ -1869,6 +1850,20 @@ html.dark .leaflet-container {
   font-size: 0.72rem;
   font-weight: 500;
   color: var(--ink);
+}
+
+.howto-step-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.howto-step-body {
+  margin: 0.125rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.625;
+  color: var(--ink-muted);
 }
 
 .howto-dialog {
@@ -2217,7 +2212,7 @@ html.dark .leaflet-container {
 }
 
 .leaflet-container {
-  background: var(--muted);
+  background: var(--paper-sunken);
   font-family: var(--font-sans), system-ui, sans-serif;
   font-size: 12px;
   width: 100%;
@@ -2236,7 +2231,7 @@ html.dark .leaflet-container {
 }
 
 .leaflet-control-attribution a {
-  color: var(--foreground) !important;
+  color: var(--ink) !important;
 }
 
 .dark .leaflet-control-attribution {
@@ -2248,10 +2243,10 @@ html.dark .leaflet-container {
 }
 
 .leaflet-popup-content-wrapper {
-  border-radius: var(--radius-lg) !important;
-  border: 1px solid var(--border) !important;
-  background: var(--card) !important;
-  color: var(--card-foreground) !important;
+  border-radius: 0 !important;
+  border: 1px dashed var(--rule-strong) !important;
+  background: var(--paper-raised) !important;
+  color: var(--ink) !important;
   box-shadow: 0 8px 24px color-mix(in srgb, var(--board) 22%, transparent) !important;
   padding: 0 !important;
 }
@@ -2268,12 +2263,12 @@ html.dark .leaflet-container {
 }
 
 .leaflet-popup-tip {
-  background: var(--card) !important;
+  background: var(--paper-raised) !important;
   box-shadow: none !important;
 }
 
 .leaflet-popup-close-button {
-  color: var(--muted-foreground) !important;
+  color: var(--ink-muted) !important;
 }
 
 .print-ticket {

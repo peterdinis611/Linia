@@ -1,14 +1,14 @@
 "use client";
 
-import { Monitor, Moon, Sun } from "lucide-react";
+import { IconMonitor, IconMoon, IconSun } from "@/components/icons";
 import { useI18n } from "@/i18n/provider";
 import { themes, type Theme } from "@/lib/theme";
 import { useTheme } from "./ThemeProvider";
 
-const ICONS: Record<Theme, typeof Sun> = {
-  light: Sun,
-  dark: Moon,
-  system: Monitor,
+const ICONS: Record<Theme, typeof IconSun> = {
+  light: IconSun,
+  dark: IconMoon,
+  system: IconMonitor,
 };
 
 export function ThemeSwitcher() {
@@ -31,7 +31,7 @@ export function ThemeSwitcher() {
             title={label}
             onClick={() => setTheme(item)}
           >
-            <Icon className="mx-auto size-3.5" aria-hidden="true" />
+            <Icon />
           </button>
         );
       })}

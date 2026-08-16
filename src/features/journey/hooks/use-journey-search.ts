@@ -114,7 +114,7 @@ function planKey(input: {
 }
 
 export function useJourneySearch() {
-  const { locale } = useI18n();
+  const { locale, messages } = useI18n();
   const [from, setFrom] = useState<SelectedPlace | null>(null);
   const [to, setTo] = useState<SelectedPlace | null>(null);
   const [via, setVia] = useState<Array<SelectedPlace | null>>([]);
@@ -790,7 +790,7 @@ export function useJourneySearch() {
         preferStop,
         language: locale,
       });
-      if (matches[0]) return matchToPlace(matches[0], locale);
+      if (matches[0]) return matchToPlace(matches[0], messages.placeKind);
     } catch {
       // fall through to coordinate pin
     }

@@ -23,7 +23,7 @@ export function PlaceAutocomplete({
   error,
   onChange,
 }: PlaceAutocompleteProps) {
-  const { locale, t } = useI18n();
+  const { locale, messages, t } = useI18n();
   const id = useId();
   const errorId = `${id}-error`;
   const geocodeErrorId = `${id}-geocode-error`;
@@ -111,7 +111,7 @@ export function PlaceAutocomplete({
   }, []);
 
   function selectMatch(match: GeocodeMatch) {
-    const place = matchToPlace(match, locale);
+    const place = matchToPlace(match, messages.placeKind);
     onChange(place);
     setDraft(place.name);
     setEditing(false);
@@ -255,7 +255,7 @@ export function PlaceAutocomplete({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate">
-                      {localizePlaceName(match.name, locale)}
+                      {localizePlaceName(match.name, messages.placeKind)}
                     </span>
                     {subtitle && (
                       <span className="suggest-sub mt-0.5 block truncate text-xs text-ink-muted">

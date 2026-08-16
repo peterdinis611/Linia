@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { HallLoader } from "@/components/status/HallLoader";
-import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/i18n/provider";
 import { transitAgencies } from "@/lib/carriers";
 import { isTransitMode, legName } from "@/lib/format";
@@ -208,20 +207,19 @@ export function RouteMap({
           {(carriers.length > 0 || transitLegs.length > 0) && (
             <div className="mt-1.5 flex flex-wrap gap-1">
               {carriers.map((name) => (
-                <Badge key={name} variant="secondary" className="max-w-[12rem]">
-                  <span className="truncate">{name}</span>
-                </Badge>
+                <span key={name} className="map-chip">
+                  {name}
+                </span>
               ))}
               {transitLegs.map((leg, index) => (
-                <Badge
+                <span
                   key={`${leg.startTime}-${index}`}
-                  variant="outline"
-                  className="font-mono text-[10px]"
+                  className="map-chip map-chip-line"
                 >
                   {legName(leg) && legName(leg) !== "Walk"
                     ? legName(leg)
                     : t(`modes.${leg.mode}`)}
-                </Badge>
+                </span>
               ))}
             </div>
           )}

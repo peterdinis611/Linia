@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { defaultLocale, locales } from "@/i18n/config";
 import {
+  hallJsonLd,
+  hallLlmsTxt,
+  hallMetadata,
   hallRobots,
   hallSitemap,
   languageAlternateUrls,
@@ -9,6 +12,8 @@ import {
   localeUrl,
   siteUrl,
 } from "@/lib/seo";
+import { en } from "@/i18n/messages/en";
+import { sk } from "@/i18n/messages/sk";
 
 describe("site URLs", () => {
   it("joins origin and path without a double slash", () => {
@@ -79,5 +84,73 @@ describe("sitemap.xml", () => {
     expect(urls.some((url) => url.includes("?"))).toBe(false);
     expect(urls).not.toContain(siteUrl("/"));
     expect(urls.some((url) => url.includes("ticket-og"))).toBe(false);
+  });
+});
+
+describe("hall metadata", () => {
+  it("prints description, canonical, og:image, and twitter card", () => {
+    const meta = hallMetadata("en", en);
+    expect(meta.description).toBe(en.meta.description);
+    expect(meta.alternates?.canonical).toBe(localeUrl("en"));
+    expect(meta.openGraph?.url).toBe(localeUrl("en"));
+    expect(meta.openGraph?.description).toBe(en.meta.description);
+    expect(meta.openGraph?.images).toEqual([
+      {
+        url: localeOgImagePath("en"),
+        width: 1200,
+        height: 630,
+        alt: en.meta.title,
+        type: "image/png",
+      },
+    ]);
+    expect(meta.twitter?.images).toEqual([localeOgImagePath("en")]);
+    expect(meta.alternates?.languages?.sk).toBe(localeUrl("sk"));
+  });
+
+  it("keeps the Slovak description on the Slovak hall", () => {
+    const meta = hallMetadata("sk", sk);
+    expect(meta.description).toBe(sk.meta.description);
+    expect(meta.alternates?.canonical).toBe(localeUrl("sk"));
+    expect(meta.openGraph?.locale).toBe("sk_SK");
+  });
+});
+
+describe("structured data", () => {
+  it("describes the hall as a free travel app with a page and a logo", () => {
+    const graph = hallJsonLd("sk", sk)["@graph"];
+    const types = graph.map((node) => node["@type"]);
+    expect(types).toEqual([
+      "Organization",
+      "WebSite",
+      "WebPage",
+      "WebApplication",
+    ]);
+
+    const page = graph.find((node) => node["@type"] === "WebPage");
+    expect(page).toMatchObject({
+      url: localeUrl("sk"),
+      name: sk.meta.title,
+      description: sk.meta.description,
+      inLanguage: "sk",
+    });
+
+    const org = graph.find((node) => node["@type"] === "Organization");
+    expect(org).toMatchObject({
+      name: "Linia",
+      logo: { url: siteUrl("/apple-icon") },
+    });
+  });
+});
+
+describe("llms.txt", () => {
+  it("lists every hall and points crawlers at the sitemap", () => {
+    const text = hallLlmsTxt();
+    expect(text).toContain("# Linia");
+    expect(text).toContain(localeUrl("en"));
+    expect(text).toContain(localeUrl("sk"));
+    expect(text).toContain(localeUrl("uk"));
+    expect(text).toContain("Slovenčina");
+    expect(text).toContain(siteUrl("/sitemap.xml"));
+    expect(text).toContain(siteUrl("/robots.txt"));
   });
 });

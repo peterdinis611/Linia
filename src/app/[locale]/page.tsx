@@ -8,6 +8,7 @@ import {
 import { isLocale, localeOg } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { interpolate } from "@/i18n/translate";
+import { OG_IMAGE_SIZE } from "@/lib/seo";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -41,7 +42,7 @@ export async function generateMetadata({
         description,
         type: "website",
         locale: localeOg[locale],
-        images: [{ url: image, width: 1200, height: 630, alt: title }],
+        images: [{ url: image, ...OG_IMAGE_SIZE, alt: title }],
       },
       twitter: {
         card: "summary_large_image",
@@ -76,7 +77,7 @@ export async function generateMetadata({
       description,
       type: "website",
       locale: localeOg[locale],
-      images: [{ url: image, width: 1200, height: 630, alt: title }],
+      images: [{ url: image, ...OG_IMAGE_SIZE, alt: title }],
     },
     twitter: {
       card: "summary_large_image",

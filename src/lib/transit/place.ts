@@ -1,13 +1,14 @@
 import { localizePlaceName } from "@/i18n/place-name";
+import type { Messages } from "@/i18n/messages/en";
 import { areaLabel, type GeocodeMatch, type SelectedPlace } from "./types";
 
 export function matchToPlace(
   match: GeocodeMatch,
-  locale?: string,
+  kinds?: Messages["placeKind"],
 ): SelectedPlace {
   return {
     id: match.id,
-    name: locale ? localizePlaceName(match.name, locale) : match.name,
+    name: kinds ? localizePlaceName(match.name, kinds) : match.name,
     type: match.type,
     lat: match.lat,
     lon: match.lon,

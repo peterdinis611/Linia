@@ -1,3 +1,5 @@
+import { OG_IMAGE_SIZE } from "@/lib/seo";
+
 type OgCardProps = {
   kicker: string;
   headline: string;
@@ -5,7 +7,7 @@ type OgCardProps = {
   to?: string;
 };
 
-export const OG_SIZE = { width: 1200, height: 630 };
+export const OG_SIZE = OG_IMAGE_SIZE;
 
 export function OgCard({ kicker, headline, from, to }: OgCardProps) {
   const route = from && to ? `${from}  →  ${to}` : null;
