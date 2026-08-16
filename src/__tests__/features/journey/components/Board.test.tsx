@@ -8,7 +8,9 @@ import { EmptyBoard, SearchingBoard, StationClock } from "@/features/journey/com
 describe("StationClock", () => {
   it("prints the station clock kicker", () => {
     renderHall(<StationClock />);
-    expect(screen.getByTestId("station-clock")).toHaveTextContent("Station clock");
+    const clock = screen.getByTestId("station-clock");
+    expect(clock).toHaveTextContent("Station clock");
+    expect(clock).toHaveClass("board-clock");
   });
 });
 

@@ -67,4 +67,14 @@ describe("HallWhen", () => {
     await user.click(screen.getByTestId("hall-clock-minute-45"));
     expect(screen.getByTestId("journey-time")).toHaveTextContent("21:45");
   });
+
+  it("prints the time on a paper stamp", () => {
+    renderHall(
+      <HallWhen datetime="2026-08-14T10:54" leaveNow={false} onChange={vi.fn()} />,
+    );
+    const stamp = screen.getByTestId("journey-time");
+    expect(stamp).toHaveClass("hall-when-time");
+    expect(stamp).toHaveTextContent("Time");
+    expect(stamp).toHaveTextContent("10:54");
+  });
 });
