@@ -1,13 +1,13 @@
+import { format } from "date-fns";
 import { formatTime, isTransitMode, legName } from "@/lib/format";
 import type { Itinerary, SelectedPlace } from "@/lib/transit/types";
 
-function pad(value: number) {
-  return String(value).padStart(2, "0");
-}
-
 function toUtcStamp(iso: string) {
   const date = new Date(iso);
-  return `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}T${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}${pad(date.getUTCSeconds())}Z`;
+  return format(
+    new Date(date.getTime() + date.getTimezoneOffset() * 60_000),
+    "yyyyMMdd'T'HHmmss'Z'",
+  );
 }
 
 function escapeIcs(value: string) {

@@ -1,3 +1,11 @@
+import {
+  differenceInSeconds,
+  format,
+  isSameDay,
+  isValid,
+  parse,
+  startOfDay,
+} from "date-fns";
 import type { Leg, TransitMode } from "./transit/types";
 
 const MODE_COLORS: Record<string, string> = {
@@ -66,7 +74,7 @@ export function formatDuration(seconds: number, t?: TranslateFn): string {
 export function formatTime(iso: string | undefined, locale?: string): string {
   if (!iso) return "—";
   const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "—";
+  if (!isValid(date)) return "—";
   return new Intl.DateTimeFormat(locale, {
     hour: "2-digit",
     minute: "2-digit",
@@ -81,22 +89,25 @@ export function formatClockRange(
   return `${formatTime(startIso, locale)} – ${formatTime(endIso, locale)}`;
 }
 
+export function delayMinutesBetween(
+  actualIso: string,
+  scheduledIso: string,
+): number | null {
+  const actual = new Date(actualIso);
+  const scheduled = new Date(scheduledIso);
+  if (!isValid(actual) || !isValid(scheduled)) return null;
+  const minutes = Math.round(differenceInSeconds(actual, scheduled) / 60);
+  return minutes === 0 ? null : minutes;
+}
+
 export function delayMinutes(leg: Leg): number | null {
   if (!leg.realTime) return null;
-  const actual = new Date(leg.startTime).getTime();
-  const scheduled = new Date(leg.scheduledStartTime).getTime();
-  if (Number.isNaN(actual) || Number.isNaN(scheduled)) return null;
-  const minutes = Math.round((actual - scheduled) / 60000);
-  return minutes === 0 ? null : minutes;
+  return delayMinutesBetween(leg.startTime, leg.scheduledStartTime);
 }
 
 export function arrivalDelayMinutes(leg: Leg): number | null {
   if (!leg.realTime) return null;
-  const actual = new Date(leg.endTime).getTime();
-  const scheduled = new Date(leg.scheduledEndTime).getTime();
-  if (Number.isNaN(actual) || Number.isNaN(scheduled)) return null;
-  const minutes = Math.round((actual - scheduled) / 60000);
-  return minutes === 0 ? null : minutes;
+  return delayMinutesBetween(leg.endTime, leg.scheduledEndTime);
 }
 
 export function formatDistance(meters: number | undefined): string | null {
@@ -174,15 +185,32 @@ export function isTransitMode(mode: TransitMode): boolean {
   return mode !== "WALK" && mode !== "BIKE" && mode !== "CAR";
 }
 
+export const hallDateTimeFormat = "yyyy-MM-dd'T'HH:mm";
+
+export function parseHallDateTime(value: string, fallback = new Date()): Date {
+  const hallStamp = value.slice(0, 16);
+  const rest = value.slice(16);
+  const looksLocal =
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(hallStamp) &&
+    !/[zZ]|[+-]\d{2}:?\d{2}/.test(rest);
+  if (looksLocal) {
+    const parsed = parse(hallStamp, hallDateTimeFormat, fallback);
+    if (isValid(parsed)) return parsed;
+  }
+  const iso = new Date(value);
+  return isValid(iso) ? iso : fallback;
+}
+
 export function toLocalDateTimeValue(date = new Date()): string {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  return format(date, hallDateTimeFormat);
 }
 
 export function startOfLocalDay(value: string) {
-  return `${value.slice(0, 10)}T00:00`;
+  return format(startOfDay(parseHallDateTime(value)), hallDateTimeFormat);
 }
 
 export function isoOnLocalDate(iso: string, stamp: string) {
-  return toLocalDateTimeValue(new Date(iso)).slice(0, 10) === stamp.slice(0, 10);
+  const instant = new Date(iso);
+  if (!isValid(instant)) return false;
+  return isSameDay(instant, parseHallDateTime(stamp));
 }

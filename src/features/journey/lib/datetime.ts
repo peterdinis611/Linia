@@ -1,4 +1,23 @@
-import { toLocalDateTimeValue } from "@/lib/format";
+import {
+  addDays,
+  eachDayOfInterval,
+  format,
+  getDate,
+  getHours,
+  getMinutes,
+  getMonth,
+  getYear,
+  isSameMonth,
+  isValid,
+  parse,
+  startOfMonth,
+  startOfWeek,
+} from "date-fns";
+import {
+  hallDateTimeFormat,
+  parseHallDateTime,
+  toLocalDateTimeValue,
+} from "@/lib/format";
 
 export type DateTimeParts = {
   year: number;
@@ -15,60 +34,58 @@ export type CalendarCell = {
   inMonth: boolean;
 };
 
-const pad = (n: number) => String(n).padStart(2, "0");
+function partsFromDate(date: Date): DateTimeParts {
+  return {
+    year: getYear(date),
+    month: getMonth(date) + 1,
+    day: getDate(date),
+    hour: getHours(date),
+    minute: getMinutes(date),
+  };
+}
 
 export function splitDateTime(value: string): DateTimeParts {
-  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(value);
-  if (!match) return splitDateTime(toLocalDateTimeValue());
-  return {
-    year: Number(match[1]),
-    month: Number(match[2]),
-    day: Number(match[3]),
-    hour: Number(match[4]),
-    minute: Number(match[5]),
-  };
+  const parsed = parse(value, hallDateTimeFormat, new Date());
+  if (!isValid(parsed)) return splitDateTime(toLocalDateTimeValue());
+  return partsFromDate(parsed);
 }
 
 export function joinDateTime(parts: DateTimeParts) {
-  return `${parts.year}-${pad(parts.month)}-${pad(parts.day)}T${pad(parts.hour)}:${pad(parts.minute)}`;
+  return format(
+    new Date(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute),
+    hallDateTimeFormat,
+  );
 }
 
 export function shiftDate(parts: DateTimeParts, days: number) {
-  const date = new Date(parts.year, parts.month - 1, parts.day + days);
-  return {
-    ...parts,
-    year: date.getFullYear(),
-    month: date.getMonth() + 1,
-    day: date.getDate(),
-  };
+  const next = addDays(
+    new Date(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute),
+    days,
+  );
+  return { ...parts, ...partsFromDate(next) };
 }
 
 export function monthCells(year: number, month: number): CalendarCell[] {
-  const start = new Date(year, month - 1, 1);
-  const weekday = (start.getDay() + 6) % 7;
-  const cursor = new Date(year, month - 1, 1 - weekday);
-  return Array.from({ length: 42 }, (_, index) => {
-    const date = new Date(cursor);
-    date.setDate(cursor.getDate() + index);
-    return {
-      year: date.getFullYear(),
-      month: date.getMonth() + 1,
-      day: date.getDate(),
-      inMonth: date.getMonth() + 1 === month,
-    };
-  });
+  const monthDate = new Date(year, month - 1, 1);
+  const start = startOfWeek(startOfMonth(monthDate), { weekStartsOn: 1 });
+  return eachDayOfInterval({ start, end: addDays(start, 41) }).map((date) => ({
+    year: getYear(date),
+    month: getMonth(date) + 1,
+    day: getDate(date),
+    inMonth: isSameMonth(date, monthDate),
+  }));
 }
 
 export function weekdayLabels(locale: string) {
-  return Array.from({ length: 7 }, (_, index) =>
-    new Intl.DateTimeFormat(locale, { weekday: "short" }).format(
-      new Date(2021, 5, 7 + index),
-    ),
+  const monday = new Date(2021, 5, 7);
+  return eachDayOfInterval({ start: monday, end: addDays(monday, 6) }).map(
+    (date) =>
+      new Intl.DateTimeFormat(locale, { weekday: "short" }).format(date),
   );
 }
 
 export function addDaysToDateTime(value: string, days: number) {
-  return joinDateTime(shiftDate(splitDateTime(value), days));
+  return format(addDays(parseHallDateTime(value), days), hallDateTimeFormat);
 }
 
 export function sameDay(

@@ -3,6 +3,7 @@
 import { useI18n } from "@/i18n/provider";
 import {
   contrastText,
+  delayMinutesBetween,
   formatTime,
   isTransitMode,
   modeColor,
@@ -42,14 +43,10 @@ export function StationBoard({
           event.place.scheduledArrival;
         const scheduled =
           event.place.scheduledDeparture ?? event.place.scheduledArrival ?? when;
-        const delayMinutesValue = (() => {
-          if (!event.realTime || !when || !scheduled) return null;
-          const actual = new Date(when).getTime();
-          const planned = new Date(scheduled).getTime();
-          if (Number.isNaN(actual) || Number.isNaN(planned)) return null;
-          const minutes = Math.round((actual - planned) / 60_000);
-          return minutes === 0 ? null : minutes;
-        })();
+        const delayMinutesValue =
+          event.realTime && when && scheduled
+            ? delayMinutesBetween(when, scheduled)
+            : null;
         const background =
           routeHex(event.routeColor) ?? modeColor(event.mode);
         const label =

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type RefObject } from "react";
+import { format } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Popover } from "radix-ui";
 import { useI18n } from "@/i18n/provider";
@@ -70,7 +71,10 @@ export function HallWhen({
     month: "long",
     year: "numeric",
   }).format(new Date(view.year, view.month - 1, 1));
-  const timeLabel = `${String(parts.hour).padStart(2, "0")}:${String(parts.minute).padStart(2, "0")}`;
+  const timeLabel = format(
+    new Date(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute),
+    "HH:mm",
+  );
 
   return (
     <div className="hall-when" data-day={allDay}>

@@ -1,3 +1,4 @@
+import { isValid } from "date-fns";
 import { z } from "zod";
 
 export const locationTypeSchema = z.enum(["ADDRESS", "PLACE", "STOP"]);
@@ -31,7 +32,7 @@ export const geocodeInputSchema = z.object({
 
 function isValidDateTime(value: string | undefined) {
   if (!value) return true;
-  return !Number.isNaN(new Date(value).getTime());
+  return isValid(new Date(value));
 }
 
 function isDifferentPlace(
