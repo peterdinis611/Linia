@@ -1,11 +1,20 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { berlin, prague, railItinerary } from "@/test/fixtures";
 import { renderHall } from "@/test/render";
 import { ItineraryDetail } from "@/features/journey/components/ItineraryDetail";
 
+const fetchTrip = vi.hoisted(() => vi.fn());
+
+vi.mock("@/lib/transit/queries", () => ({
+  fetchTrip,
+}));
+
 describe("ItineraryDetail", () => {
+  beforeEach(() => {
+    fetchTrip.mockReset();
+  });
   it("prints a service notice on the strip", () => {
     const itinerary = railItinerary({
       legs: [
@@ -85,5 +94,24 @@ describe("ItineraryDetail", () => {
     });
     renderHall(<ItineraryDetail itinerary={itinerary} />);
     expect(screen.getByTestId("leg-now")).toHaveTextContent("Now");
+  });
+
+  it("does not fetch trip stops until the stamp is pressed", async () => {
+    const user = userEvent.setup();
+    fetchTrip.mockResolvedValue(railItinerary());
+    const itinerary = railItinerary({
+      legs: [
+        {
+          ...railItinerary().legs[0]!,
+          intermediateStops: [],
+        },
+      ],
+    });
+    renderHall(<ItineraryDetail itinerary={itinerary} />);
+
+    expect(fetchTrip).not.toHaveBeenCalled();
+    await user.click(screen.getByTestId("load-stops"));
+    expect(fetchTrip).toHaveBeenCalledWith("trip-ec-172");
+    expect(await screen.findByText("1 stop")).toBeInTheDocument();
   });
 });

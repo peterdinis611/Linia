@@ -68,6 +68,19 @@ export const localeOg: Record<Locale, string> = {
   uk: "uk_UA",
 };
 
+const latinExtLocales: ReadonlySet<Locale> = new Set([
+  "sk",
+  "cs",
+  "pl",
+  "hu",
+  "ro",
+  "hr",
+]);
+
+export function localeNeedsLatinExt(locale: Locale): boolean {
+  return latinExtLocales.has(locale);
+}
+
 export function isLocale(value: string | undefined | null): value is Locale {
   return value != null && (locales as readonly string[]).includes(value);
 }

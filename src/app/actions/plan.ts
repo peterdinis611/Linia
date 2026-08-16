@@ -15,7 +15,7 @@ import type { Itinerary } from "@/lib/transit/types";
 
 const DAY_SECONDS = 86_400;
 const DAY_ITINERARIES = 20;
-const MAX_DAY_PAGES = 5;
+const MAX_DAY_PAGES = 2;
 
 export const planJourneyAction = actionClient
   .inputSchema(planJourneyInputSchema)

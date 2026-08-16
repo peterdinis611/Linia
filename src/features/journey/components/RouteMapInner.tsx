@@ -213,6 +213,7 @@ export default function RouteMapInner({
       zoom={4}
       scrollWheelZoom
       zoomControl={false}
+      preferCanvas
       className="h-full w-full"
     >
       <MapTileSkin skin={tileSkin} />

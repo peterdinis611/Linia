@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { HallLoader } from "@/components/status/HallLoader";
 import { Badge } from "@/components/ui/badge";
@@ -63,7 +63,9 @@ export function RouteMap({
   onAssignPending,
 }: RouteMapProps) {
   const { t } = useI18n();
+  const stageRef = useRef<HTMLDivElement>(null);
   const [full, setFull] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
   const viaNames =
     routeMode === "via"
       ? via
@@ -88,6 +90,30 @@ export function RouteMap({
   );
 
   useEffect(() => {
+    if (pickMode !== "idle" || full) setMapReady(true);
+  }, [pickMode, full]);
+
+  useEffect(() => {
+    if (mapReady) return;
+    const node = stageRef.current;
+    if (!node) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setMapReady(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setMapReady(true);
+        observer.disconnect();
+      },
+      { rootMargin: "120px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [mapReady]);
+
+  useEffect(() => {
     function onKey(event: KeyboardEvent) {
       if (event.key !== "Escape") return;
       if (full) {
@@ -102,23 +128,28 @@ export function RouteMap({
 
   return (
     <div
+      ref={stageRef}
       className={`map-stage${pickMode !== "idle" ? " map-stage-picking" : ""}${full ? " map-stage-full" : ""}`}
       data-tour="map"
     >
-      <RouteMapInner
-        itinerary={itinerary}
-        from={from}
-        to={to}
-        via={via}
-        pendingPick={pendingPick}
-        highlightCarriers={highlightCarriers}
-        fitKey={fitKey}
-        pickMode={pickMode}
-        full={full}
-        onMapClick={onMapClick}
-        onMarkerDrag={onMarkerDrag}
-        onToggleFull={() => setFull((value) => !value)}
-      />
+      {mapReady ? (
+        <RouteMapInner
+          itinerary={itinerary}
+          from={from}
+          to={to}
+          via={via}
+          pendingPick={pendingPick}
+          highlightCarriers={highlightCarriers}
+          fitKey={fitKey}
+          pickMode={pickMode}
+          full={full}
+          onMapClick={onMapClick}
+          onMarkerDrag={onMarkerDrag}
+          onToggleFull={() => setFull((value) => !value)}
+        />
+      ) : (
+        <div className="h-full w-full" data-testid="map-pending" />
+      )}
       <div className="pointer-events-none absolute top-3 left-3 z-[500] right-16">
         <div className="map-pin-bar pointer-events-auto">
           <PickStamp

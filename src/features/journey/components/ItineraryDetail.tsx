@@ -92,12 +92,13 @@ function LegBlock({
   const color = legColor(leg);
   const transit = isTransitMode(leg.mode);
   const phase = legPhase(leg, now);
+  const [wantStops, setWantStops] = useState(false);
   const {
     stops: intermediates,
     loading: loadingStops,
     failed: failedStops,
     retry: retryStops,
-  } = useIntermediateStops(leg);
+  } = useIntermediateStops(leg, wantStops);
   const delay = delayMinutes(leg);
   const arriveDelay = arrivalDelayMinutes(leg);
   const liveStop = phase === "current" ? currentStopIndex(intermediates, now) : -1;
@@ -190,6 +191,29 @@ function LegBlock({
         </div>
       </div>
 
+      {!wantStops &&
+        intermediates.length === 0 &&
+        !loadingStops &&
+        !failedStops &&
+        Boolean(leg.tripId) && (
+        <p className="grid grid-cols-[3.4rem_14px_1fr] gap-x-3 text-xs">
+          <span />
+          <span className="flex justify-center">
+            <span className="w-[3px] min-h-4" style={{ background: color }} />
+          </span>
+          <span className="py-1">
+            <button
+              type="button"
+              className="stamp"
+              data-testid="load-stops"
+              onClick={() => setWantStops(true)}
+            >
+              {t("detail.retryStops")}
+            </button>
+          </span>
+        </p>
+      )}
+
       {loadingStops && intermediates.length === 0 && (
         <p className="grid grid-cols-[3.4rem_14px_1fr] gap-x-3 text-xs text-ink-muted">
           <span />
@@ -208,7 +232,14 @@ function LegBlock({
           </span>
           <span className="flex flex-wrap items-center gap-2 py-1">
             <span className="text-ink-muted">{t("detail.stopsFailed")}</span>
-            <button type="button" className="stamp" onClick={retryStops}>
+            <button
+              type="button"
+              className="stamp"
+              onClick={() => {
+                setWantStops(true);
+                retryStops();
+              }}
+            >
               {t("detail.retryStops")}
             </button>
           </span>
@@ -271,7 +302,10 @@ function LegBlock({
   );
 }
 
-function useIntermediateStops(leg: Leg): {
+function useIntermediateStops(
+  leg: Leg,
+  enabled: boolean,
+): {
   stops: Place[];
   loading: boolean;
   failed: boolean;
@@ -287,6 +321,10 @@ function useIntermediateStops(leg: Leg): {
     setStops(existing);
     setFailed(false);
     if (!isTransitMode(leg.mode) || existing.length > 0 || !leg.tripId) {
+      setLoading(false);
+      return;
+    }
+    if (!enabled) {
       setLoading(false);
       return;
     }
@@ -310,7 +348,7 @@ function useIntermediateStops(leg: Leg): {
       });
 
     return () => controller.abort();
-  }, [leg, tick]);
+  }, [leg, tick, enabled]);
 
   return {
     stops,

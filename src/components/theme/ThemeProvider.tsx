@@ -8,7 +8,12 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { themeCookie, type ResolvedTheme, type Theme } from "@/lib/theme";
+import {
+  themeCookie,
+  themeFromCookieString,
+  type ResolvedTheme,
+  type Theme,
+} from "@/lib/theme";
 
 type ThemeContextValue = {
   theme: Theme;
@@ -37,17 +42,25 @@ function applyResolved(resolved: ResolvedTheme) {
 
 export function ThemeProvider({
   children,
-  initialTheme = "system",
+  initialTheme,
 }: {
   children: ReactNode;
   initialTheme?: Theme;
 }) {
-  const [theme, setThemeState] = useState<Theme>(initialTheme);
+  const [theme, setThemeState] = useState<Theme>(initialTheme ?? "system");
   const [resolved, setResolved] = useState<ResolvedTheme>(() =>
     initialTheme === "dark" ? "dark" : "light",
   );
+  const [synced, setSynced] = useState(initialTheme != null);
 
   useEffect(() => {
+    if (initialTheme != null) return;
+    setThemeState(themeFromCookieString(document.cookie));
+    setSynced(true);
+  }, [initialTheme]);
+
+  useEffect(() => {
+    if (!synced) return;
     const apply = () => {
       const next = resolveTheme(theme);
       applyResolved(next);
@@ -59,7 +72,7 @@ export function ThemeProvider({
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     media.addEventListener("change", apply);
     return () => media.removeEventListener("change", apply);
-  }, [theme]);
+  }, [theme, synced]);
 
   const value = useMemo(
     () => ({
