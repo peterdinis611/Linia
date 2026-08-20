@@ -21,8 +21,12 @@ import { useJourneySearch } from "../hooks/use-journey-search";
 export function JourneySearch() {
   const search = useJourneySearch();
   const { t } = useI18n();
+  const [mapOpen, setMapOpen] = useState(false);
   const startTour = useHallTour({
-    onShowMap: () => search.revealMap(),
+    onShowMap: () => {
+      setMapOpen(true);
+      search.revealMap();
+    },
     onShowBoard: () => {
       document
         .querySelector("[data-tour='board']")
@@ -40,9 +44,13 @@ export function JourneySearch() {
     return () => window.clearInterval(id);
   }, [search.liveAt]);
 
+  useEffect(() => {
+    if (search.pickMode !== "idle") setMapOpen(true);
+  }, [search.pickMode]);
+
   return (
     <>
-    <div className="no-print flex h-dvh flex-col overflow-hidden">
+    <div className="hall-shell no-print flex h-dvh flex-col overflow-hidden">
       <div className="signal-bar shrink-0" aria-hidden="true" />
 
       <header data-tour="hall" className="shrink-0 border-b border-rule px-4 py-4 sm:px-6">
@@ -69,7 +77,7 @@ export function JourneySearch() {
         </div>
       </header>
 
-      <main className="hall-body">
+      <main className="hall-body" data-map={mapOpen ? "open" : "pocket"}>
         <section className="panel-scroll min-h-0 min-w-0 overflow-x-hidden overflow-y-auto border-rule p-4 sm:p-6 lg:border-r">
           <div className="flex flex-col gap-6">
             <SearchForm
@@ -315,7 +323,7 @@ export function JourneySearch() {
           </div>
         </section>
 
-        <section className="hall-map">
+        <section className="hall-map" data-tour="map">
           <RouteMap
             itinerary={search.selected}
             from={search.from}
@@ -327,6 +335,16 @@ export function JourneySearch() {
             pickMode={search.pickMode}
             pendingPick={search.pendingPick}
             pinBusy={search.pinBusy}
+            pocketed={!mapOpen}
+            onTogglePocket={() => {
+              if (mapOpen) {
+                search.setPickMode("idle");
+                setMapOpen(false);
+                return;
+              }
+              setMapOpen(true);
+              search.revealMap();
+            }}
             onPickModeChange={search.setPickMode}
             onMapClick={search.handleMapClick}
             onMarkerDrag={search.handleMarkerDrag}
@@ -335,30 +353,34 @@ export function JourneySearch() {
         </section>
       </main>
 
-      <footer className="shrink-0 border-t border-rule px-4 py-3 text-center text-[11px] leading-5 text-ink-muted sm:px-6">
-        <HowToButton onOpen={startTour} />
-        <span className="mx-2 text-rule-strong" aria-hidden="true">
-          ·
-        </span>
-        {t("footer.printedFrom")}{" "}
-        <a
-          href="https://transitous.org/sources/"
-          className="text-ink underline decoration-rule-strong underline-offset-2 hover:text-signal"
-          target="_blank"
-          rel="noreferrer"
-        >
-          {t("footer.sources")}
-        </a>
-        . {t("footer.mapCopyright")}{" "}
-        <a
-          href="https://www.openstreetmap.org/copyright"
-          className="text-ink underline decoration-rule-strong underline-offset-2 hover:text-signal"
-          target="_blank"
-          rel="noreferrer"
-        >
-          OpenStreetMap
-        </a>{" "}
-        {t("footer.contributors")}
+      <footer className="hall-foot">
+        <p className="hall-foot-nav">
+          <HowToButton onOpen={startTour} />
+          <span className="hall-foot-dot" aria-hidden="true">
+            ·
+          </span>
+          {t("footer.printedFrom")}{" "}
+          <a
+            href="https://transitous.org/sources/"
+            className="hall-foot-link"
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t("footer.sources")}
+          </a>
+        </p>
+        <p className="hall-foot-legal">
+          {t("footer.mapCopyright")}{" "}
+          <a
+            href="https://www.openstreetmap.org/copyright"
+            className="hall-foot-link"
+            target="_blank"
+            rel="noreferrer"
+          >
+            OpenStreetMap
+          </a>{" "}
+          {t("footer.contributors")}
+        </p>
       </footer>
     </div>
     {search.routeMode === "board" && search.selected ? (

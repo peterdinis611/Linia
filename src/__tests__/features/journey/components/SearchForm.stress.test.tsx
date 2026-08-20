@@ -60,7 +60,7 @@ describe("SearchForm stress", () => {
     const arriveBy = screen.getByRole("button", { name: "Arrive by" });
     const allDay = screen.getByTestId("all-day");
     const rail = screen.getByRole("button", { name: "Rail" });
-    const coach = screen.getByRole("button", { name: "Coach" });
+    const coach = screen.getByRole("button", { name: "Bus" });
     const direct = screen.getByRole("button", { name: "Direct" });
     const find = screen.getByRole("button", { name: "Find connections" });
 

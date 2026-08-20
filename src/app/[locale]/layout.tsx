@@ -30,6 +30,16 @@ export async function generateMetadata({
   return hallMetadata(locale, getDictionary(locale));
 }
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover" as const,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f1eadc" },
+    { media: "(prefers-color-scheme: dark)", color: "#10161f" },
+  ],
+};
+
 export default async function LocaleLayout({
   children,
   params,

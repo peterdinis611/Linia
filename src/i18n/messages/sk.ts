@@ -105,7 +105,8 @@ export const sk: Messages = {
     useLocation: "Odkiaľ som",
     locating: "Hľadám zastávku…",
     geocodeFailed: "Miesta sa nepodarilo načítať. Skúste znova.",
-    pickFromList: "Vyberte stanicu zo zoznamu",
+    pickFromList: "Vyberte miesto zo zoznamu",
+    noPlaces: "Nič sa nenašlo. Skúste stanicu alebo mesto.",
     returnTrip: "Spiatočný",
     returnKicker: "Spiatočná pečiatka",
     outbound: "Tam",
@@ -206,6 +207,9 @@ export const sk: Messages = {
     here: "Tu som",
     fullscreen: "Celá mapa",
     exitFullscreen: "Zavrieť celú mapu",
+    unfold: "Rozložiť mapu",
+    fold: "Zložiť mapu",
+    pocketKicker: "Stenová mapa",
     approximate: "Čiara je približná, kým sa nevytlačí trasa naživo.",
   },
   results: {
@@ -291,6 +295,8 @@ export const sk: Messages = {
     STOP: "Zast.",
     ADDRESS: "Adr.",
     PLACE: "Miesto",
+    BUS: "Bus",
+    RAIL: "Vlak",
   },
   placeKind: {
     busStation: "autobusová stanica",

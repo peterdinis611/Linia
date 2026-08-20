@@ -105,7 +105,8 @@ export const nl: Messages = {
     useLocation: "Vanaf mijn locatie",
     locating: "Je halte zoeken…",
     geocodeFailed: "Plekken konden niet worden geladen. Probeer opnieuw.",
-    pickFromList: "Kies een station uit de lijst",
+    pickFromList: "Kies een plek uit de lijst",
+    noPlaces: "Niets gevonden. Probeer een station of stad.",
     returnTrip: "Terug",
     returnKicker: "Terugstempel",
     outbound: "Heen",
@@ -208,6 +209,9 @@ export const nl: Messages = {
     here: "Ik ben hier",
     fullscreen: "Hele kaart",
     exitFullscreen: "Hele kaart sluiten",
+    unfold: "Kaart uitvouwen",
+    fold: "Kaart vouwen",
+    pocketKicker: "Wandkaart",
     approximate: "De lijn is bij benadering tot het actuele pad drukt.",
   },
   results: {
@@ -293,6 +297,8 @@ export const nl: Messages = {
     STOP: "Halt",
     ADDRESS: "Adr.",
     PLACE: "Plek",
+    BUS: "Bus",
+    RAIL: "Trein",
   },
   placeKind: {
     busStation: "busstation",

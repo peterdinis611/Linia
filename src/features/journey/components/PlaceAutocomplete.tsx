@@ -1,18 +1,29 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { createPortal, flushSync } from "react-dom";
 import { useI18n } from "@/i18n/provider";
 import { localizePlaceName } from "@/i18n/place-name";
 import { matchToPlace } from "@/lib/transit/place";
 import { searchPlaces } from "@/lib/transit/queries";
 import { geocodeInputSchema } from "@/lib/schemas";
+import { stopModeKind } from "@/lib/transit/geocode-rank";
 import { areaLabel, type GeocodeMatch, type SelectedPlace } from "@/lib/transit/types";
+
+const COMMIT_FIELDS = "linia-commit-fields";
 
 type PlaceAutocompleteProps = {
   label: string;
   placeholder: string;
   value: SelectedPlace | null;
   error?: string;
+  bias?: { lat: number; lon: number } | null;
   onChange: (place: SelectedPlace | null) => void;
 };
 
@@ -21,6 +32,7 @@ export function PlaceAutocomplete({
   placeholder,
   value,
   error,
+  bias,
   onChange,
 }: PlaceAutocompleteProps) {
   const { locale, messages, t } = useI18n();
@@ -28,6 +40,8 @@ export function PlaceAutocomplete({
   const errorId = `${id}-error`;
   const geocodeErrorId = `${id}-geocode-error`;
   const rootRef = useRef<HTMLDivElement>(null);
+  const fieldRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const [draft, setDraft] = useState(value?.name ?? "");
   const [editing, setEditing] = useState(false);
   const [open, setOpen] = useState(false);
@@ -35,11 +49,18 @@ export function PlaceAutocomplete({
   const [results, setResults] = useState<GeocodeMatch[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [fetchError, setFetchError] = useState(false);
+  const [listPos, setListPos] = useState({ top: 0, left: 0, width: 0, maxHeight: 272 });
 
   const query = value && !editing ? value.name : draft;
   const canClear = query.trim().length > 0;
   const showList =
     editing && open && draft.trim().length >= 2 && results.length > 0;
+  const emptyList =
+    editing &&
+    !loading &&
+    !fetchError &&
+    draft.trim().length >= 2 &&
+    results.length === 0;
 
   useEffect(() => {
     if (value) {
@@ -72,6 +93,7 @@ export function PlaceAutocomplete({
         const matches = await searchPlaces(
           parsed.data.query,
           parsed.data.language ?? locale,
+          bias,
         );
         if (controller.signal.aborted) return;
         setResults(matches);
@@ -92,22 +114,52 @@ export function PlaceAutocomplete({
       controller.abort();
       window.clearTimeout(handle);
     };
-  }, [draft, editing, locale]);
+  }, [bias?.lat, bias?.lon, draft, editing, locale]);
 
   useEffect(() => {
     if (!showList && !value) return;
     window.dispatchEvent(new Event("linia-tour-fit"));
   }, [showList, value]);
 
-  useEffect(() => {
-    function onPointerDown(event: MouseEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-        setEditing(false);
-      }
+  useLayoutEffect(() => {
+    if (!showList) return;
+    function placeList() {
+      const field = fieldRef.current;
+      if (!field) return;
+      const rect = field.getBoundingClientRect();
+      const cta = document.querySelector(".search-cta");
+      const ctaTop = cta?.getBoundingClientRect().top ?? window.innerHeight;
+      const below = Math.min(ctaTop, window.innerHeight) - rect.bottom - 8;
+      const above = rect.top - 8;
+      const openUp = below < 160 && above > below;
+      const room = Math.max(0, openUp ? above : below);
+      const maxHeight = Math.min(272, Math.max(96, room));
+      setListPos({
+        top: openUp ? rect.top - 4 - maxHeight : rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+        maxHeight,
+      });
     }
-    document.addEventListener("mousedown", onPointerDown);
-    return () => document.removeEventListener("mousedown", onPointerDown);
+    placeList();
+    window.addEventListener("resize", placeList);
+    window.addEventListener("scroll", placeList, true);
+    return () => {
+      window.removeEventListener("resize", placeList);
+      window.removeEventListener("scroll", placeList, true);
+    };
+  }, [showList, results.length]);
+
+  useEffect(() => {
+    function onPointerDown(event: PointerEvent) {
+      const node = event.target as Node;
+      if (rootRef.current?.contains(node)) return;
+      if (listRef.current?.contains(node)) return;
+      setOpen(false);
+      setEditing(false);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
   }, []);
 
   function selectMatch(match: GeocodeMatch) {
@@ -117,6 +169,19 @@ export function PlaceAutocomplete({
     setEditing(false);
     setOpen(false);
   }
+
+  useEffect(() => {
+    function commit() {
+      if (value) return;
+      const match = results[activeIndex] ?? results[0];
+      if (!match || draft.trim().length < 2) return;
+      flushSync(() => {
+        selectMatch(match);
+      });
+    }
+    window.addEventListener(COMMIT_FIELDS, commit);
+    return () => window.removeEventListener(COMMIT_FIELDS, commit);
+  }, [activeIndex, draft, results, value]);
 
   function clearField() {
     setDraft("");
@@ -128,10 +193,14 @@ export function PlaceAutocomplete({
     onChange(null);
   }
 
-  const unmatched = !value && draft.trim().length > 0 && !loading && !fetchError;
-  const pickHint = unmatched ? t("search.pickFromList") : undefined;
+  const unmatched = !value && draft.trim().length > 0 && !loading && !fetchError && !editing;
+  const pickHint = unmatched
+    ? t("search.pickFromList")
+    : emptyList
+      ? t("search.noPlaces")
+      : undefined;
   const shownError = error
-    ? unmatched
+    ? unmatched || emptyList
       ? pickHint
       : error
     : pickHint;
@@ -147,7 +216,7 @@ export function PlaceAutocomplete({
       <label htmlFor={id} className="kicker mb-2 block">
         {label}
       </label>
-      <div className="relative">
+      <div ref={fieldRef} className="relative">
         <input
           id={id}
           role="combobox"
@@ -228,49 +297,80 @@ export function PlaceAutocomplete({
           {value.area}
         </p>
       ) : null}
-      {showList && (
-        <ul id={`${id}-list`} role="listbox" className="suggest">
-          {results.map((match, index) => {
-            const subtitle = areaLabel(match.areas);
-            return (
-              <li key={`${match.id}-${match.lat}-${match.lon}`}>
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={index === activeIndex}
-                  className="suggest-item flex w-full items-start gap-3 px-3 py-2.5 text-left text-sm"
-                  onMouseEnter={() => setActiveIndex(index)}
-                  onClick={() => selectMatch(match)}
-                >
-                  <span
-                    className={`mt-0.5 px-1.5 py-0.5 font-mono text-[10px] font-medium tracking-wider uppercase ${
-                      match.type === "STOP" ? "badge-stop" : "badge-place"
-                    }`}
-                  >
-                    {match.type === "STOP"
-                      ? t("placeType.STOP")
-                      : match.type === "ADDRESS"
-                        ? t("placeType.ADDRESS")
-                        : t("placeType.PLACE")}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate">
-                      {localizePlaceName(match.name, messages.placeKind)}
-                    </span>
-                    {subtitle && (
-                      <span className="suggest-sub mt-0.5 block truncate text-xs text-ink-muted">
-                        {subtitle}
+      {showList
+        ? createPortal(
+            <ul
+              ref={listRef}
+              id={`${id}-list`}
+              role="listbox"
+              className="suggest"
+              style={{
+                position: "fixed",
+                top: listPos.top,
+                left: listPos.left,
+                width: listPos.width,
+                maxHeight: listPos.maxHeight,
+                zIndex: 900,
+              }}
+            >
+              {results.map((match, index) => {
+                const subtitle = areaLabel(match.areas);
+                return (
+                  <li key={`${match.id}-${match.lat}-${match.lon}`}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={index === activeIndex}
+                      className="suggest-item flex w-full items-start gap-3 px-3 py-2.5 text-left text-sm"
+                      onMouseEnter={() => setActiveIndex(index)}
+                      onPointerDown={(event) => {
+                        event.preventDefault();
+                        selectMatch(match);
+                      }}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        selectMatch(match);
+                      }}
+                    >
+                      <span
+                        className={`mt-0.5 px-1.5 py-0.5 font-mono text-[10px] font-medium tracking-wider uppercase ${
+                          match.type === "STOP" ? "badge-stop" : "badge-place"
+                        }`}
+                      >
+                        {matchBadge(match, t)}
                       </span>
-                    )}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate">
+                          {localizePlaceName(match.name, messages.placeKind)}
+                        </span>
+                        {subtitle && (
+                          <span className="suggest-sub mt-0.5 block truncate text-xs text-ink-muted">
+                            {subtitle}
+                          </span>
+                        )}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>,
+            document.body,
+          )
+        : null}
     </div>
   );
+}
+
+function matchBadge(
+  match: GeocodeMatch,
+  t: (key: string) => string,
+) {
+  if (match.type === "ADDRESS") return t("placeType.ADDRESS");
+  if (match.type === "PLACE") return t("placeType.PLACE");
+  const kind = stopModeKind(match);
+  if (kind === "bus") return t("placeType.BUS");
+  if (kind === "rail") return t("placeType.RAIL");
+  return t("placeType.STOP");
 }
 
 function ClearIcon() {

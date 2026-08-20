@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n/provider";
 import type { JourneyFormFieldErrors } from "@/lib/schemas";
 import { MAX_VIA_STOPS } from "@/lib/transit/place";
@@ -119,6 +119,15 @@ export function SearchForm({
       night ||
       wantReturn,
   );
+
+  useEffect(() => {
+    const messages = Object.values(fieldErrors ?? {}).filter(Boolean);
+    if (messages.length === 0) return;
+    document
+      .querySelector("[data-testid='search-form'] .field-error")
+      ?.scrollIntoView({ block: "center" });
+  }, [fieldErrors]);
+
   const modeOptions: { value: Exclude<ModeFilter, "all">; label: string }[] = [
     { value: "train", label: t("search.modeRail") },
     { value: "bus", label: t("search.modeCoach") },
@@ -148,7 +157,9 @@ export function SearchForm({
       data-testid="search-form"
       onSubmit={(event) => {
         event.preventDefault();
-        if (!loading) onSearch();
+        if (loading) return;
+        window.dispatchEvent(new Event("linia-commit-fields"));
+        onSearch();
       }}
     >
       <div>
@@ -164,6 +175,7 @@ export function SearchForm({
           label={t("search.origin")}
           placeholder={t("search.originPlaceholder")}
           value={from}
+          bias={to}
           error={fieldErrors?.from ? t(fieldErrors.from) : undefined}
           onChange={onFromChange}
         />
@@ -219,6 +231,7 @@ export function SearchForm({
               label={t("search.destination")}
               placeholder={t("search.destinationPlaceholder")}
               value={to}
+              bias={from}
               error={fieldErrors?.to ? t(fieldErrors.to) : undefined}
               onChange={onToChange}
             />
@@ -264,6 +277,7 @@ export function SearchForm({
                   label={t("search.viaN", { n: index + 1 })}
                   placeholder={t("search.viaPlaceholder")}
                   value={stop}
+                  bias={from ?? to}
                   error={
                     fieldErrors?.[`via.${index}`]
                       ? t(fieldErrors[`via.${index}`]!)

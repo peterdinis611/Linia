@@ -165,6 +165,40 @@ export function useJourneySearch() {
   const claimedPlan = useRef("");
   const pinBusyRef = useRef(false);
   const planGen = useRef(0);
+  const searchSnap = useRef({
+    from,
+    to,
+    via,
+    routeMode,
+    leaveNow,
+    datetime,
+    arriveBy,
+    allDay,
+    modeFilter,
+    transferFilter,
+    accessible,
+    bike,
+    night,
+    wantReturn,
+    returnDatetime,
+  });
+  searchSnap.current = {
+    from,
+    to,
+    via,
+    routeMode,
+    leaveNow,
+    datetime,
+    arriveBy,
+    allDay,
+    modeFilter,
+    transferFilter,
+    accessible,
+    bike,
+    night,
+    wantReturn,
+    returnDatetime,
+  };
 
   const activeItineraries =
     hallLeg === "inbound" ? inboundItineraries : itineraries;
@@ -257,16 +291,20 @@ export function useJourneySearch() {
     setFrom(place);
     clearPlaceErrors();
     setPendingPick(null);
-    if (place) bumpFit();
-    else dropPlan();
+    if (place) {
+      setPickMode("idle");
+      bumpFit();
+    } else dropPlan();
   }
 
   function handleToChange(place: SelectedPlace | null, _source: PlaceSource = "form") {
     setTo(place);
     clearPlaceErrors();
     setPendingPick(null);
-    if (place) bumpFit();
-    else dropPlan();
+    if (place) {
+      setPickMode("idle");
+      bumpFit();
+    } else dropPlan();
   }
 
   function handleViaChange(index: number, place: SelectedPlace | null) {
@@ -835,22 +873,23 @@ export function useJourneySearch() {
   }
 
   async function handleSearch() {
+    const snap = searchSnap.current;
     await runPlan({
-      from,
-      to,
-      via: routeMode === "via" ? via : [],
-      leaveNow,
-      datetime,
-      arriveBy,
-      allDay,
-      modeFilter,
-      transferFilter,
-      accessible,
-      bike,
-      night,
-      wantReturn: routeMode !== "board" && wantReturn,
-      returnDatetime,
-      board: routeMode === "board",
+      from: snap.from,
+      to: snap.to,
+      via: snap.routeMode === "via" ? snap.via : [],
+      leaveNow: snap.leaveNow,
+      datetime: snap.datetime,
+      arriveBy: snap.arriveBy,
+      allDay: snap.allDay,
+      modeFilter: snap.modeFilter,
+      transferFilter: snap.transferFilter,
+      accessible: snap.accessible,
+      bike: snap.bike,
+      night: snap.night,
+      wantReturn: snap.routeMode !== "board" && snap.wantReturn,
+      returnDatetime: snap.returnDatetime,
+      board: snap.routeMode === "board",
     });
   }
 
@@ -874,7 +913,6 @@ export function useJourneySearch() {
     };
     const key = planKey(snapshot);
     if (!key || key === claimedPlan.current) return;
-    if (pickMode !== "idle") return;
     const timer = window.setTimeout(() => {
       void runPlan(snapshot);
     }, 280);
@@ -897,7 +935,6 @@ export function useJourneySearch() {
     night,
     wantReturn,
     returnDatetime,
-    pickMode,
   ]);
 
   useEffect(() => {

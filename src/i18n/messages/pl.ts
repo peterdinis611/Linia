@@ -105,7 +105,8 @@ export const pl: Messages = {
     useLocation: "Skąd jestem",
     locating: "Szukam przystanku…",
     geocodeFailed: "Miejsc nie udało się wczytać. Spróbuj ponownie.",
-    pickFromList: "Wybierz stację z listy",
+    pickFromList: "Wybierz miejsce z listy",
+    noPlaces: "Nic nie znaleziono. Spróbuj stacji lub miasta.",
     returnTrip: "Powrotny",
     returnKicker: "Pieczątka powrotna",
     outbound: "Tam",
@@ -207,6 +208,9 @@ export const pl: Messages = {
     here: "Tu jestem",
     fullscreen: "Cała mapa",
     exitFullscreen: "Zamknij całą mapę",
+    unfold: "Rozłóż mapę",
+    fold: "Złóż mapę",
+    pocketKicker: "Mapa ścienna",
     approximate: "Linia jest przybliżona, aż wydrukuje się żywa trasa.",
   },
   results: {
@@ -292,6 +296,8 @@ export const pl: Messages = {
     STOP: "Przyst.",
     ADDRESS: "Adr.",
     PLACE: "Miejsce",
+    BUS: "Bus",
+    RAIL: "Kolej",
   },
   placeKind: {
     busStation: "dworzec autobusowy",

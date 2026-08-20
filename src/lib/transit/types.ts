@@ -49,6 +49,7 @@ export type GeocodeMatch = {
   lon: number;
   score: number;
   street?: string;
+  modes: string[];
   areas: Area[];
 };
 

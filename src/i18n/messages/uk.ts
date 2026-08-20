@@ -105,7 +105,8 @@ export const uk: Messages = {
     useLocation: "З мого місця",
     locating: "Шукаю вашу зупинку…",
     geocodeFailed: "Місця не вдалося завантажити. Спробуйте ще раз.",
-    pickFromList: "Оберіть станцію зі списку",
+    pickFromList: "Оберіть місце зі списку",
+    noPlaces: "Нічого не знайдено. Спробуйте станцію або місто.",
     returnTrip: "Назад",
     returnKicker: "Штамп назад",
     outbound: "Туди",
@@ -208,6 +209,9 @@ export const uk: Messages = {
     here: "Я тут",
     fullscreen: "Уся карта",
     exitFullscreen: "Закрити всю карту",
+    unfold: "Розгорнути мапу",
+    fold: "Згорнути мапу",
+    pocketKicker: "Настінна мапа",
     approximate: "Лінія приблизна, доки не надрукується шлях наживо.",
   },
   results: {
@@ -293,6 +297,8 @@ export const uk: Messages = {
     STOP: "Зуп.",
     ADDRESS: "Адр.",
     PLACE: "Місце",
+    BUS: "Авто",
+    RAIL: "Потяг",
   },
   placeKind: {
     busStation: "автовокзал",

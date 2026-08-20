@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { HallLoader } from "@/components/status/HallLoader";
 import { useI18n } from "@/i18n/provider";
@@ -35,6 +35,8 @@ type RouteMapProps = {
   pickMode: MapPickMode;
   pendingPick: SelectedPlace | null;
   pinBusy: boolean;
+  pocketed: boolean;
+  onTogglePocket: () => void;
   onPickModeChange: (mode: MapPickMode) => void;
   onMapClick: (lat: number, lon: number) => void;
   onMarkerDrag: (
@@ -56,12 +58,15 @@ export function RouteMap({
   pickMode,
   pendingPick,
   pinBusy,
+  pocketed,
+  onTogglePocket,
   onPickModeChange,
   onMapClick,
   onMarkerDrag,
   onAssignPending,
 }: RouteMapProps) {
   const { t } = useI18n();
+  const stageId = useId();
   const stageRef = useRef<HTMLDivElement>(null);
   const [full, setFull] = useState(false);
   const [mapReady, setMapReady] = useState(false);
@@ -89,11 +94,10 @@ export function RouteMap({
   );
 
   useEffect(() => {
-    if (pickMode !== "idle" || full) setMapReady(true);
-  }, [pickMode, full]);
-
-  useEffect(() => {
-    if (mapReady) return;
+    if (full) {
+      setMapReady(true);
+      return;
+    }
     const node = stageRef.current;
     if (!node) return;
     if (typeof IntersectionObserver === "undefined") {
@@ -102,15 +106,13 @@ export function RouteMap({
     }
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        setMapReady(true);
-        observer.disconnect();
+        setMapReady(Boolean(entry?.isIntersecting));
       },
-      { rootMargin: "120px" },
+      { threshold: 0.02 },
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [mapReady]);
+  }, [full, pocketed]);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -126,11 +128,26 @@ export function RouteMap({
   }, [full, pickMode, onPickModeChange]);
 
   return (
-    <div
-      ref={stageRef}
-      className={`map-stage${pickMode !== "idle" ? " map-stage-picking" : ""}${full ? " map-stage-full" : ""}`}
-      data-tour="map"
-    >
+    <>
+      <button
+        type="button"
+        className="map-pocket"
+        data-testid="map-pocket"
+        aria-expanded={!pocketed}
+        aria-controls={stageId}
+        onClick={onTogglePocket}
+      >
+        <span className="map-pocket-copy">
+          <span className="kicker">{t("map.pocketKicker")}</span>
+          <span className="map-pocket-line">{caption}</span>
+        </span>
+        <span className="stamp">{pocketed ? t("map.unfold") : t("map.fold")}</span>
+      </button>
+      <div
+        ref={stageRef}
+        id={stageId}
+        className={`map-stage${pickMode !== "idle" ? " map-stage-picking" : ""}${full ? " map-stage-full" : ""}`}
+      >
       {mapReady ? (
         <RouteMapInner
           itinerary={itinerary}
@@ -149,35 +166,38 @@ export function RouteMap({
       ) : (
         <div className="h-full w-full" data-testid="map-pending" />
       )}
-      <div className="pointer-events-none absolute top-3 left-3 z-[500] right-16">
+      <div className="map-pin-dock pointer-events-none">
         <div className="map-pin-bar pointer-events-auto">
           <PickStamp
-            label={t("map.pinOrigin")}
+            label={t("map.origin")}
+            longLabel={t("map.pinOrigin")}
             testId="pin-origin"
             active={pickMode === "from"}
             onClick={() => onPickModeChange(pickMode === "from" ? "idle" : "from")}
           />
           <PickStamp
-            label={t("map.pinDestination")}
+            label={t("map.destination")}
+            longLabel={t("map.pinDestination")}
             testId="pin-destination"
             active={pickMode === "to"}
             onClick={() => onPickModeChange(pickMode === "to" ? "idle" : "to")}
           />
           <PickStamp
-            label={t("map.pinVia")}
+            label={t("map.via")}
+            longLabel={t("map.pinVia")}
             testId="pin-via"
             active={pickMode === "via"}
             onClick={() => onPickModeChange(pickMode === "via" ? "idle" : "via")}
           />
         </div>
       </div>
-      <div className="map-overlay pointer-events-none absolute bottom-3 left-3 z-[500] max-w-[min(24rem,calc(100%-1.5rem))]">
-        <div className="map-plaque pointer-events-auto px-3 py-2">
-          <p className="truncate text-sm font-medium">
+      <div className="map-overlay pointer-events-none">
+        <div className="map-plaque pointer-events-auto">
+          <p className="map-plaque-title">
             {pinBusy ? t("map.reading") : caption}
           </p>
           {pendingPick && pickMode === "idle" && (
-            <div className="mt-2 flex flex-wrap gap-1.5">
+            <div className="map-plaque-assign">
               <button type="button" className="stamp" onClick={() => onAssignPending("from")}>
                 {t("map.origin")}
               </button>
@@ -190,7 +210,7 @@ export function RouteMap({
             </div>
           )}
           {!pendingPick && hintRole !== "pending" ? (
-            <p className="mt-1 text-xs text-ink-muted">
+            <p className="map-plaque-hint">
               {t("map.clickToSet", {
                 target:
                   hintRole === "from"
@@ -202,10 +222,10 @@ export function RouteMap({
             </p>
           ) : null}
           {approximate ? (
-            <p className="mt-1 text-xs text-ink-muted">{t("map.approximate")}</p>
+            <p className="map-plaque-hint">{t("map.approximate")}</p>
           ) : null}
           {(carriers.length > 0 || transitLegs.length > 0) && (
-            <div className="mt-1.5 flex flex-wrap gap-1">
+            <div className="map-plaque-chips">
               {carriers.map((name) => (
                 <span key={name} className="map-chip">
                   {name}
@@ -225,17 +245,20 @@ export function RouteMap({
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
 function PickStamp({
   label,
+  longLabel,
   active,
   testId,
   onClick,
 }: {
   label: string;
+  longLabel: string;
   active: boolean;
   testId: string;
   onClick: () => void;
@@ -247,9 +270,12 @@ function PickStamp({
       data-testid={testId}
       data-on={active}
       aria-pressed={active}
+      aria-label={longLabel}
+      title={longLabel}
       onClick={onClick}
     >
-      {label}
+      <span className="map-pin-long">{longLabel}</span>
+      <span className="map-pin-short">{label}</span>
     </button>
   );
 }

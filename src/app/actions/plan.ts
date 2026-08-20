@@ -15,6 +15,7 @@ import type { Itinerary } from "@/lib/transit/types";
 
 const DAY_SECONDS = 86_400;
 const DAY_ITINERARIES = 20;
+const NEAR_ITINERARIES = 12;
 const MAX_DAY_PAGES = 2;
 
 export const planJourneyAction = actionClient
@@ -28,6 +29,8 @@ export const planJourneyAction = actionClient
       arriveBy: String(allDay ? false : parsedInput.arriveBy),
       directModes: "WALK",
       timetableView: "true",
+      slowDirect: "true",
+      numItineraries: String(allDay ? DAY_ITINERARIES : NEAR_ITINERARIES),
     });
 
     const transitModes = transitModesFor(parsedInput.modeFilter, {
@@ -60,7 +63,6 @@ export const planJourneyAction = actionClient
     }
 
     if (allDay) {
-      params.set("numItineraries", String(DAY_ITINERARIES));
       params.set("searchWindow", String(DAY_SECONDS));
     }
 

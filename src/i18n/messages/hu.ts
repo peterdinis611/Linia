@@ -105,7 +105,8 @@ export const hu: Messages = {
     useLocation: "A helyemről",
     locating: "Megálló keresése…",
     geocodeFailed: "A helyek nem tölthetők. Próbáld újra.",
-    pickFromList: "Válassz állomást a listából",
+    pickFromList: "Válassz helyet a listából",
+    noPlaces: "Nincs találat. Próbálj állomást vagy várost.",
     returnTrip: "Visszaút",
     returnKicker: "Visszaút pecsét",
     outbound: "Oda",
@@ -207,6 +208,9 @@ export const hu: Messages = {
     here: "Itt vagyok",
     fullscreen: "Teljes térkép",
     exitFullscreen: "Teljes térkép bezárása",
+    unfold: "Térkép kinyitása",
+    fold: "Térkép összecsukása",
+    pocketKicker: "Fali térkép",
     approximate: "A vonal közelítő, amíg az élő út ki nem nyomtatódik.",
   },
   results: {
@@ -292,6 +296,8 @@ export const hu: Messages = {
     STOP: "Megálló",
     ADDRESS: "Cím",
     PLACE: "Hely",
+    BUS: "Busz",
+    RAIL: "Vonat",
   },
   placeKind: {
     busStation: "autóbusz-állomás",

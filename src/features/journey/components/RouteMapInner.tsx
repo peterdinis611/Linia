@@ -360,7 +360,7 @@ function MapToolbar({
   }
 
   return (
-    <div className="map-chrome absolute top-3 right-3 z-[1000]">
+    <div className="map-chrome">
       <ChromeButton
         label={t("map.mapLabel")}
         pressed={basemap === "map"}
@@ -392,10 +392,10 @@ function MapToolbar({
           {full ? <IconCollapse /> : <IconExpand />}
         </ChromeButton>
       ) : null}
-      <ChromeButton label={t("map.zoomIn")} onClick={() => map.zoomIn()}>
+      <ChromeButton label={t("map.zoomIn")} className="map-chrome-zoom" onClick={() => map.zoomIn()}>
         <IconPlus />
       </ChromeButton>
-      <ChromeButton label={t("map.zoomOut")} onClick={() => map.zoomOut()}>
+      <ChromeButton label={t("map.zoomOut")} className="map-chrome-zoom" onClick={() => map.zoomOut()}>
         <IconMinus />
       </ChromeButton>
     </div>
@@ -406,18 +406,21 @@ function ChromeButton({
   label,
   pressed,
   testId,
+  className,
   onClick,
   children,
 }: {
   label: string;
   pressed?: boolean;
   testId?: string;
+  className?: string;
   onClick: () => void;
   children: ReactNode;
 }) {
   return (
     <button
       type="button"
+      className={className}
       aria-label={label}
       aria-pressed={pressed}
       title={label}

@@ -28,6 +28,8 @@ export const geocodeInputSchema = z.object({
     .min(2, "validation.queryTooShort")
     .max(120, "validation.queryTooLong"),
   language: z.string().trim().min(2).max(8).optional(),
+  lat: z.number().gte(-90).lte(90).optional(),
+  lon: z.number().gte(-180).lte(180).optional(),
 });
 
 function isValidDateTime(value: string | undefined) {
@@ -248,6 +250,7 @@ export const geocodeMatchSchema = z.looseObject({
   lon: z.number(),
   score: z.number().optional().default(0),
   street: z.string().optional(),
+  modes: z.array(z.string()).optional().default([]),
   areas: z.array(areaSchema).optional().default([]),
 });
 

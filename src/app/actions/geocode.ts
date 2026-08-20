@@ -9,6 +9,8 @@ import {
   reverseGeocodeInputSchema,
 } from "@/lib/schemas";
 import { motisFetch } from "@/lib/transit/client";
+import { rankGeocodeMatches } from "@/lib/transit/geocode-rank";
+import type { GeocodeMatch } from "@/lib/transit/types";
 
 export const geocodeAction = actionClient
   .inputSchema(geocodeInputSchema)
@@ -18,11 +20,18 @@ export const geocodeAction = actionClient
       text: parsedInput.query,
     });
     if (parsedInput.language) params.set("language", parsedInput.language);
+    if (parsedInput.lat != null && parsedInput.lon != null) {
+      params.set("place", `${parsedInput.lat},${parsedInput.lon}`);
+      params.set("placeBias", "2");
+    }
     return rankGeocodeMatches(
-      await motisFetch("/v1/geocode", params, {
-        language: parsedInput.language,
-        revalidate: 1800,
-      }),
+      parseGeocodeMatches(
+        await motisFetch("/v1/geocode", params, {
+          language: parsedInput.language,
+          revalidate: 1800,
+        }),
+      ),
+      parsedInput.query,
     );
   });
 
@@ -38,11 +47,13 @@ export const reverseGeocodeAction = actionClient
       params.set("type", "STOP");
     }
 
-    const preferred = await rankGeocodeMatches(
-      await motisFetch("/v1/reverse-geocode", params, {
-        language: parsedInput.language,
-        revalidate: 1800,
-      }),
+    const preferred = rankGeocodeMatches(
+      parseGeocodeMatches(
+        await motisFetch("/v1/reverse-geocode", params, {
+          language: parsedInput.language,
+          revalidate: 1800,
+        }),
+      ),
     );
     if (preferred.length > 0 || !parsedInput.preferStop) {
       return preferred;
@@ -53,29 +64,22 @@ export const reverseGeocodeAction = actionClient
     });
     if (parsedInput.language) fallback.set("language", parsedInput.language);
     return rankGeocodeMatches(
-      await motisFetch("/v1/reverse-geocode", fallback, {
-        language: parsedInput.language,
-        revalidate: 1800,
-      }),
+      parseGeocodeMatches(
+        await motisFetch("/v1/reverse-geocode", fallback, {
+          language: parsedInput.language,
+          revalidate: 1800,
+        }),
+      ),
     );
   });
 
-function rankGeocodeMatches(matches: unknown) {
+function parseGeocodeMatches(matches: unknown): GeocodeMatch[] {
   if (!Array.isArray(matches)) {
     throw new TransitError("Unexpected place search response");
   }
 
-  return matches
-    .flatMap((item) => {
-      const parsed = geocodeMatchSchema.safeParse(item);
-      return parsed.success ? [parsed.data] : [];
-    })
-    .sort((a, b) => {
-      const rank = (type: string) =>
-        type === "STOP" ? 0 : type === "ADDRESS" ? 1 : 2;
-      const byType = rank(a.type) - rank(b.type);
-      if (byType !== 0) return byType;
-      return (b.score ?? 0) - (a.score ?? 0);
-    })
-    .slice(0, 8);
+  return matches.flatMap((item) => {
+    const parsed = geocodeMatchSchema.safeParse(item);
+    return parsed.success ? [parsed.data] : [];
+  });
 }

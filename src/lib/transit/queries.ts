@@ -66,11 +66,25 @@ function planCacheKey(input: {
 export async function searchPlaces(
   query: string,
   language?: string,
+  bias?: { lat: number; lon: number } | null,
 ): Promise<GeocodeMatch[]> {
   const trimmed = query.trim();
   if (!trimmed) return [];
-  return geocodeCache.get(`${language ?? ""}|${trimmed.toLowerCase()}`, async () =>
-    unwrapAction(await geocodeAction({ query: trimmed, language })),
+  const near =
+    bias && Number.isFinite(bias.lat) && Number.isFinite(bias.lon)
+      ? `${bias.lat.toFixed(3)},${bias.lon.toFixed(3)}`
+      : "";
+  return geocodeCache.get(
+    `${language ?? ""}|${near}|${trimmed.toLowerCase()}`,
+    async () =>
+      unwrapAction(
+        await geocodeAction({
+          query: trimmed,
+          language,
+          lat: bias?.lat,
+          lon: bias?.lon,
+        }),
+      ),
   );
 }
 

@@ -178,10 +178,19 @@ test.describe("home", () => {
     );
   });
 
-  test("shows the map on a phone", async ({ page }) => {
+  test("keeps the map folded on a phone until it is unfolded", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
 
+    const pocket = page.getByTestId("map-pocket");
+    await expect(pocket).toBeVisible();
+    await expect(pocket).toHaveAttribute("aria-expanded", "false");
+    await expect(page.getByTestId("pin-origin")).toBeHidden();
+
+    await pocket.click();
+    await expect(pocket).toHaveAttribute("aria-expanded", "true");
     await expect(page.getByRole("button", { name: "Pin origin" })).toBeVisible();
     await expect(page.getByTestId("map-here")).toBeVisible();
     await expect(page.getByTestId("map-fullscreen")).toBeVisible();
@@ -373,7 +382,7 @@ test.describe("search form validation", () => {
     await page.goto("/");
     await page.getByRole("combobox", { name: "Origin" }).fill("zzzz");
     await expect(
-      page.getByRole("alert").filter({ hasText: "Pick a station from the list" }),
+      page.getByRole("alert").filter({ hasText: "No matching places" }),
     ).toBeVisible();
   });
 

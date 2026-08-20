@@ -105,7 +105,8 @@ export const hr: Messages = {
     useLocation: "Od moje lokacije",
     locating: "Tražim tvoje stajalište…",
     geocodeFailed: "Mjesta se nisu mogla učitati. Pokušaj ponovo.",
-    pickFromList: "Odaberi stanicu s popisa",
+    pickFromList: "Odaberi mjesto s popisa",
+    noPlaces: "Ništa nije pronađeno. Pokušaj stanicu ili grad.",
     returnTrip: "Povratak",
     returnKicker: "Povratni pečat",
     outbound: "Tamo",
@@ -208,6 +209,9 @@ export const hr: Messages = {
     here: "Tu sam",
     fullscreen: "Cijela karta",
     exitFullscreen: "Zatvori cijelu kartu",
+    unfold: "Otvori kartu",
+    fold: "Skupi kartu",
+    pocketKicker: "Zidna karta",
     approximate: "Crta je približna dok se ne ispiše put uživo.",
   },
   results: {
@@ -293,6 +297,8 @@ export const hr: Messages = {
     STOP: "Staj.",
     ADDRESS: "Adr.",
     PLACE: "Mjesto",
+    BUS: "Bus",
+    RAIL: "Vlak",
   },
   placeKind: {
     busStation: "autobusni kolodvor",

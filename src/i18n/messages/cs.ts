@@ -105,7 +105,8 @@ export const cs: Messages = {
     useLocation: "Odkud jsem",
     locating: "Hledám zastávku…",
     geocodeFailed: "Místa se nepodařilo načíst. Zkuste znovu.",
-    pickFromList: "Vyberte stanici ze seznamu",
+    pickFromList: "Vyberte místo ze seznamu",
+    noPlaces: "Nic se nenašlo. Zkuste stanici nebo město.",
     returnTrip: "Zpáteční",
     returnKicker: "Razítko zpáteční",
     outbound: "Tam",
@@ -207,6 +208,9 @@ export const cs: Messages = {
     here: "Tady jsem",
     fullscreen: "Celá mapa",
     exitFullscreen: "Zavřít celou mapu",
+    unfold: "Rozložit mapu",
+    fold: "Složit mapu",
+    pocketKicker: "Nástěnná mapa",
     approximate: "Čára je přibližná, dokud se nevytiskne trasa živě.",
   },
   results: {
@@ -292,6 +296,8 @@ export const cs: Messages = {
     STOP: "Zast.",
     ADDRESS: "Adr.",
     PLACE: "Místo",
+    BUS: "Bus",
+    RAIL: "Vlak",
   },
   placeKind: {
     busStation: "autobusové nádraží",
