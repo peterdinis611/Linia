@@ -1,6 +1,7 @@
 import { areaLabel, type GeocodeMatch } from "./types";
 
 const MAX_GUESSES = 8;
+const MAX_NAMED = 40;
 
 const RAIL_MODES = new Set([
   "RAIL",
@@ -110,6 +111,46 @@ function busRank(match: GeocodeMatch, wantRail: boolean) {
   return 3;
 }
 
+export function distinctArea(match: GeocodeMatch) {
+  const name = fold(match.name);
+  const areas = match.areas ?? [];
+  const local = [...areas]
+    .filter((area) => fold(area.name) !== name)
+    .sort((a, b) => {
+      const aTown = a.adminLevel >= 6 && a.adminLevel <= 8 ? 0 : 1;
+      const bTown = b.adminLevel >= 6 && b.adminLevel <= 8 ? 0 : 1;
+      if (aTown !== bTown) return aTown - bTown;
+      return a.adminLevel - b.adminLevel;
+    });
+  return local[0]?.name ?? areaLabel(areas);
+}
+
+function namedLikeQuery(match: GeocodeMatch, query: string) {
+  const needle = fold(query);
+  if (needle.length < 2) return false;
+  const name = fold(match.name);
+  if (
+    name === needle ||
+    name.startsWith(`${needle} `) ||
+    name.startsWith(`${needle},`) ||
+    name.startsWith(`${needle}-`)
+  ) {
+    return true;
+  }
+  return (match.areas ?? []).some(
+    (area) =>
+      fold(area.name) === needle && area.adminLevel >= 6 && area.adminLevel <= 8,
+  );
+}
+
+function limitGuesses(ranked: GeocodeMatch[], query: string) {
+  const named = ranked.filter((match) => namedLikeQuery(match, query));
+  if (named.length <= 1) return ranked.slice(0, MAX_GUESSES);
+  const seen = new Set(named.map((match) => match.id));
+  const rest = ranked.filter((match) => !seen.has(match.id)).slice(0, MAX_GUESSES);
+  return [...named, ...rest].slice(0, MAX_NAMED);
+}
+
 export function rankGeocodeMatches(
   matches: GeocodeMatch[],
   query = "",
@@ -135,7 +176,7 @@ export function rankGeocodeMatches(
 
   const addressQuery = /\d/.test(trimmed);
   const wantRail = queryWantsRail(trimmed);
-  return mappable
+  const ranked = mappable
     .map((match, index) => ({
       match,
       index,
@@ -160,6 +201,6 @@ export function rankGeocodeMatches(
       if (byScore !== 0) return byScore;
       return a.index - b.index;
     })
-    .map((item) => item.match)
-    .slice(0, MAX_GUESSES);
+    .map((item) => item.match);
+  return limitGuesses(ranked, trimmed);
 }

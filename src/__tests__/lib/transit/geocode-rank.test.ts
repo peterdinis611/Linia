@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { rankGeocodeMatches } from "@/lib/transit/geocode-rank";
+import { rankGeocodeMatches, distinctArea } from "@/lib/transit/geocode-rank";
 import type { GeocodeMatch } from "@/lib/transit/types";
 
 function address(
@@ -143,6 +143,49 @@ describe("rankGeocodeMatches", () => {
       rankGeocodeMatches([stop, town], "Bardejov", { preferType: "PLACE" })[0]
         ?.type,
     ).toBe("PLACE");
+  });
+
+  it("keeps every town that shares the typed name", () => {
+    const towns = [
+      "Bardejov",
+      "Smilno",
+      "Zborov",
+      "Nižná Polianka",
+      "Vyšný Tvarožec",
+      "Rešov",
+      "Livov",
+      "Cigeľka",
+      "Petrová",
+    ].map((area, index) =>
+      address("Smilno", area, -4 - index, {
+        type: "PLACE",
+        id: `place-smilno-${index}`,
+        lat: 49.3 + index * 0.01,
+        lon: 21.2,
+      }),
+    );
+    const ranked = rankGeocodeMatches(towns, "Smilno", { preferType: "PLACE" });
+    expect(ranked).toHaveLength(towns.length);
+    expect(ranked.every((match) => match.name === "Smilno")).toBe(true);
+    expect(distinctArea(towns[0]!)).toBe("Bardejov");
+    expect(distinctArea(towns[2]!)).toBe("Zborov");
+  });
+
+  it("keeps every stop that starts with the typed town", () => {
+    const stops = Array.from({ length: 12 }, (_, index) => ({
+      type: "STOP" as const,
+      name: index === 0 ? "Bardejov" : `Bardejov, Zastávka ${index}`,
+      id: `stop-bardejov-${index}`,
+      lat: 49.29,
+      lon: 21.27 + index * 0.001,
+      score: -index,
+      modes: ["BUS"],
+      areas: [
+        { name: "Bardejov", adminLevel: 8, matched: true, default: true },
+      ],
+    }));
+    const ranked = rankGeocodeMatches(stops, "Bardejov");
+    expect(ranked).toHaveLength(12);
   });
 
   it("keeps European towns and drops cities outside Europe", () => {

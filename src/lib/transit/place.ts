@@ -1,7 +1,7 @@
 import { localizePlaceName } from "@/i18n/place-name";
 import type { Messages } from "@/i18n/messages/en";
-import { hasMappableCoords } from "./geocode-rank";
-import { areaLabel, type GeocodeMatch, type SelectedPlace } from "./types";
+import { hasMappableCoords, distinctArea } from "./geocode-rank";
+import type { GeocodeMatch, SelectedPlace } from "./types";
 
 export function matchToPlace(
   match: GeocodeMatch,
@@ -16,7 +16,7 @@ export function matchToPlace(
     type: match.type,
     lat: match.lat,
     lon: match.lon,
-    area: areaLabel(match.areas),
+    area: distinctArea(match),
   };
 }
 

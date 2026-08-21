@@ -14,8 +14,9 @@ import { resolveStopId } from "@/lib/transit/resolve-stop";
 import type { Itinerary } from "@/lib/transit/types";
 
 const DAY_SECONDS = 86_400;
-const DAY_ITINERARIES = 20;
-const NEAR_ITINERARIES = 12;
+const NEAR_SECONDS = 21_600;
+const DAY_ITINERARIES = 24;
+const NEAR_ITINERARIES = 20;
 const MAX_DAY_PAGES = 2;
 
 export const planJourneyAction = actionClient
@@ -31,9 +32,9 @@ export const planJourneyAction = actionClient
       timetableView: "true",
       slowDirect: "true",
       numItineraries: String(allDay ? DAY_ITINERARIES : NEAR_ITINERARIES),
-      maxPreTransitTime: "1800",
-      maxPostTransitTime: "1800",
-      maxMatchingDistance: "750",
+      maxPreTransitTime: "2400",
+      maxPostTransitTime: "2400",
+      maxMatchingDistance: parsedInput.distanceFilter === "suburban" ? "2000" : "1200",
     });
 
     const transitModes = transitModesFor(parsedInput.modeFilter, {
@@ -68,6 +69,8 @@ export const planJourneyAction = actionClient
 
     if (allDay) {
       params.set("searchWindow", String(DAY_SECONDS));
+    } else {
+      params.set("searchWindow", String(NEAR_SECONDS));
     }
 
     if (parsedInput.via.length > 0) {

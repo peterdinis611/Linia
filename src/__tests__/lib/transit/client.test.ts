@@ -27,8 +27,9 @@ describe("MOTIS query helpers", () => {
     expect(transitModesFor("all", { distance: "long" })).toContain("COACH");
     expect(transitModesFor("all", { distance: "long" })).not.toContain("BUS");
     expect(transitModesFor("all", { distance: "suburban" })).toContain("BUS");
+    expect(transitModesFor("all", { distance: "suburban" })).toContain("COACH");
     expect(transitModesFor("all", { distance: "suburban" })).toContain("REGIONAL_RAIL");
-    expect(transitModesFor("bus", { distance: "suburban" })).toBe("BUS");
+    expect(transitModesFor("bus", { distance: "suburban" })).toBe("BUS,COACH");
     expect(transitModesFor("train", { distance: "long" })).toContain("LONG_DISTANCE");
     expect(transitModesFor("train", { distance: "long" })).not.toContain("COACH");
     expect(transitModesFor("bus", { distance: "long" })).toBe("COACH");

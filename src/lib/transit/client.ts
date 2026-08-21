@@ -33,9 +33,12 @@ const LONG_DISTANCE_MODES = [
 
 const SUBURBAN_MODES = [
   "BUS",
+  "COACH",
   "SUBURBAN",
   "REGIONAL_RAIL",
   "REGIONAL_FAST_RAIL",
+  "TRAM",
+  "OTHER",
 ] as const;
 
 export function placeQueryParam(place: SelectedPlace): string {

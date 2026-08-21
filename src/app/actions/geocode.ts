@@ -18,7 +18,7 @@ export const geocodeAction = actionClient
   .action(async ({ parsedInput }) => {
     const params = new URLSearchParams({
       text: parsedInput.query,
-      numResults: "20",
+      numResults: "50",
     });
     if (parsedInput.language) params.set("language", parsedInput.language);
     if (parsedInput.lat != null && parsedInput.lon != null) {

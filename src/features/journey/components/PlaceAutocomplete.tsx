@@ -13,8 +13,8 @@ import { localizePlaceName } from "@/i18n/place-name";
 import { matchToPlace } from "@/lib/transit/place";
 import { searchPlaces } from "@/lib/transit/queries";
 import { geocodeInputSchema } from "@/lib/schemas";
-import { stopModeKind } from "@/lib/transit/geocode-rank";
-import { areaLabel, type GeocodeMatch, type SelectedPlace } from "@/lib/transit/types";
+import { distinctArea, stopModeKind } from "@/lib/transit/geocode-rank";
+import { type GeocodeMatch, type SelectedPlace } from "@/lib/transit/types";
 
 const COMMIT_FIELDS = "linia-commit-fields";
 
@@ -141,7 +141,7 @@ export function PlaceAutocomplete({
       const above = rect.top - 8;
       const openUp = below < 160 && above > below;
       const room = Math.max(0, openUp ? above : below);
-      const maxHeight = Math.min(272, Math.max(96, room));
+      const maxHeight = Math.min(420, Math.max(96, room));
       setListPos({
         top: openUp ? rect.top - 4 - maxHeight : rect.bottom + 4,
         left: rect.left,
@@ -322,7 +322,7 @@ export function PlaceAutocomplete({
               }}
             >
               {results.map((match, index) => {
-                const subtitle = areaLabel(match.areas);
+                const subtitle = distinctArea(match);
                 return (
                   <li key={`${match.id}-${match.lat}-${match.lon}`}>
                     <button
