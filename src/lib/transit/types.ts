@@ -1,10 +1,12 @@
 import type {
+  DistanceFilter as SchemaDistanceFilter,
   ModeFilter as SchemaModeFilter,
   SelectedPlace as SchemaSelectedPlace,
   TransferFilter as SchemaTransferFilter,
 } from "@/lib/schemas";
 
 export type ModeFilter = SchemaModeFilter;
+export type DistanceFilter = SchemaDistanceFilter;
 export type TransferFilter = SchemaTransferFilter;
 export type SelectedPlace = SchemaSelectedPlace;
 
@@ -139,6 +141,7 @@ export type PlanResponse = {
   to?: Place;
   itineraries: Itinerary[];
   direct?: Itinerary[];
+  serviceFrom?: string;
 };
 
 export type StopTimeEvent = {

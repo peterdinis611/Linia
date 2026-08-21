@@ -116,4 +116,59 @@ describe("rankGeocodeMatches", () => {
     expect(ranked[0]).toEqual(wanted);
     expect(ranked).toHaveLength(8);
   });
+
+  it("prefers a city place when the desk asks for a town", () => {
+    const town: GeocodeMatch = {
+      type: "PLACE",
+      name: "Bardejov",
+      id: "place-bardejov",
+      lat: 49.29,
+      lon: 21.27,
+      score: -20,
+      modes: [],
+      areas: [{ name: "Slovensko", adminLevel: 2, matched: true, default: true }],
+    };
+    const stop: GeocodeMatch = {
+      type: "STOP",
+      name: "Bardejov",
+      id: "sk-sad-bardejov",
+      lat: 49.29,
+      lon: 21.27,
+      score: -4,
+      modes: ["BUS"],
+      areas: [{ name: "Slovensko", adminLevel: 2, matched: true, default: true }],
+    };
+    expect(rankGeocodeMatches([stop, town], "Bardejov")[0]?.type).toBe("STOP");
+    expect(
+      rankGeocodeMatches([stop, town], "Bardejov", { preferType: "PLACE" })[0]
+        ?.type,
+    ).toBe("PLACE");
+  });
+
+  it("keeps European towns and drops cities outside Europe", () => {
+    const presov: GeocodeMatch = {
+      type: "PLACE",
+      name: "Prešov",
+      id: "place-presov",
+      lat: 48.998,
+      lon: 21.24,
+      score: -12,
+      modes: [],
+      areas: [{ name: "Slovensko", adminLevel: 2, matched: true, default: true }],
+    };
+    const parisTexas: GeocodeMatch = {
+      type: "PLACE",
+      name: "Paris",
+      id: "place-paris-tx",
+      lat: 33.661,
+      lon: -95.555,
+      score: -2,
+      modes: [],
+      areas: [{ name: "United States", adminLevel: 2, matched: true, default: true }],
+    };
+    const ranked = rankGeocodeMatches([parisTexas, presov], "Prešov", {
+      preferType: "PLACE",
+    });
+    expect(ranked.map((match) => match.name)).toEqual(["Prešov"]);
+  });
 });

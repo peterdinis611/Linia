@@ -26,6 +26,67 @@ describe("journeySearchFormSchema", () => {
     expect(journeySearchFormSchema.safeParse(base).success).toBe(true);
   });
 
+  it("needs a city before a suburban stamp", () => {
+    const parsed = journeySearchFormSchema.safeParse({
+      ...base,
+      distanceFilter: "suburban",
+    });
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) {
+      expect(fieldErrorsFromZod(parsed.error).city).toBe(
+        "validation.cityRequired",
+      );
+    }
+  });
+
+  it("accepts a suburban ticket once a city is stamped", () => {
+    expect(
+      journeySearchFormSchema.safeParse({
+        ...base,
+        distanceFilter: "suburban",
+        city: berlin,
+      }).success,
+    ).toBe(true);
+  });
+
+  it("needs a destination on a suburban ticket", () => {
+    const parsed = journeySearchFormSchema.safeParse({
+      ...base,
+      from: null,
+      to: null,
+      distanceFilter: "suburban",
+      city: berlin,
+    });
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) {
+      expect(fieldErrorsFromZod(parsed.error).to).toBe(
+        "validation.destinationRequired",
+      );
+    }
+  });
+
+  it("lets the city stand in as suburban destination", () => {
+    expect(
+      journeySearchFormSchema.safeParse({
+        ...base,
+        to: null,
+        distanceFilter: "suburban",
+        city: prague,
+      }).success,
+    ).toBe(true);
+  });
+
+  it("lets the city stand in as suburban origin", () => {
+    expect(
+      journeySearchFormSchema.safeParse({
+        ...base,
+        from: null,
+        distanceFilter: "suburban",
+        city: berlin,
+      }).success,
+    ).toBe(true);
+  });
+
   it("lets the station board skip a destination", () => {
     const parsed = journeySearchFormSchema.safeParse({
       ...base,

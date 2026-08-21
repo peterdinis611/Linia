@@ -31,10 +31,14 @@ export const planJourneyAction = actionClient
       timetableView: "true",
       slowDirect: "true",
       numItineraries: String(allDay ? DAY_ITINERARIES : NEAR_ITINERARIES),
+      maxPreTransitTime: "1800",
+      maxPostTransitTime: "1800",
+      maxMatchingDistance: "750",
     });
 
     const transitModes = transitModesFor(parsedInput.modeFilter, {
       night: parsedInput.night,
+      distance: parsedInput.distanceFilter,
     });
     if (transitModes) {
       params.set("transitModes", transitModes);
@@ -99,17 +103,62 @@ export const planJourneyAction = actionClient
     }
 
     const itineraries = uniqueJourneys(pages.flat());
-    const kept = allDay && stamp
+    let kept = allDay && stamp
       ? itineraries.filter((item) => isoOnLocalDate(item.startTime, stamp))
       : itineraries;
+    let serviceFrom: string | undefined;
+
+    if (
+      kept.length === 0 &&
+      !allDay &&
+      !parsedInput.arriveBy &&
+      parsedInput.from.type === "STOP" &&
+      parsedInput.from.id &&
+      !parsedInput.from.id.startsWith("coord:")
+    ) {
+      const nextStamp = await peekFirstDeparture(
+        parsedInput.from.id,
+        parsedInput.language,
+      );
+      const requested = stamp ? Date.parse(stamp) : Date.now();
+      if (
+        nextStamp &&
+        Date.parse(nextStamp) - requested > 3 * 60 * 60 * 1000
+      ) {
+        params.delete("pageCursor");
+        params.set("time", nextStamp);
+        const later = await fetchPlanPage(params, parsedInput.language, revalidate);
+        kept = uniqueJourneys(later.itineraries);
+        if (kept.length > 0) serviceFrom = nextStamp;
+      }
+    }
 
     return {
       from: first.from,
       to: first.to,
       itineraries: kept,
       direct: first.direct,
+      serviceFrom,
     };
   });
+
+async function peekFirstDeparture(stopId: string, language?: string) {
+  try {
+    const params = new URLSearchParams({
+      stopId,
+      n: "1",
+      arriveBy: "false",
+    });
+    const body = await motisFetch("/v5/stoptimes", params, { language });
+    const event = Array.isArray((body as { stopTimes?: unknown }).stopTimes)
+      ? (body as { stopTimes: Array<{ place?: { departure?: string; scheduledDeparture?: string } }> }).stopTimes[0]
+      : undefined;
+    const stamp = event?.place?.departure ?? event?.place?.scheduledDeparture;
+    return typeof stamp === "string" && stamp ? stamp : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 async function fetchPlanPage(
   params: URLSearchParams,

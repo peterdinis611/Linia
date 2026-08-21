@@ -25,6 +25,7 @@ export const getStopTimesAction = actionClient
     });
     const transitModes = transitModesFor(parsedInput.modeFilter, {
       night: parsedInput.night,
+      distance: parsedInput.distanceFilter,
     });
     if (transitModes) {
       for (const mode of transitModes.split(",")) {

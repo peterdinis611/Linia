@@ -16,6 +16,8 @@ function renderForm(overrides: Partial<Props> = {}) {
     datetime: "2026-08-14T08:30",
     arriveBy: false,
     allDay: false,
+    city: null,
+    distanceFilter: "all",
     modeFilter: "all",
     transferFilter: "all",
     loading: false,
@@ -30,6 +32,8 @@ function renderForm(overrides: Partial<Props> = {}) {
     onDatetimeChange: vi.fn(),
     onArriveByChange: vi.fn(),
     onAllDayChange: vi.fn(),
+    onCityChange: vi.fn(),
+    onDistanceFilterChange: vi.fn(),
     onModeFilterChange: vi.fn(),
     onTransferFilterChange: vi.fn(),
     onAccessibleChange: vi.fn(),
@@ -50,6 +54,15 @@ function renderForm(overrides: Partial<Props> = {}) {
 }
 
 describe("SearchForm", () => {
+  it("asks for a city before suburban lines", async () => {
+    const user = userEvent.setup();
+    const { props } = renderForm();
+    await user.click(screen.getByTestId("distance-suburban"));
+    expect(props.onDistanceFilterChange).toHaveBeenCalledWith("suburban");
+    expect(screen.getByRole("combobox", { name: "City" })).toBeInTheDocument();
+    expect(screen.getByText("Name the city first. Then stamp long-distance or suburban.")).toBeInTheDocument();
+  });
+
   it("stamps leave now by default", () => {
     renderForm();
     expect(screen.getByRole("button", { name: "Leave now" })).toHaveAttribute(
@@ -107,6 +120,21 @@ describe("SearchForm", () => {
     expect(props.onNightChange).toHaveBeenCalledWith(true);
     await user.click(screen.getByTestId("return-trip"));
     expect(props.onWantReturnChange).toHaveBeenCalledWith(true);
+  });
+
+  it("pins suburban from and to on the same ticket", () => {
+    renderForm({ distanceFilter: "suburban" });
+    expect(screen.getByRole("combobox", { name: "Destination" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Swap origin and destination" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Via stops" })).not.toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Stamp from and to. The map pins both stops and the suburban line.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Find connections" })).toBeInTheDocument();
   });
 
   it("hides the journey desk on the station board", () => {

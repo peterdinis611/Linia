@@ -1,13 +1,17 @@
 import { localizePlaceName } from "@/i18n/place-name";
 import type { Messages } from "@/i18n/messages/en";
+import { hasMappableCoords } from "./geocode-rank";
 import { areaLabel, type GeocodeMatch, type SelectedPlace } from "./types";
 
 export function matchToPlace(
   match: GeocodeMatch,
   kinds?: Messages["placeKind"],
 ): SelectedPlace {
+  const id =
+    match.id.trim() ||
+    `coord:${match.lat.toFixed(5)},${match.lon.toFixed(5)}`;
   return {
-    id: match.id,
+    id,
     name: kinds ? localizePlaceName(match.name, kinds) : match.name,
     type: match.type,
     lat: match.lat,
@@ -49,7 +53,8 @@ export function isRoutableStop(place: SelectedPlace): boolean {
   return (
     place.type === "STOP" &&
     place.id.length > 0 &&
-    !place.id.startsWith("coord:")
+    !place.id.startsWith("coord:") &&
+    hasMappableCoords(place.lat, place.lon)
   );
 }
 

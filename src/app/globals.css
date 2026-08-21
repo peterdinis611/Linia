@@ -619,6 +619,20 @@ html:not(.dark) .board-clock .kicker {
   background: color-mix(in srgb, var(--paper-raised) 72%, transparent);
 }
 
+.ticket-line[data-desk="city"] {
+  gap: 0.75rem;
+  padding-top: 0.95rem;
+  background:
+    repeating-linear-gradient(
+      -12deg,
+      transparent,
+      transparent 11px,
+      color-mix(in srgb, var(--rule) 35%, transparent) 11px,
+      color-mix(in srgb, var(--rule) 35%, transparent) 12px
+    ),
+    color-mix(in srgb, var(--paper-raised) 82%, transparent);
+}
+
 .ticket-line-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

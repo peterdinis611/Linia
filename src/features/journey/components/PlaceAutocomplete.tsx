@@ -24,6 +24,8 @@ type PlaceAutocompleteProps = {
   value: SelectedPlace | null;
   error?: string;
   bias?: { lat: number; lon: number } | null;
+  kind?: "any" | "city";
+  placeBias?: number;
   onChange: (place: SelectedPlace | null) => void;
 };
 
@@ -33,6 +35,8 @@ export function PlaceAutocomplete({
   value,
   error,
   bias,
+  kind = "any",
+  placeBias,
   onChange,
 }: PlaceAutocompleteProps) {
   const { locale, messages, t } = useI18n();
@@ -94,6 +98,10 @@ export function PlaceAutocomplete({
           parsed.data.query,
           parsed.data.language ?? locale,
           bias,
+          {
+            type: kind === "city" ? "PLACE" : undefined,
+            placeBias,
+          },
         );
         if (controller.signal.aborted) return;
         setResults(matches);
@@ -114,7 +122,7 @@ export function PlaceAutocomplete({
       controller.abort();
       window.clearTimeout(handle);
     };
-  }, [bias?.lat, bias?.lon, draft, editing, locale]);
+  }, [bias?.lat, bias?.lon, draft, editing, kind, locale, placeBias]);
 
   useEffect(() => {
     if (!showList && !value) return;

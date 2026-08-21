@@ -31,8 +31,8 @@ import { useI18n } from "@/i18n/provider";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { carrierName } from "@/lib/carriers";
 import { isTransitMode, legColor, legName } from "@/lib/format";
+import { pathPointsForLeg } from "@/lib/transit/path";
 import type { Itinerary, SelectedPlace } from "@/lib/transit/types";
-import { decodePolyline } from "@/lib/polyline";
 import type { MapPickMode } from "../hooks/use-journey-search";
 
 const EUROPE_CENTER: LatLngExpression = [50.1, 10];
@@ -65,11 +65,13 @@ type RouteMapInnerProps = {
   from: SelectedPlace | null;
   to: SelectedPlace | null;
   via: Array<SelectedPlace | null>;
+  ends?: SelectedPlace[];
   pendingPick: SelectedPlace | null;
   highlightCarriers?: string[];
   fitKey: number;
   pickMode: MapPickMode;
   full?: boolean;
+  lockPins?: boolean;
   onMapClick: (lat: number, lon: number) => void;
   onMarkerDrag: (
     role: "from" | "to" | `via.${number}`,
@@ -86,6 +88,10 @@ type PathLeg = {
   faded: boolean;
   label: string;
 };
+
+function samePin(a: SelectedPlace, b: SelectedPlace) {
+  return Math.abs(a.lat - b.lat) < 1e-4 && Math.abs(a.lon - b.lon) < 1e-4;
+}
 
 function pinIcon(kind: "from" | "to" | "via" | "pending") {
   return L.divIcon({
@@ -122,11 +128,13 @@ export default function RouteMapInner({
   from,
   to,
   via,
+  ends = [],
   pendingPick,
   highlightCarriers = [],
   fitKey,
   pickMode,
   full = false,
+  lockPins = false,
   onMapClick,
   onMarkerDrag,
   onToggleFull,
@@ -147,17 +155,13 @@ export default function RouteMapInner({
     () =>
       itinerary?.legs
         .map((leg) => {
-          const precision = leg.legGeometry?.precision ?? 6;
-          const points = leg.legGeometry?.points
-            ? decodePolyline(leg.legGeometry.points, precision)
-            : [];
           const agency = carrierName(leg);
           const faded =
             highlightCarriers.length > 0 &&
             Boolean(agency) &&
             !highlightCarriers.includes(agency!);
           return {
-            positions: points,
+            positions: pathPointsForLeg(leg),
             color: nightMap ? liftChartColor(legColor(leg)) : legColor(leg),
             dashed: !isTransitMode(leg.mode),
             faded,
@@ -176,6 +180,14 @@ export default function RouteMapInner({
   const origin = from ? ([from.lat, from.lon] as LatLngExpression) : null;
   const destination = to ? ([to.lat, to.lon] as LatLngExpression) : null;
   const viaPoints = via.filter((stop): stop is SelectedPlace => Boolean(stop));
+  const extraEnds = useMemo(
+    () =>
+      ends.filter(
+        (place) =>
+          (!from || !samePin(place, from)) && (!to || !samePin(place, to)),
+      ),
+    [ends, from, to],
+  );
   const previewLine = useMemo<LatLngExpression[]>(() => {
     const pins: LatLngExpression[] = [];
     if (origin) pins.push(origin);
@@ -183,17 +195,22 @@ export default function RouteMapInner({
     if (destination) pins.push(destination);
     return pins;
   }, [origin, destination, viaPoints]);
+  const spurLines = useMemo<LatLngExpression[][]>(() => {
+    if (!origin) return [];
+    return extraEnds.map((place) => [origin, [place.lat, place.lon]]);
+  }, [origin, extraEnds]);
   const previewColor = nightMap ? "#ff8b7a" : "#c8102e";
 
   const fitPoints = useMemo<LatLngExpression[]>(() => {
     const fromPaths = paths.flatMap((path) => path.positions);
-    if (fromPaths.length > 0) return fromPaths;
-    const pins: LatLngExpression[] = [];
+    if (fromPaths.length > 0 && extraEnds.length === 0) return fromPaths;
+    const pins: LatLngExpression[] = [...fromPaths];
     if (origin) pins.push(origin);
     for (const stop of viaPoints) pins.push([stop.lat, stop.lon]);
     if (destination) pins.push(destination);
+    for (const place of extraEnds) pins.push([place.lat, place.lon]);
     return pins;
-  }, [paths, origin, destination, viaPoints]);
+  }, [paths, origin, destination, viaPoints, extraEnds]);
 
   const tileSkin = nightChart
     ? "map-tiles-night"
@@ -233,13 +250,14 @@ export default function RouteMapInner({
       <JourneyPaths
         paths={paths}
         preview={previewLine}
+        spurs={spurLines}
         previewColor={previewColor}
         halo={halo}
       />
       {from && origin && (
         <Marker
           position={origin}
-          draggable
+          draggable={!lockPins}
           icon={pinIcon("from")}
           eventHandlers={{
             dragend: (event) => {
@@ -256,7 +274,7 @@ export default function RouteMapInner({
           <Marker
             key={`${stop.id}-${index}`}
             position={[stop.lat, stop.lon]}
-            draggable
+            draggable={!lockPins}
             icon={pinIcon("via")}
             eventHandlers={{
               dragend: (event) => {
@@ -274,7 +292,7 @@ export default function RouteMapInner({
       {to && destination && (
         <Marker
           position={destination}
-          draggable
+          draggable={!lockPins}
           icon={pinIcon("to")}
           eventHandlers={{
             dragend: (event) => {
@@ -286,6 +304,15 @@ export default function RouteMapInner({
           <Popup>{to.name}</Popup>
         </Marker>
       )}
+      {extraEnds.map((place) => (
+        <Marker
+          key={place.id}
+          position={[place.lat, place.lon]}
+          icon={pinIcon("to")}
+        >
+          <Popup>{place.name}</Popup>
+        </Marker>
+      ))}
       {pendingPick && (
         <Marker
           position={[pendingPick.lat, pendingPick.lon]}
@@ -467,11 +494,13 @@ function MapResizer() {
 function JourneyPaths({
   paths,
   preview,
+  spurs = [],
   previewColor,
   halo,
 }: {
   paths: PathLeg[];
   preview: LatLngExpression[];
+  spurs?: LatLngExpression[][];
   previewColor: string;
   halo: string;
 }) {
@@ -488,6 +517,19 @@ function JourneyPaths({
           opacity: 0.72,
           dashArray: "10 10",
           className: "journey-preview",
+        }).addTo(map),
+      );
+    }
+
+    for (const spur of spurs) {
+      if (spur.length < 2) continue;
+      layers.push(
+        L.polyline(spur, {
+          color: previewColor,
+          weight: 2,
+          opacity: 0.32,
+          dashArray: "6 10",
+          className: "journey-preview-spur",
         }).addTo(map),
       );
     }
@@ -518,7 +560,7 @@ function JourneyPaths({
         map.removeLayer(layer);
       }
     };
-  }, [map, paths, preview, previewColor, halo]);
+  }, [map, paths, preview, spurs, previewColor, halo]);
 
   return null;
 }
@@ -532,16 +574,19 @@ function FitPoints({
 }) {
   const map = useMap();
   const lastKey = useRef<number | null>(null);
+  const lastCount = useRef(0);
 
   useEffect(() => {
     map.invalidateSize({ animate: false });
     if (points.length === 0) {
       if (lastKey.current !== null) map.setView(EUROPE_CENTER, 4);
       lastKey.current = fitKey;
+      lastCount.current = 0;
       return;
     }
-    if (lastKey.current === fitKey) return;
+    if (lastKey.current === fitKey && lastCount.current === points.length) return;
     lastKey.current = fitKey;
+    lastCount.current = points.length;
     if (points.length >= 2) {
       map.fitBounds(points as LatLngBoundsExpression, {
         padding: [48, 72],

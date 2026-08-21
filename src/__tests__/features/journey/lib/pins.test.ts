@@ -3,6 +3,7 @@ import { berlin, dresden, prague } from "@/test/fixtures";
 import {
   canPinVia,
   nextPickAfter,
+  otherEnd,
   placesAfterPin,
   roleForMapClick,
   upsertViaList,
@@ -49,5 +50,11 @@ describe("map pins", () => {
     expect(upsertViaList([null], dresden)).toEqual([dresden]);
     expect(upsertViaList([dresden], prague)).toEqual([dresden, prague]);
     expect(upsertViaList([dresden, prague], berlin)).toEqual([dresden, berlin]);
+  });
+
+  it("uses the city as the other pin when destination is empty", () => {
+    expect(otherEnd({ from: berlin, to: null, city: prague })).toEqual(prague);
+    expect(otherEnd({ from: berlin, to: dresden, city: prague })).toEqual(dresden);
+    expect(otherEnd({ from: berlin, to: null, city: berlin })).toBeNull();
   });
 });

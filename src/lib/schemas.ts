@@ -3,6 +3,7 @@ import { z } from "zod";
 
 export const locationTypeSchema = z.enum(["ADDRESS", "PLACE", "STOP"]);
 export const modeFilterSchema = z.enum(["all", "train", "bus"]);
+export const distanceFilterSchema = z.enum(["all", "long", "suburban"]);
 export const transferFilterSchema = z.enum(["all", "direct", "transfers"]);
 
 export const selectedPlaceSchema = z.object({
@@ -30,6 +31,8 @@ export const geocodeInputSchema = z.object({
   language: z.string().trim().min(2).max(8).optional(),
   lat: z.number().gte(-90).lte(90).optional(),
   lon: z.number().gte(-180).lte(180).optional(),
+  type: locationTypeSchema.optional(),
+  placeBias: z.number().gte(0).lte(10).optional(),
 });
 
 function isValidDateTime(value: string | undefined) {
@@ -55,6 +58,7 @@ export const planJourneyInputSchema = z
     arriveBy: z.boolean().optional().default(false),
     allDay: z.boolean().optional().default(false),
     modeFilter: modeFilterSchema,
+    distanceFilter: distanceFilterSchema.optional().default("all"),
     transferFilter: transferFilterSchema,
     accessible: z.boolean().optional().default(false),
     bike: z.boolean().optional().default(false),
@@ -102,6 +106,8 @@ export const journeySearchFormSchema = z
     arriveBy: z.boolean(),
     allDay: z.boolean().optional().default(false),
     modeFilter: modeFilterSchema,
+    distanceFilter: distanceFilterSchema.optional().default("all"),
+    city: selectedPlaceSchema.nullable().optional().default(null),
     transferFilter: transferFilterSchema,
     board: z.boolean().optional().default(false),
     accessible: z.boolean().optional().default(false),
@@ -111,21 +117,38 @@ export const journeySearchFormSchema = z
     returnTime: z.string().trim().optional(),
   })
   .superRefine((value, ctx) => {
-    if (!value.from) {
+    if (value.distanceFilter !== "all" && !value.city) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["city"],
+        message: "validation.cityRequired",
+      });
+    }
+    const suburban = value.distanceFilter === "suburban";
+    const board = Boolean(value.board);
+    if (!value.from && !(suburban && value.city)) {
       ctx.addIssue({
         code: "custom",
         path: ["from"],
         message: "validation.originRequired",
       });
     }
-    if (!value.board && !value.to) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["to"],
-        message: "validation.destinationRequired",
-      });
+    if (!board && !value.to) {
+      const cityAsDest = Boolean(
+        suburban &&
+          value.city &&
+          value.from &&
+          (value.from.lat !== value.city.lat || value.from.lon !== value.city.lon),
+      );
+      if (!cityAsDest) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["to"],
+          message: "validation.destinationRequired",
+        });
+      }
     }
-    if (!value.board) {
+    if (!board) {
       value.via.forEach((stop, index) => {
         if (!stop) {
           ctx.addIssue({
@@ -151,14 +174,14 @@ export const journeySearchFormSchema = z
         });
       }
     }
-    if (!value.board && !isDifferentPlace(value.from, value.to)) {
+    if (!board && !isDifferentPlace(value.from, value.to)) {
       ctx.addIssue({
         code: "custom",
         path: ["to"],
         message: "validation.placesDifferent",
       });
     }
-    if (!value.board) {
+    if (!board) {
       value.via.forEach((stop, index) => {
         if (!stop) return;
         if (!isDifferentPlace(value.from, stop) || !isDifferentPlace(value.to, stop)) {
@@ -170,7 +193,7 @@ export const journeySearchFormSchema = z
         }
       });
     }
-    if (value.wantReturn && !value.board) {
+    if (value.wantReturn && !board) {
       if (!value.returnTime) {
         ctx.addIssue({
           code: "custom",
@@ -205,7 +228,13 @@ export const journeySearchFormSchema = z
     }
   });
 
-export type JourneyFormField = "from" | "to" | "time" | "via" | "returnTime";
+export type JourneyFormField =
+  | "from"
+  | "to"
+  | "time"
+  | "via"
+  | "returnTime"
+  | "city";
 export type JourneyFormFieldErrors = Partial<
   Record<JourneyFormField, string> & Record<`via.${number}`, string>
 >;
@@ -216,7 +245,13 @@ export function fieldErrorsFromZod(error: {
   const next: JourneyFormFieldErrors = {};
   for (const issue of error.issues) {
     const key = issue.path[0];
-    if (key === "from" || key === "to" || key === "time" || key === "returnTime") {
+    if (
+      key === "from" ||
+      key === "to" ||
+      key === "time" ||
+      key === "returnTime" ||
+      key === "city"
+    ) {
       if (!next[key]) next[key] = issue.message;
       continue;
     }
@@ -245,7 +280,7 @@ export const areaSchema = z.looseObject({
 export const geocodeMatchSchema = z.looseObject({
   type: locationTypeSchema,
   name: z.string(),
-  id: z.string(),
+  id: z.string().optional().default(""),
   lat: z.number(),
   lon: z.number(),
   score: z.number().optional().default(0),
@@ -330,6 +365,7 @@ export const planResponseSchema = z.looseObject({
   to: placeSchema.optional(),
   itineraries: z.array(itinerarySchema).optional().default([]),
   direct: z.array(itinerarySchema).optional().default([]),
+  serviceFrom: z.string().optional(),
 });
 
 export const stopTimesInputSchema = z.object({
@@ -337,6 +373,7 @@ export const stopTimesInputSchema = z.object({
   time: z.string().trim().min(1).optional(),
   arriveBy: z.boolean().optional().default(false),
   modeFilter: modeFilterSchema.optional().default("all"),
+  distanceFilter: distanceFilterSchema.optional().default("all"),
   night: z.boolean().optional().default(false),
   pageCursor: z.string().trim().max(2000).optional(),
   language: z.string().trim().min(2).max(8).optional(),
@@ -369,6 +406,7 @@ export const stopTimesResponseSchema = z.looseObject({
 });
 
 export type ModeFilter = z.infer<typeof modeFilterSchema>;
+export type DistanceFilter = z.infer<typeof distanceFilterSchema>;
 export type TransferFilter = z.infer<typeof transferFilterSchema>;
 export type SelectedPlace = z.infer<typeof selectedPlaceSchema>;
 export type GeocodeInput = z.infer<typeof geocodeInputSchema>;

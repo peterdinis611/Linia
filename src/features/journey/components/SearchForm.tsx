@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n/provider";
 import type { JourneyFormFieldErrors } from "@/lib/schemas";
 import { MAX_VIA_STOPS } from "@/lib/transit/place";
-import type { ModeFilter, SelectedPlace, TransferFilter } from "@/lib/transit/types";
+import type {
+  DistanceFilter,
+  ModeFilter,
+  SelectedPlace,
+  TransferFilter,
+} from "@/lib/transit/types";
 import type { RouteMode } from "../hooks/use-journey-search";
 import { PlaceAutocomplete } from "./PlaceAutocomplete";
 import { HallWhen } from "./HallWhen";
@@ -18,6 +23,8 @@ type SearchFormProps = {
   datetime: string;
   arriveBy: boolean;
   allDay: boolean;
+  city: SelectedPlace | null;
+  distanceFilter: DistanceFilter;
   modeFilter: ModeFilter;
   transferFilter: TransferFilter;
   accessible: boolean;
@@ -40,6 +47,8 @@ type SearchFormProps = {
   onDatetimeChange: (value: string) => void;
   onArriveByChange: (value: boolean) => void;
   onAllDayChange: (value: boolean) => void;
+  onCityChange: (place: SelectedPlace | null) => void;
+  onDistanceFilterChange: (value: DistanceFilter) => void;
   onModeFilterChange: (value: ModeFilter) => void;
   onTransferFilterChange: (value: TransferFilter) => void;
   onAccessibleChange: (value: boolean) => void;
@@ -64,6 +73,8 @@ export function SearchForm({
   datetime,
   arriveBy,
   allDay,
+  city,
+  distanceFilter,
   modeFilter,
   transferFilter,
   accessible,
@@ -86,6 +97,8 @@ export function SearchForm({
   onDatetimeChange,
   onArriveByChange,
   onAllDayChange,
+  onCityChange,
+  onDistanceFilterChange,
   onModeFilterChange,
   onTransferFilterChange,
   onAccessibleChange,
@@ -102,6 +115,7 @@ export function SearchForm({
 }: SearchFormProps) {
   const { t } = useI18n();
   const [fieldsKey, setFieldsKey] = useState(0);
+  const suburban = distanceFilter === "suburban";
   const board = routeMode === "board";
   const canClear = Boolean(
     hasSearched ||
@@ -112,6 +126,8 @@ export function SearchForm({
       !leaveNow ||
       arriveBy ||
       allDay ||
+      city ||
+      distanceFilter !== "all" ||
       modeFilter !== "all" ||
       transferFilter !== "all" ||
       accessible ||
@@ -128,6 +144,13 @@ export function SearchForm({
       ?.scrollIntoView({ block: "center" });
   }, [fieldErrors]);
 
+  const distanceOptions: {
+    value: Exclude<DistanceFilter, "all">;
+    label: string;
+  }[] = [
+    { value: "long", label: t("search.distanceLong") },
+    { value: "suburban", label: t("search.distanceSuburban") },
+  ];
   const modeOptions: { value: Exclude<ModeFilter, "all">; label: string }[] = [
     { value: "train", label: t("search.modeRail") },
     { value: "bus", label: t("search.modeCoach") },
@@ -169,13 +192,58 @@ export function SearchForm({
         </p>
       </div>
 
+      <div className="ticket-line" data-desk="city">
+        <p className="kicker">{t("search.cityKicker")}</p>
+        <PlaceAutocomplete
+          key={`city-${fieldsKey}`}
+          kind="city"
+          label={t("search.city")}
+          placeholder={t("search.cityPlaceholder")}
+          value={city}
+          error={fieldErrors?.city ? t(fieldErrors.city) : undefined}
+          onChange={onCityChange}
+        />
+        <div
+          className="ticket-line-row"
+          role="group"
+          aria-label={t("search.distanceGroup")}
+        >
+          {distanceOptions.map((option) => {
+            const selected = distanceFilter === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                className="stamp"
+                data-on={selected}
+                data-testid={`distance-${option.value}`}
+                aria-pressed={selected}
+                onClick={() =>
+                  onDistanceFilterChange(selected ? "all" : option.value)
+                }
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+        <p className="font-mono text-[11px] tracking-[0.12em] text-ink-muted uppercase">
+          {suburban ? t("search.suburbanHint") : t("search.cityHint")}
+        </p>
+      </div>
+
       <div className="space-y-3" data-tour="origin">
         <PlaceAutocomplete
           key={`origin-${fieldsKey}`}
           label={t("search.origin")}
-          placeholder={t("search.originPlaceholder")}
+          placeholder={
+            suburban
+              ? t("search.originSuburbanPlaceholder")
+              : t("search.originPlaceholder")
+          }
           value={from}
-          bias={to}
+          bias={city ?? to}
+          placeBias={city ? 3 : undefined}
           error={fieldErrors?.from ? t(fieldErrors.from) : undefined}
           onChange={onFromChange}
         />
@@ -229,15 +297,21 @@ export function SearchForm({
             <PlaceAutocomplete
               key={`destination-${fieldsKey}`}
               label={t("search.destination")}
-              placeholder={t("search.destinationPlaceholder")}
+              placeholder={
+                suburban
+                  ? t("search.destinationSuburbanPlaceholder")
+                  : t("search.destinationPlaceholder")
+              }
               value={to}
-              bias={from}
+              bias={city ?? from}
+              placeBias={city ? 3 : undefined}
               error={fieldErrors?.to ? t(fieldErrors.to) : undefined}
               onChange={onToChange}
             />
           </div>
         </>
       ) : null}
+      {!suburban ? (
       <div className="space-y-3">
         <div data-tour="route">
           <p className="kicker mb-2">{t("search.route")}</p>
@@ -277,7 +351,8 @@ export function SearchForm({
                   label={t("search.viaN", { n: index + 1 })}
                   placeholder={t("search.viaPlaceholder")}
                   value={stop}
-                  bias={from ?? to}
+                  bias={city ?? from ?? to}
+                  placeBias={city ? 3 : undefined}
                   error={
                     fieldErrors?.[`via.${index}`]
                       ? t(fieldErrors[`via.${index}`]!)
@@ -305,6 +380,7 @@ export function SearchForm({
           </>
         )}
       </div>
+      ) : null}
 
       <div className="space-y-5" data-tour="when">
       <div className="grid grid-cols-2 gap-2">

@@ -76,6 +76,20 @@ describe("share", () => {
     });
   });
 
+  it("round-trips a city desk and suburban stamp", () => {
+    const query = encodeShareQuery({
+      ...base,
+      city: berlin,
+      distanceFilter: "suburban",
+    });
+    expect(query).toContain("scope=suburban");
+    expect(query).toContain("city=");
+    expect(parseShareQuery(`?${query}`)).toMatchObject({
+      distanceFilter: "suburban",
+      city: { name: "Berlin Hbf" },
+    });
+  });
+
   it("finds a selected trip by key", () => {
     const first = railItinerary();
     const second = railItinerary({

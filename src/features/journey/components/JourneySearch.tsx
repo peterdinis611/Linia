@@ -89,6 +89,8 @@ export function JourneySearch() {
             datetime={search.datetime}
             arriveBy={search.arriveBy}
             allDay={search.allDay}
+            city={search.city}
+            distanceFilter={search.distanceFilter}
             modeFilter={search.modeFilter}
             transferFilter={search.transferFilter}
             accessible={search.accessible}
@@ -148,6 +150,8 @@ export function JourneySearch() {
                 search.setDatetime(startOfLocalDay(search.datetime));
               }
             }}
+            onCityChange={search.handleCityChange}
+            onDistanceFilterChange={search.handleDistanceFilterChange}
             onModeFilterChange={search.setModeFilter}
             onTransferFilterChange={search.setTransferFilter}
             onAccessibleChange={search.setAccessible}
@@ -199,7 +203,7 @@ export function JourneySearch() {
             />
           )}
 
-          {search.routeMode === "board" && search.stopTimes.length > 0 && (
+          {search.boardView && search.stopTimes.length > 0 && (
             <div
               data-testid="station-board-panel"
               data-tour="board"
@@ -257,7 +261,9 @@ export function JourneySearch() {
             </div>
           )}
 
-          {search.routeMode !== "board" && search.itineraries.length > 0 && (
+          {search.routeMode !== "board" &&
+            !search.boardView &&
+            search.itineraries.length > 0 && (
             <>
               {search.from && search.to ? (
                 <PinLine
@@ -326,16 +332,18 @@ export function JourneySearch() {
         <section className="hall-map" data-tour="map">
           <RouteMap
             itinerary={search.selected}
-            from={search.from}
-            to={search.to}
-            via={search.via}
-            routeMode={search.routeMode}
+            from={search.mapFrom}
+            to={search.mapTo}
+            via={search.boardView ? [] : search.via}
+            ends={search.boardView ? search.boardEnds : []}
+            routeMode={search.boardView ? "board" : search.routeMode}
             highlightCarriers={search.selectedCarriers}
             fitKey={search.mapFitKey}
             pickMode={search.pickMode}
             pendingPick={search.pendingPick}
             pinBusy={search.pinBusy}
             pocketed={!mapOpen}
+            lockPins={search.boardView}
             onTogglePocket={() => {
               if (mapOpen) {
                 search.setPickMode("idle");
@@ -383,21 +391,21 @@ export function JourneySearch() {
         </p>
       </footer>
     </div>
-    {search.routeMode === "board" && search.selected ? (
+    {search.boardView && search.selected ? (
       <PrintTicket
         itinerary={search.selected}
-        from={search.from}
+        from={search.from ?? search.city}
         to={search.to}
       />
     ) : null}
-    {search.routeMode !== "board" && search.outboundSelected ? (
+    {!search.boardView && search.outboundSelected ? (
       <PrintTicket
         itinerary={search.outboundSelected}
         from={search.from}
         to={search.to}
       />
     ) : null}
-    {search.routeMode !== "board" &&
+    {!search.boardView &&
     search.wantReturn &&
     search.returnSelected ? (
       <PrintTicket

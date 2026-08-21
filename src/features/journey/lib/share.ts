@@ -1,10 +1,12 @@
 import { isTransitMode, toLocalDateTimeValue } from "@/lib/format";
 import {
+  distanceFilterSchema,
   modeFilterSchema,
   selectedPlaceSchema,
   transferFilterSchema,
 } from "@/lib/schemas";
 import type {
+  DistanceFilter,
   Itinerary,
   ModeFilter,
   SelectedPlace,
@@ -20,6 +22,8 @@ export type ShareSnapshot = {
   arriveBy: boolean;
   allDay: boolean;
   modeFilter: ModeFilter;
+  distanceFilter?: DistanceFilter;
+  city?: SelectedPlace | null;
   transferFilter: TransferFilter;
   tripKey?: string;
   board?: boolean;
@@ -92,6 +96,10 @@ export function encodeShareQuery(snapshot: ShareSnapshot) {
   if (snapshot.allDay) params.set("day", "1");
   if (snapshot.arriveBy) params.set("arrive", "1");
   if (snapshot.modeFilter !== "all") params.set("mode", snapshot.modeFilter);
+  if (snapshot.distanceFilter && snapshot.distanceFilter !== "all") {
+    params.set("scope", snapshot.distanceFilter);
+  }
+  if (snapshot.city) params.set("city", encodePlace(snapshot.city));
   if (snapshot.transferFilter !== "all") {
     params.set("xfers", snapshot.transferFilter);
   }
@@ -142,6 +150,8 @@ export function parseShareQuery(
   const datetime = at && !Number.isNaN(new Date(at).getTime()) ? at : toLocalDateTimeValue();
   const allDay = params.get("day") === "1";
   const mode = modeFilterSchema.safeParse(params.get("mode") ?? "all");
+  const scope = distanceFilterSchema.safeParse(params.get("scope") ?? "all");
+  const city = decodePlace(params.get("city") ?? "");
   const xfers = transferFilterSchema.safeParse(params.get("xfers") ?? "all");
   const tripKey = params.get("trip")?.trim() || undefined;
   const back = params.get("back")?.trim() ?? "";
@@ -157,6 +167,8 @@ export function parseShareQuery(
     arriveBy: params.get("arrive") === "1",
     allDay,
     modeFilter: mode.success ? mode.data : "all",
+    distanceFilter: scope.success ? scope.data : "all",
+    city: city ?? undefined,
     transferFilter: xfers.success ? xfers.data : "all",
     tripKey,
     board,
@@ -177,6 +189,8 @@ export function snapshotForShare(input: {
   arriveBy: boolean;
   allDay: boolean;
   modeFilter: ModeFilter;
+  distanceFilter?: DistanceFilter;
+  city?: SelectedPlace | null;
   transferFilter: TransferFilter;
   selected: Itinerary | null;
   board?: boolean;
@@ -201,6 +215,8 @@ export function snapshotForShare(input: {
     arriveBy: pinOutbound ? false : input.arriveBy,
     allDay: pinOutbound ? false : input.allDay,
     modeFilter: input.modeFilter,
+    distanceFilter: input.distanceFilter,
+    city: input.city ?? undefined,
     transferFilter: input.transferFilter,
     tripKey: selected ? itineraryKey(selected) : undefined,
     board: input.board || undefined,

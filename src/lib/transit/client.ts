@@ -1,5 +1,6 @@
 import { TransitError } from "@/lib/errors";
-import type { ModeFilter, SelectedPlace } from "@/lib/schemas";
+import { hasMappableCoords } from "./geocode-rank";
+import type { DistanceFilter, ModeFilter, SelectedPlace } from "@/lib/schemas";
 
 export const MOTIS_BASE = (
   process.env.MOTIS_BASE ?? "https://api.transitous.org/api"
@@ -23,8 +24,27 @@ const TRAIN_MODES = [
 
 const BUS_MODES = ["BUS", "COACH"] as const;
 
+const LONG_DISTANCE_MODES = [
+  "HIGHSPEED_RAIL",
+  "LONG_DISTANCE",
+  "NIGHT_RAIL",
+  "COACH",
+] as const;
+
+const SUBURBAN_MODES = [
+  "BUS",
+  "SUBURBAN",
+  "REGIONAL_RAIL",
+  "REGIONAL_FAST_RAIL",
+] as const;
+
 export function placeQueryParam(place: SelectedPlace): string {
-  if (place.type === "STOP" && place.id) {
+  if (
+    place.type === "STOP" &&
+    place.id &&
+    !place.id.startsWith("coord:") &&
+    hasMappableCoords(place.lat, place.lon)
+  ) {
     return place.id;
   }
   return `${place.lat},${place.lon}`;
@@ -32,12 +52,25 @@ export function placeQueryParam(place: SelectedPlace): string {
 
 export function transitModesFor(
   filter: ModeFilter,
-  options?: { night?: boolean },
+  options?: { night?: boolean; distance?: DistanceFilter },
 ): string | undefined {
   if (options?.night) return "NIGHT_RAIL";
-  if (filter === "train") return TRAIN_MODES.join(",");
-  if (filter === "bus") return BUS_MODES.join(",");
-  return undefined;
+  const byVehicle =
+    filter === "train" ? TRAIN_MODES : filter === "bus" ? BUS_MODES : undefined;
+  const byDistance =
+    options?.distance === "long"
+      ? LONG_DISTANCE_MODES
+      : options?.distance === "suburban"
+        ? SUBURBAN_MODES
+        : undefined;
+  if (!byDistance) {
+    return byVehicle ? byVehicle.join(",") : undefined;
+  }
+  if (!byVehicle) return byDistance.join(",");
+  const modes = byVehicle.filter((mode) =>
+    (byDistance as readonly string[]).includes(mode),
+  );
+  return (modes.length > 0 ? modes : byDistance).join(",");
 }
 
 export async function motisFetch(

@@ -10,7 +10,9 @@ import {
   type JourneyFormFieldErrors,
 } from "@/lib/schemas";
 import { coordPlace, matchToPlace, MAX_VIA_STOPS, placeToSelected } from "@/lib/transit/place";
+import { boardDestinations, itineraryFromStopTime, mapDestination } from "@/lib/transit/path";
 import {
+  type DistanceFilter,
   type Itinerary,
   type ModeFilter,
   type Place,
@@ -18,7 +20,13 @@ import {
   type StopTimeEvent,
   type TransferFilter,
 } from "@/lib/transit/types";
-import { fetchStopTimes, fetchTrip, planJourney, reverseGeocodePlace } from "@/lib/transit/queries";
+import {
+  fetchStopTimes,
+  fetchTrip,
+  planJourney,
+  resolveBoardEnds,
+  reverseGeocodePlace,
+} from "@/lib/transit/queries";
 import {
   countTransferKinds,
   emptyBoardCopy,
@@ -36,6 +44,7 @@ import {
 import { addDaysToDateTime } from "../lib/datetime";
 import {
   nextPickAfter,
+  otherEnd,
   placesAfterPin,
   roleForMapClick,
   type MapPickMode,
@@ -61,6 +70,25 @@ export type PlaceSource = "form" | "map";
 export type RouteMode = "point" | "via" | "board";
 export type HallLeg = "outbound" | "inbound";
 
+function suburbanOrigin(input: {
+  from: SelectedPlace | null;
+  city?: SelectedPlace | null;
+  distanceFilter?: DistanceFilter;
+}) {
+  if (input.distanceFilter === "suburban") return input.from ?? input.city ?? null;
+  return input.from;
+}
+
+function suburbanDestination(input: {
+  from: SelectedPlace | null;
+  to: SelectedPlace | null;
+  city?: SelectedPlace | null;
+  distanceFilter?: DistanceFilter;
+}) {
+  if (input.distanceFilter !== "suburban") return input.to;
+  return otherEnd(input);
+}
+
 function planKey(input: {
   from: SelectedPlace | null;
   to: SelectedPlace | null;
@@ -70,6 +98,7 @@ function planKey(input: {
   arriveBy: boolean;
   allDay: boolean;
   modeFilter: ModeFilter;
+  distanceFilter?: DistanceFilter;
   transferFilter: TransferFilter;
   accessible?: boolean;
   bike?: boolean;
@@ -90,6 +119,7 @@ function planKey(input: {
           : input.datetime,
       input.arriveBy ? "1" : "0",
       input.modeFilter,
+      input.distanceFilter ?? "all",
     ].join("|");
   }
   if (!input.to) return "";
@@ -105,6 +135,7 @@ function planKey(input: {
         : input.datetime,
     input.arriveBy ? "1" : "0",
     input.modeFilter,
+    input.distanceFilter ?? "all",
     input.transferFilter,
     input.accessible ? "1" : "0",
     input.bike ? "1" : "0",
@@ -123,6 +154,8 @@ export function useJourneySearch() {
   const [datetime, setDatetime] = useState(toLocalDateTimeValue);
   const [arriveBy, setArriveBy] = useState(false);
   const [allDay, setAllDay] = useState(false);
+  const [city, setCity] = useState<SelectedPlace | null>(null);
+  const [distanceFilter, setDistanceFilter] = useState<DistanceFilter>("all");
   const [modeFilter, setModeFilter] = useState<ModeFilter>("all");
   const [transferFilter, setTransferFilter] = useState<TransferFilter>("all");
   const [loading, setLoading] = useState(false);
@@ -155,6 +188,8 @@ export function useJourneySearch() {
   const [inboundSelectedIndex, setInboundSelectedIndex] = useState(0);
   const [stopTimes, setStopTimes] = useState<StopTimeEvent[]>([]);
   const [boardTrip, setBoardTrip] = useState<Itinerary | null>(null);
+  const [boardEvent, setBoardEvent] = useState<StopTimeEvent | null>(null);
+  const [boardEnds, setBoardEnds] = useState<SelectedPlace[]>([]);
   const [boardCursors, setBoardCursors] = useState<{
     prev?: string;
     next?: string;
@@ -174,6 +209,8 @@ export function useJourneySearch() {
     datetime,
     arriveBy,
     allDay,
+    city,
+    distanceFilter,
     modeFilter,
     transferFilter,
     accessible,
@@ -191,6 +228,8 @@ export function useJourneySearch() {
     datetime,
     arriveBy,
     allDay,
+    city,
+    distanceFilter,
     modeFilter,
     transferFilter,
     accessible,
@@ -199,6 +238,8 @@ export function useJourneySearch() {
     wantReturn,
     returnDatetime,
   };
+
+  const boardView = routeMode === "board";
 
   const activeItineraries =
     hallLeg === "inbound" ? inboundItineraries : itineraries;
@@ -227,12 +268,27 @@ export function useJourneySearch() {
   );
 
   const selected =
-    routeMode === "board"
+    boardView
       ? boardTrip
       : filtered.find((item) => item.index === activeSelectedIndex)?.itinerary ??
         filtered[0]?.itinerary ??
         null;
   selectedRef.current = selected;
+
+  const boardMapTo = useMemo(
+    () =>
+      boardView
+        ? mapDestination({
+            itinerary: boardTrip,
+            event: boardEvent,
+            ends: boardEnds,
+          })
+        : null,
+    [boardView, boardTrip, boardEvent, boardEnds],
+  );
+
+  const mapFrom = from ?? city;
+  const mapTo = boardView ? boardMapTo : otherEnd({ from, to, city });
 
   const returnSelected =
     inboundItineraries[inboundSelectedIndex] ?? inboundItineraries[0] ?? null;
@@ -274,6 +330,8 @@ export function useJourneySearch() {
     setSelectedCarriers([]);
     setStopTimes([]);
     setBoardTrip(null);
+    setBoardEvent(null);
+    setBoardEnds([]);
     setBoardCursors({});
     setHasSearched(false);
     setError(null);
@@ -305,6 +363,24 @@ export function useJourneySearch() {
       setPickMode("idle");
       bumpFit();
     } else dropPlan();
+  }
+
+  function handleCityChange(place: SelectedPlace | null) {
+    setCity(place);
+    setFieldErrors((errors) => ({
+      ...errors,
+      city: place || distanceFilter === "all" ? undefined : "validation.cityRequired",
+    }));
+    if (place) bumpFit();
+  }
+
+  function handleDistanceFilterChange(value: DistanceFilter) {
+    setDistanceFilter(value);
+    setFieldErrors((errors) => ({
+      ...errors,
+      city: value !== "all" && !city ? "validation.cityRequired" : undefined,
+    }));
+    bumpFit();
   }
 
   function handleViaChange(index: number, place: SelectedPlace | null) {
@@ -439,6 +515,8 @@ export function useJourneySearch() {
     setDatetime(snapshot.datetime);
     setArriveBy(snapshot.arriveBy);
     setAllDay(snapshot.allDay);
+    setCity(snapshot.city ?? null);
+    setDistanceFilter(snapshot.distanceFilter ?? "all");
     setModeFilter(snapshot.modeFilter);
     setTransferFilter(snapshot.transferFilter);
     setAccessible(Boolean(snapshot.accessible));
@@ -466,6 +544,8 @@ export function useJourneySearch() {
       arriveBy: boolean;
       allDay: boolean;
       modeFilter: ModeFilter;
+      distanceFilter?: DistanceFilter;
+      city?: SelectedPlace | null;
       pageCursor?: string;
       tripKey?: string;
     },
@@ -484,6 +564,7 @@ export function useJourneySearch() {
       arriveBy: snapshot.arriveBy,
       allDay: snapshot.allDay,
       modeFilter: snapshot.modeFilter,
+      distanceFilter: snapshot.distanceFilter,
       transferFilter: "all",
       board: true,
     });
@@ -507,6 +588,7 @@ export function useJourneySearch() {
               : snapshot.datetime,
           arriveBy: snapshot.arriveBy,
           modeFilter: snapshot.modeFilter,
+          distanceFilter: snapshot.distanceFilter,
           pageCursor: snapshot.pageCursor,
           language: locale,
         },
@@ -522,28 +604,48 @@ export function useJourneySearch() {
         arriveBy: snapshot.arriveBy,
         allDay: snapshot.allDay,
         modeFilter: snapshot.modeFilter,
+        distanceFilter: snapshot.distanceFilter ?? "all",
+        city: snapshot.city,
         transferFilter: "all",
         board: true,
         tripKey: snapshot.tripKey,
       };
       setStopTimes(result.stopTimes);
+      setBoardEnds(boardDestinations(result.stopTimes));
       setBoardCursors({
         prev: result.previousPageCursor,
         next: result.nextPageCursor,
       });
       setItineraries([]);
       setInboundItineraries([]);
+      const ends = await resolveBoardEnds(
+        result.stopTimes,
+        snapshot.from,
+        locale,
+      );
+      if (gen !== planGen.current) return;
+      setBoardEnds(ends);
       if (snapshot.tripKey) {
         const match = result.stopTimes.find(
           (event) => event.tripId && snapshot.tripKey?.includes(event.tripId),
         );
         if (match?.tripId) {
+          setBoardEvent(match);
           const trip = await fetchTrip(match.tripId);
           if (gen !== planGen.current) return;
           setBoardTrip(trip);
         }
       } else if (!silent) {
-        setBoardTrip(null);
+        const first = result.stopTimes.find((event) => event.tripId);
+        if (first) {
+          setBoardEvent(first);
+          const trip = await loadBoardTrip(first);
+          if (gen !== planGen.current) return;
+          setBoardTrip(trip);
+        } else {
+          setBoardEvent(null);
+          setBoardTrip(null);
+        }
       }
       setLiveAt(Date.now());
       bumpFit();
@@ -552,6 +654,8 @@ export function useJourneySearch() {
       if (!silent) {
         setStopTimes([]);
         setBoardTrip(null);
+        setBoardEvent(null);
+        setBoardEnds([]);
         setError(
           err instanceof Error &&
             (err.message.startsWith("errors.") ||
@@ -578,6 +682,8 @@ export function useJourneySearch() {
       arriveBy: boolean;
       allDay: boolean;
       modeFilter: ModeFilter;
+      distanceFilter?: DistanceFilter;
+      city?: SelectedPlace | null;
       transferFilter: TransferFilter;
       accessible?: boolean;
       bike?: boolean;
@@ -606,6 +712,8 @@ export function useJourneySearch() {
       arriveBy: snapshot.arriveBy,
       allDay: snapshot.allDay,
       modeFilter: snapshot.modeFilter,
+      distanceFilter: snapshot.distanceFilter,
+      city: snapshot.city,
       transferFilter: snapshot.transferFilter,
       accessible: snapshot.accessible,
       bike: snapshot.bike,
@@ -640,6 +748,9 @@ export function useJourneySearch() {
     setHasSearched(true);
     setPendingPick(null);
     setStopTimes([]);
+    setBoardTrip(null);
+    setBoardEvent(null);
+    setBoardEnds([]);
     try {
       const outboundInput = {
         from: origin,
@@ -649,6 +760,7 @@ export function useJourneySearch() {
         arriveBy: parsed.data.allDay ? false : parsed.data.arriveBy,
         allDay: parsed.data.allDay,
         modeFilter: parsed.data.modeFilter,
+        distanceFilter: parsed.data.distanceFilter,
         transferFilter: parsed.data.transferFilter,
         accessible: access,
         bike: withBike,
@@ -668,6 +780,7 @@ export function useJourneySearch() {
               arriveBy: false,
               allDay: parsed.data.allDay,
               modeFilter: parsed.data.modeFilter,
+              distanceFilter: parsed.data.distanceFilter,
               transferFilter: parsed.data.transferFilter,
               accessible: access,
               bike: withBike,
@@ -695,6 +808,8 @@ export function useJourneySearch() {
         arriveBy: parsed.data.arriveBy,
         allDay: parsed.data.allDay,
         modeFilter: parsed.data.modeFilter,
+        distanceFilter: parsed.data.distanceFilter,
+        city: parsed.data.city,
         transferFilter: parsed.data.transferFilter,
         tripKey: snapshot.tripKey,
         accessible: access,
@@ -760,7 +875,7 @@ export function useJourneySearch() {
   useEffect(() => {
     const base = lastPlan.current;
     if (!base) return;
-    if (routeMode !== "board" && itineraries.length === 0) return;
+    if (!boardView && itineraries.length === 0) return;
     const snapshot = snapshotForShare({
       from: base.from,
       to: base.to,
@@ -770,9 +885,11 @@ export function useJourneySearch() {
       arriveBy: base.arriveBy,
       allDay: base.allDay,
       modeFilter: base.modeFilter,
+      distanceFilter: base.distanceFilter,
+      city: base.city,
       transferFilter: base.transferFilter,
       selected: hallLeg === "inbound" ? returnSelected : selected,
-      board: routeMode === "board",
+      board: boardView,
       accessible,
       bike,
       night,
@@ -804,6 +921,8 @@ export function useJourneySearch() {
     setDatetime(toLocalDateTimeValue());
     setArriveBy(false);
     setAllDay(false);
+    setCity(null);
+    setDistanceFilter("all");
     setModeFilter("all");
     setTransferFilter("all");
     setAccessible(false);
@@ -841,7 +960,7 @@ export function useJourneySearch() {
     setPinBusy(true);
     try {
       const role =
-        routeMode === "board" && pickMode === "idle"
+        routeMode === "board"
           ? "from"
           : roleForMapClick(pickMode, { from, to, via });
       const place = await lookupPlace(lat, lon, role === "via");
@@ -875,19 +994,25 @@ export function useJourneySearch() {
   async function handleSearch() {
     const snap = searchSnap.current;
     await runPlan({
-      from: snap.from,
-      to: snap.to,
-      via: snap.routeMode === "via" ? snap.via : [],
+      from: suburbanOrigin(snap),
+      to: suburbanDestination(snap),
+      via:
+        snap.routeMode === "via" && snap.distanceFilter !== "suburban"
+          ? snap.via
+          : [],
       leaveNow: snap.leaveNow,
       datetime: snap.datetime,
       arriveBy: snap.arriveBy,
       allDay: snap.allDay,
       modeFilter: snap.modeFilter,
+      distanceFilter: snap.distanceFilter,
+      city: snap.city,
       transferFilter: snap.transferFilter,
       accessible: snap.accessible,
       bike: snap.bike,
       night: snap.night,
-      wantReturn: snap.routeMode !== "board" && snap.wantReturn,
+      wantReturn:
+        snap.routeMode !== "board" && snap.wantReturn,
       returnDatetime: snap.returnDatetime,
       board: snap.routeMode === "board",
     });
@@ -895,13 +1020,24 @@ export function useJourneySearch() {
 
   useEffect(() => {
     const snapshot = {
-      from,
-      to,
-      via: routeMode === "via" ? via : [],
+      from: suburbanOrigin({
+        from,
+        city,
+        distanceFilter,
+      }),
+      to: suburbanDestination({
+        from,
+        to,
+        city,
+        distanceFilter,
+      }),
+      via: routeMode === "via" && distanceFilter !== "suburban" ? via : [],
       leaveNow,
       datetime,
       arriveBy,
       allDay,
+      city,
+      distanceFilter,
       modeFilter,
       transferFilter,
       accessible,
@@ -928,6 +1064,8 @@ export function useJourneySearch() {
     datetime,
     arriveBy,
     allDay,
+    city,
+    distanceFilter,
     modeFilter,
     transferFilter,
     accessible,
@@ -1012,7 +1150,7 @@ export function useJourneySearch() {
   function handleTimeShift(direction: "earlier" | "later") {
     const base = lastPlan.current;
     if (!base) return;
-    if (routeMode === "board") {
+    if (boardView) {
       const cursor =
         direction === "later" ? boardCursors.next : boardCursors.prev;
       if (!cursor) return;
@@ -1024,6 +1162,8 @@ export function useJourneySearch() {
           arriveBy: base.arriveBy,
           allDay: base.allDay,
           modeFilter: base.modeFilter,
+          distanceFilter: base.distanceFilter,
+          city: base.city,
           pageCursor: cursor,
           tripKey: selectedRef.current
             ? itineraryKey(selectedRef.current)
@@ -1074,13 +1214,20 @@ export function useJourneySearch() {
 
   async function handleSelectStopTime(event: StopTimeEvent) {
     if (!event.tripId) return;
-    try {
-      const trip = await fetchTrip(event.tripId);
-      setBoardTrip(trip);
-      bumpFit();
-    } catch {
-      setBoardTrip(null);
+    setBoardEvent(event);
+    setBoardTrip(await loadBoardTrip(event));
+    bumpFit();
+  }
+
+  async function loadBoardTrip(event: StopTimeEvent) {
+    if (event.tripId) {
+      try {
+        return await fetchTrip(event.tripId);
+      } catch {
+        // Suburban feeds often omit a full trip shape; fall back to the two ends.
+      }
     }
+    return itineraryFromStopTime(event);
   }
 
   function handleOpenStation(place: Place) {
@@ -1099,6 +1246,8 @@ export function useJourneySearch() {
       arriveBy: false,
       allDay: false,
       modeFilter,
+      distanceFilter,
+      city,
     });
   }
 
@@ -1130,6 +1279,8 @@ export function useJourneySearch() {
         arriveBy: false,
         allDay: false,
         modeFilter,
+        distanceFilter,
+        city,
       });
     });
   }
@@ -1181,6 +1332,8 @@ export function useJourneySearch() {
     setArriveBy(false);
     setAllDay(false);
     setDatetime(toLocalDateTimeValue());
+    setCity(null);
+    setDistanceFilter("all");
     setModeFilter("all");
     setTransferFilter("all");
     setAccessible(false);
@@ -1230,6 +1383,9 @@ export function useJourneySearch() {
     datetime,
     arriveBy,
     allDay,
+    city,
+    distanceFilter,
+    boardView,
     modeFilter,
     transferFilter,
     accessible,
@@ -1241,6 +1397,10 @@ export function useJourneySearch() {
     inboundItineraries,
     stopTimes,
     boardTrip,
+    boardEnds,
+    boardMapTo,
+    mapFrom,
+    mapTo,
     loading,
     error,
     hasSearched,
@@ -1269,6 +1429,8 @@ export function useJourneySearch() {
     shareUrl,
     setArriveBy,
     setModeFilter,
+    setDistanceFilter,
+    handleDistanceFilterChange,
     setTransferFilter,
     setSelectedIndex: handleSelectedIndexChange,
     setSelectedCarriers,
@@ -1280,6 +1442,7 @@ export function useJourneySearch() {
     handlePickModeChange,
     handleFromChange,
     handleToChange,
+    handleCityChange,
     handleViaChange,
     handleAddVia,
     handleRemoveVia,

@@ -6,6 +6,7 @@ import { HallLoader } from "@/components/status/HallLoader";
 import { useI18n } from "@/i18n/provider";
 import { transitAgencies } from "@/lib/carriers";
 import { isTransitMode, legName } from "@/lib/format";
+import { pathPointsForLeg } from "@/lib/transit/path";
 import type { Itinerary, SelectedPlace } from "@/lib/transit/types";
 import type { MapPickMode, RouteMode } from "../hooks/use-journey-search";
 import { roleForMapClick } from "../lib/pins";
@@ -29,6 +30,7 @@ type RouteMapProps = {
   from: SelectedPlace | null;
   to: SelectedPlace | null;
   via: Array<SelectedPlace | null>;
+  ends?: SelectedPlace[];
   routeMode: RouteMode;
   highlightCarriers?: string[];
   fitKey: number;
@@ -36,6 +38,7 @@ type RouteMapProps = {
   pendingPick: SelectedPlace | null;
   pinBusy: boolean;
   pocketed: boolean;
+  lockPins?: boolean;
   onTogglePocket: () => void;
   onPickModeChange: (mode: MapPickMode) => void;
   onMapClick: (lat: number, lon: number) => void;
@@ -52,6 +55,7 @@ export function RouteMap({
   from,
   to,
   via,
+  ends = [],
   routeMode,
   highlightCarriers = [],
   fitKey,
@@ -59,6 +63,7 @@ export function RouteMap({
   pendingPick,
   pinBusy,
   pocketed,
+  lockPins = false,
   onTogglePocket,
   onPickModeChange,
   onMapClick,
@@ -81,16 +86,21 @@ export function RouteMap({
   const caption =
     from && to
       ? [from.name, ...viaNames, to.name].join(" → ")
-      : pendingPick
-        ? t("map.pinned", { name: pendingPick.name })
-        : t("map.europe");
+      : from
+        ? from.name
+        : pendingPick
+          ? t("map.pinned", { name: pendingPick.name })
+          : t("map.europe");
   const carriers = itinerary ? transitAgencies(itinerary) : [];
   const transitLegs =
     itinerary?.legs.filter((leg) => isTransitMode(leg.mode)).slice(0, 4) ?? [];
 
   const approximate = Boolean(
     itinerary &&
-      itinerary.legs.every((leg) => !leg.legGeometry?.points),
+      itinerary.legs.some(
+        (leg) =>
+          !leg.legGeometry?.points && pathPointsForLeg(leg).length > 1,
+      ),
   );
 
   useEffect(() => {
@@ -154,11 +164,13 @@ export function RouteMap({
           from={from}
           to={to}
           via={via}
+          ends={ends}
           pendingPick={pendingPick}
           highlightCarriers={highlightCarriers}
           fitKey={fitKey}
           pickMode={pickMode}
           full={full}
+          lockPins={lockPins}
           onMapClick={onMapClick}
           onMarkerDrag={onMarkerDrag}
           onToggleFull={() => setFull((value) => !value)}
@@ -175,6 +187,8 @@ export function RouteMap({
             active={pickMode === "from"}
             onClick={() => onPickModeChange(pickMode === "from" ? "idle" : "from")}
           />
+          {routeMode === "board" ? null : (
+            <>
           <PickStamp
             label={t("map.destination")}
             longLabel={t("map.pinDestination")}
@@ -189,6 +203,8 @@ export function RouteMap({
             active={pickMode === "via"}
             onClick={() => onPickModeChange(pickMode === "via" ? "idle" : "via")}
           />
+            </>
+          )}
         </div>
       </div>
       <div className="map-overlay pointer-events-none">
@@ -209,7 +225,7 @@ export function RouteMap({
               </button>
             </div>
           )}
-          {!pendingPick && hintRole !== "pending" ? (
+          {!pendingPick && hintRole !== "pending" && routeMode !== "board" ? (
             <p className="map-plaque-hint">
               {t("map.clickToSet", {
                 target:

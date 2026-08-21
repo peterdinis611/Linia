@@ -55,6 +55,26 @@ export function roleForMapClick(
   return "pending";
 }
 
+export function samePlace(
+  a: { lat: number; lon: number } | null | undefined,
+  b: { lat: number; lon: number } | null | undefined,
+) {
+  if (!a || !b) return false;
+  return Math.abs(a.lat - b.lat) < 1e-4 && Math.abs(a.lon - b.lon) < 1e-4;
+}
+
+export function otherEnd(input: {
+  from: SelectedPlace | null;
+  to: SelectedPlace | null;
+  city?: SelectedPlace | null;
+}): SelectedPlace | null {
+  if (input.to) return input.to;
+  if (input.from && input.city && !samePlace(input.from, input.city)) {
+    return input.city;
+  }
+  return null;
+}
+
 export function nextPickAfter(assigned: PinRole, next: PinPlaces): MapPickMode {
   if (assigned === "from") return next.to ? "idle" : "to";
   if (assigned === "to") return next.from ? "idle" : "from";

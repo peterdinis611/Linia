@@ -4,12 +4,17 @@ import { planJourneyAction } from "@/app/actions/plan";
 import { getStopTimesAction } from "@/app/actions/stoptimes";
 import { getTripAction } from "@/app/actions/trip";
 import { createTtlCache } from "@/lib/ttl-cache";
+import { hasMappableCoords } from "@/lib/transit/geocode-rank";
+import { matchToPlace } from "@/lib/transit/place";
+import { boardDestinationName, boardDestinations } from "@/lib/transit/path";
 import type {
+  DistanceFilter,
   GeocodeMatch,
   Itinerary,
   ModeFilter,
   PlanResponse,
   SelectedPlace,
+  StopTimeEvent,
   StopTimesResponse,
   TransferFilter,
 } from "@/lib/transit/types";
@@ -35,6 +40,7 @@ function planCacheKey(input: {
   arriveBy?: boolean;
   allDay?: boolean;
   modeFilter: ModeFilter;
+  distanceFilter?: DistanceFilter;
   transferFilter: TransferFilter;
   accessible?: boolean;
   bike?: boolean;
@@ -55,6 +61,7 @@ function planCacheKey(input: {
     input.arriveBy ? "1" : "0",
     input.allDay ? "1" : "0",
     input.modeFilter,
+    input.distanceFilter ?? "all",
     input.transferFilter,
     input.accessible ? "1" : "0",
     input.bike ? "1" : "0",
@@ -67,6 +74,7 @@ export async function searchPlaces(
   query: string,
   language?: string,
   bias?: { lat: number; lon: number } | null,
+  options?: { type?: "PLACE" | "STOP"; placeBias?: number },
 ): Promise<GeocodeMatch[]> {
   const trimmed = query.trim();
   if (!trimmed) return [];
@@ -75,7 +83,7 @@ export async function searchPlaces(
       ? `${bias.lat.toFixed(3)},${bias.lon.toFixed(3)}`
       : "";
   return geocodeCache.get(
-    `${language ?? ""}|${near}|${trimmed.toLowerCase()}`,
+    `${language ?? ""}|${near}|${options?.type ?? ""}|${options?.placeBias ?? ""}|${trimmed.toLowerCase()}`,
     async () =>
       unwrapAction(
         await geocodeAction({
@@ -83,6 +91,8 @@ export async function searchPlaces(
           language,
           lat: bias?.lat,
           lon: bias?.lon,
+          type: options?.type,
+          placeBias: options?.placeBias,
         }),
       ),
   );
@@ -109,6 +119,7 @@ export async function planJourney(
     arriveBy?: boolean;
     allDay?: boolean;
     modeFilter: ModeFilter;
+    distanceFilter?: DistanceFilter;
     transferFilter: TransferFilter;
     accessible?: boolean;
     bike?: boolean;
@@ -136,6 +147,7 @@ function stopTimesCacheKey(input: {
   time?: string;
   arriveBy?: boolean;
   modeFilter?: ModeFilter;
+  distanceFilter?: DistanceFilter;
   night?: boolean;
   pageCursor?: string;
   language?: string;
@@ -148,6 +160,7 @@ function stopTimesCacheKey(input: {
     when,
     input.arriveBy ? "1" : "0",
     input.modeFilter ?? "all",
+    input.distanceFilter ?? "all",
     input.night ? "1" : "0",
     input.pageCursor ?? "",
     input.language ?? "",
@@ -160,6 +173,7 @@ export async function fetchStopTimes(
     time?: string;
     arriveBy?: boolean;
     modeFilter?: ModeFilter;
+    distanceFilter?: DistanceFilter;
     night?: boolean;
     pageCursor?: string;
     language?: string;
@@ -171,4 +185,43 @@ export async function fetchStopTimes(
     async () => unwrapAction(await getStopTimesAction(input)),
     options,
   );
+}
+
+export async function resolveBoardEnds(
+  events: StopTimeEvent[],
+  bias: { lat: number; lon: number } | null,
+  language?: string,
+): Promise<SelectedPlace[]> {
+  const mapped = boardDestinations(events);
+  const covered = new Set(mapped.map((place) => place.name.toLowerCase()));
+  const names: string[] = [];
+  const seen = new Set<string>();
+  for (const event of events) {
+    const name = boardDestinationName(event);
+    const key = name.toLowerCase();
+    if (name.length < 2 || seen.has(key) || covered.has(key)) continue;
+    seen.add(key);
+    names.push(name);
+  }
+  if (mapped.length > 0 && names.length === 0) return mapped;
+
+  const found: SelectedPlace[] = [...mapped];
+  const used = new Set(
+    mapped.map(
+      (place) => place.id || `${place.lat.toFixed(4)},${place.lon.toFixed(4)}`,
+    ),
+  );
+  for (const name of names.slice(0, 8)) {
+    const matches = await searchPlaces(name, language, bias, { placeBias: 3 });
+    const stop = matches.find(
+      (match) =>
+        match.type === "STOP" && hasMappableCoords(match.lat, match.lon),
+    );
+    if (!stop) continue;
+    const key = stop.id || `${stop.lat.toFixed(4)},${stop.lon.toFixed(4)}`;
+    if (used.has(key)) continue;
+    used.add(key);
+    found.push(matchToPlace(stop));
+  }
+  return found;
 }
