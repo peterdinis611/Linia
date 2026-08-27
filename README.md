@@ -26,7 +26,6 @@ Open [http://localhost:3000](http://localhost:3000). The hall talks to Transitou
 | --- | --- |
 | `MOTIS_BASE` | MOTIS API root. Defaults to `https://api.transitous.org/api`. |
 | `NEXT_PUBLIC_SITE_URL` | Canonical site URL in production (sitemap, Open Graph, share links). |
-| `NEXT_PUBLIC_CARTO_KEY` | Optional. Free CARTO Voyager tiles. Without it the hall uses Esri topo (CARTO now watermarks raster tiles). Request a key at [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey). |
 
 ## Scripts
 
@@ -45,4 +44,4 @@ End-to-end tests start a mock MOTIS server and a Next.js app. They do not call t
 
 ## Data
 
-Routing and geocoding come from [Transitous](https://transitous.org/sources/), built on open timetable feeds. The map uses [OpenStreetMap](https://www.openstreetmap.org/copyright).
+Routing and geocoding come from [Transitous](https://transitous.org/sources/), built on open timetable feeds. The map uses [OpenStreetMap](https://www.openstreetmap.org/copyright) via [OpenFreeMap](https://openfreemap.org/) Liberty, and Esri imagery for satellite.

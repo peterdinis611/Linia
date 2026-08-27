@@ -10,6 +10,7 @@ import {
   type ResultSort,
 } from "../lib/filters";
 import { ServiceGap } from "./Board";
+import { BoardCount, BoardMast } from "./BoardMast";
 import { CarrierCompare } from "./CarrierCompare";
 import { ItineraryDetail } from "./ItineraryDetail";
 import { ItineraryList } from "./ItineraryList";
@@ -60,7 +61,7 @@ export function JourneyResults({
   onTimeShift,
   onOpenStation,
 }: JourneyResultsProps) {
-  const { locale, t, tp } = useI18n();
+  const { t, tp } = useI18n();
   const [sort, setSort] = useState<ResultSort>("depart");
   const sorted = useMemo(
     () => sortIndexedItineraries(filtered, sort),
@@ -90,87 +91,60 @@ export function JourneyResults({
         <div className="searching-ribbon" aria-hidden="true" />
       ) : null}
       {serviceFrom ? <ServiceGap iso={serviceFrom} /> : null}
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <p className="kicker">{t("results.departures")}</p>
-          <p className="font-display mt-1 text-xl italic">{countLabel}</p>
-        </div>
-        <div className="flex flex-col items-end gap-1">
-          <div className="flex items-center gap-2">
-            {shareUrl ? (
-              <ShareJourney
-                url={shareUrl}
-                itinerary={selected}
-                fromName={selected?.legs[0]?.from.name}
-                toName={selected?.legs[selected.legs.length - 1]?.to.name}
-              />
-            ) : null}
-            {onRefresh ? (
+      <BoardMast
+        kicker={t("results.departures")}
+        headline={
+          <BoardCount count={filtered.length} label={countLabel} />
+        }
+        share={
+          shareUrl ? (
+            <ShareJourney
+              url={shareUrl}
+              itinerary={selected}
+              fromName={selected?.legs[0]?.from.name}
+              toName={selected?.legs[selected.legs.length - 1]?.to.name}
+            />
+          ) : null
+        }
+        liveAt={liveAt}
+        liveFresh={liveFresh}
+        loading={loading}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        onTimeShift={onTimeShift}
+      >
+        <div
+          className="board-sort"
+          role="group"
+          aria-label={t("results.sort")}
+        >
+          {SORTS.map((value) => {
+            const label =
+              value === "depart"
+                ? t("results.sortDepart")
+                : value === "fastest"
+                  ? t("results.sortFastest")
+                  : t("results.sortTransfersShort");
+            const full =
+              value === "transfers" ? t("results.sortTransfers") : label;
+            return (
               <button
+                key={value}
                 type="button"
                 className="stamp"
-                data-testid="refresh-live"
-                onClick={onRefresh}
-                disabled={refreshing || loading}
+                data-on={sort === value}
+                data-testid={`sort-${value}`}
+                aria-pressed={sort === value}
+                aria-label={full}
+                title={full}
+                onClick={() => setSort(value)}
               >
-                {t("results.refresh")}
+                {label}
               </button>
-            ) : null}
-            <p className="font-mono text-[11px] tracking-wider text-ink-muted uppercase">
-              {liveFresh ? t("results.live") : t("results.stale")}
-            </p>
-          </div>
-          {liveAt ? (
-            <p className="font-mono text-[10px] tracking-wide text-ink-muted uppercase">
-              {t("results.updated", {
-                time: new Date(liveAt).toLocaleTimeString(locale, {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
-              })}
-            </p>
-          ) : null}
+            );
+          })}
         </div>
-      </div>
-      <div className="rail-ornament" aria-hidden="true" />
-      {onTimeShift ? (
-        <div className="mode-switch" data-cols="2" role="group">
-          <button
-            type="button"
-            data-testid="earlier-connections"
-            disabled={loading || refreshing}
-            onClick={() => onTimeShift("earlier")}
-          >
-            {t("results.earlier")}
-          </button>
-          <button
-            type="button"
-            data-testid="later-connections"
-            disabled={loading || refreshing}
-            onClick={() => onTimeShift("later")}
-          >
-            {t("results.later")}
-          </button>
-        </div>
-      ) : null}
-      <div className="mode-switch" data-cols="3" role="group" aria-label={t("results.sort")}>
-        {SORTS.map((value) => (
-          <button
-            key={value}
-            type="button"
-            data-on={sort === value}
-            data-testid={`sort-${value}`}
-            aria-pressed={sort === value}
-            onClick={() => setSort(value)}
-          >
-            {value === "depart"
-              ? t("results.sortDepart")
-              : value === "fastest"
-                ? t("results.sortFastest")
-                : t("results.sortTransfers")}
-          </button>
-        ))}
-      </div>
+      </BoardMast>
       <CarrierCompare
         itineraries={afterTransfers.map((item) => item.itinerary)}
         selectedCarriers={selectedCarriers}

@@ -351,6 +351,10 @@ export function useJourneySearch() {
     setFrom(place);
     clearPlaceErrors();
     setPendingPick(null);
+    if (!place && !city && distanceFilter !== "all") {
+      setDistanceFilter("all");
+      setFieldErrors((errors) => ({ ...errors, city: undefined }));
+    }
     if (place) {
       setPickMode("idle");
       bumpFit();
@@ -369,19 +373,29 @@ export function useJourneySearch() {
 
   function handleCityChange(place: SelectedPlace | null) {
     setCity(place);
+    if (!place && distanceFilter !== "all" && !from) {
+      setDistanceFilter("all");
+    }
     setFieldErrors((errors) => ({
       ...errors,
-      city: place || distanceFilter === "all" ? undefined : "validation.cityRequired",
+      city:
+        place || distanceFilter === "all" || from
+          ? undefined
+          : "validation.cityRequired",
     }));
     if (place) bumpFit();
   }
 
   function handleDistanceFilterChange(value: DistanceFilter) {
+    if (value !== "all" && !city && !from) {
+      setFieldErrors((errors) => ({
+        ...errors,
+        city: "validation.cityRequired",
+      }));
+      return;
+    }
     setDistanceFilter(value);
-    setFieldErrors((errors) => ({
-      ...errors,
-      city: value !== "all" && !city ? "validation.cityRequired" : undefined,
-    }));
+    setFieldErrors((errors) => ({ ...errors, city: undefined }));
     bumpFit();
   }
 

@@ -4,7 +4,7 @@ import type { CSSProperties } from "react";
 import { useI18n } from "@/i18n/provider";
 import {
   compareCarriers,
-  formatCarrierDuration,
+  formatCarrierDurationTight,
   shortCarrierName,
 } from "@/lib/carriers";
 import type { Itinerary } from "@/lib/transit/types";
@@ -22,7 +22,7 @@ export function CarrierCompare({
   onSelectedCarriersChange,
   onJumpToItinerary,
 }: CarrierCompareProps) {
-  const { t, tp } = useI18n();
+  const { t } = useI18n();
   const carriers = compareCarriers(itineraries);
   if (carriers.length === 0) return null;
 
@@ -92,14 +92,24 @@ export function CarrierCompare({
         >
           <div className="carrier-ledger-row carrier-ledger-head" role="row">
             <span role="columnheader">{t("carriers.carrier")}</span>
-            <span role="columnheader">{t("carriers.fastest")}</span>
-            <span role="columnheader">{t("carriers.transfers")}</span>
-            <span role="columnheader">{t("carriers.routes")}</span>
+            <span className="carrier-ledger-metrics">
+              <span role="columnheader">
+                <span className="sr-only">{t("carriers.fastest")}</span>
+                <span aria-hidden="true">{t("carriers.fastestShort")}</span>
+              </span>
+              <span role="columnheader">{t("carriers.transfers")}</span>
+              <span role="columnheader">{t("carriers.routes")}</span>
+            </span>
           </div>
           {carriers.map((carrier) => {
             const on = selectedCarriers.includes(carrier.name);
             const isFastest = carrier.fastestDuration === fastestDuration;
             const isFewest = carrier.fewestTransfers === fewestTransfers;
+            const duration = formatCarrierDurationTight(carrier.fastestDuration);
+            const transfers =
+              carrier.fewestTransfers === 0
+                ? t("detail.direct")
+                : String(carrier.fewestTransfers);
             return (
               <button
                 type="button"
@@ -110,7 +120,7 @@ export function CarrierCompare({
                 data-fastest={isFastest}
                 data-fewest={isFewest}
                 aria-pressed={on}
-                aria-label={carrier.name}
+                aria-label={`${carrier.name}, ${duration}, ${transfers}, ${carrier.connections}`}
                 style={{ "--carrier": carrier.color } as CSSProperties}
                 onClick={() =>
                   toggleCarrier(carrier.name, carrier.bestItineraryIndex)
@@ -118,7 +128,7 @@ export function CarrierCompare({
               >
                 <span className="carrier-ledger-name" role="cell">
                   <span className="carrier-ledger-mark" aria-hidden="true" />
-                  <span>
+                  <span className="carrier-ledger-who">
                     <span className="carrier-ledger-short">
                       {shortCarrierName(carrier.name)}
                     </span>
@@ -134,15 +144,11 @@ export function CarrierCompare({
                     ) : null}
                   </span>
                 </span>
-                <span role="cell">
-                  {formatCarrierDuration(carrier.fastestDuration, t)}
+                <span className="carrier-ledger-metrics">
+                  <span role="cell">{duration}</span>
+                  <span role="cell">{transfers}</span>
+                  <span role="cell">{carrier.connections}</span>
                 </span>
-                <span role="cell">
-                  {carrier.fewestTransfers === 0
-                    ? t("detail.direct")
-                    : tp("transfersShort", carrier.fewestTransfers)}
-                </span>
-                <span role="cell">{carrier.connections}</span>
               </button>
             );
           })}

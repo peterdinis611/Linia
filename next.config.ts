@@ -48,7 +48,6 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: DAY,
     remotePatterns: [
-      { protocol: "https", hostname: "*.basemaps.cartocdn.com" },
       { protocol: "https", hostname: "server.arcgisonline.com" },
     ],
   },

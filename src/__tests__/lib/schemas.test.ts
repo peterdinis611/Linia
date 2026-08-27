@@ -29,6 +29,8 @@ describe("journeySearchFormSchema", () => {
   it("needs a city before a suburban stamp", () => {
     const parsed = journeySearchFormSchema.safeParse({
       ...base,
+      from: null,
+      to: null,
       distanceFilter: "suburban",
     });
     expect(parsed.success).toBe(false);
@@ -37,6 +39,15 @@ describe("journeySearchFormSchema", () => {
         "validation.cityRequired",
       );
     }
+  });
+
+  it("does not need a city when origin is already stamped", () => {
+    expect(
+      journeySearchFormSchema.safeParse({
+        ...base,
+        distanceFilter: "long",
+      }).success,
+    ).toBe(true);
   });
 
   it("accepts a suburban ticket once a city is stamped", () => {

@@ -7,6 +7,7 @@ import { LanguageSwitcher } from "@/i18n/language-switcher";
 import { useI18n } from "@/i18n/provider";
 import { splitDateTime } from "../lib/datetime";
 import { EmptyBoard, SearchingBoard, StationClock } from "./Board";
+import { BoardMast } from "./BoardMast";
 import { ShareJourney } from "./ShareJourney";
 import { HowToButton } from "./HowToUse";
 import { ItineraryDetail } from "./ItineraryDetail";
@@ -211,53 +212,32 @@ export function JourneySearch() {
               data-tour="board"
               className="space-y-4"
             >
-              <div className="flex items-end justify-between gap-3">
-                <div>
-                  <p className="kicker">{t("board.stationKicker")}</p>
-                  <p className="font-display mt-1 text-xl italic">
+              <BoardMast
+                kicker={t("board.stationKicker")}
+                headline={
+                  <p className="board-mast-title">
                     {search.arriveBy
                       ? t("board.stationArrivals")
                       : t("board.stationDepartures")}
                   </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {search.shareUrl ? (
+                }
+                share={
+                  search.shareUrl ? (
                     <ShareJourney
                       kind="board"
                       url={search.shareUrl}
                       itinerary={search.boardTrip}
                       fromName={search.from?.name}
                     />
-                  ) : null}
-                  <button
-                    type="button"
-                    className="stamp"
-                    data-testid="refresh-live"
-                    onClick={search.handleRefresh}
-                    disabled={search.refreshing || search.loading}
-                  >
-                    {t("results.refresh")}
-                  </button>
-                </div>
-              </div>
-              <div className="mode-switch" data-cols="2" role="group">
-                <button
-                  type="button"
-                  data-testid="earlier-connections"
-                  disabled={search.loading || search.refreshing}
-                  onClick={() => search.handleTimeShift("earlier")}
-                >
-                  {t("results.earlier")}
-                </button>
-                <button
-                  type="button"
-                  data-testid="later-connections"
-                  disabled={search.loading || search.refreshing}
-                  onClick={() => search.handleTimeShift("later")}
-                >
-                  {t("results.later")}
-                </button>
-              </div>
+                  ) : null
+                }
+                liveAt={search.liveAt}
+                liveFresh={liveFresh}
+                loading={search.loading}
+                refreshing={search.refreshing}
+                onRefresh={search.handleRefresh}
+                onTimeShift={search.handleTimeShift}
+              />
               <StationBoard
                 stopTimes={search.stopTimes}
                 arriveBy={search.arriveBy}

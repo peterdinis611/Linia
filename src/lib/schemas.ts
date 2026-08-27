@@ -117,7 +117,7 @@ export const journeySearchFormSchema = z
     returnTime: z.string().trim().optional(),
   })
   .superRefine((value, ctx) => {
-    if (value.distanceFilter !== "all" && !value.city) {
+    if (value.distanceFilter !== "all" && !value.city && !value.from) {
       ctx.addIssue({
         code: "custom",
         path: ["city"],

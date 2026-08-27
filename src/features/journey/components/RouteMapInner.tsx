@@ -17,6 +17,7 @@ import {
   IconSatellite,
 } from "@/components/icons";
 import L from "leaflet";
+import { maplibreGL } from "@maplibre/maplibre-gl-leaflet";
 import {
   Marker,
   MapContainer,
@@ -27,6 +28,7 @@ import {
 } from "react-leaflet";
 import type { LatLngBoundsExpression, LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { useI18n } from "@/i18n/provider";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { carrierName } from "@/lib/carriers";
@@ -45,31 +47,16 @@ const EUROPE_CENTER: LatLngExpression = [50.1, 10];
 
 type Basemap = "map" | "satellite";
 
-const CARTO_KEY = process.env.NEXT_PUBLIC_CARTO_KEY?.trim();
+const OPENFREEMAP_LIBERTY = "https://tiles.openfreemap.org/styles/liberty";
+const OPENFREEMAP_DARK = "https://tiles.openfreemap.org/styles/dark";
+const OPENFREEMAP_ATTR =
+  '&copy; <a href="https://openfreemap.org/">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
-const TILES: Record<
-  Basemap,
-  { url: string; attribution: string; maxZoom: number }
-> = {
-  map: CARTO_KEY
-    ? {
-        url: `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(CARTO_KEY)}`,
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        maxZoom: 20,
-      }
-    : {
-        url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
-        attribution:
-          "Tiles &copy; Esri &mdash; Source: Esri, USGS, NOAA",
-        maxZoom: 19,
-      },
-  satellite: {
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attribution:
-      "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics",
-    maxZoom: 19,
-  },
+const SATELLITE = {
+  url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+  attribution:
+    "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics",
+  maxZoom: 19,
 };
 
 const SATELLITE_LABELS =
@@ -159,8 +146,6 @@ export default function RouteMapInner({
   const { t } = useI18n();
   const [basemap, setBasemap] = useState<Basemap>("map");
   const { resolved } = useTheme();
-  const tiles = TILES[basemap];
-  const nightChart = resolved === "dark" && basemap === "map";
   const nightMap = resolved === "dark";
   const halo = nightMap
     ? "#f3e6c8"
@@ -247,31 +232,35 @@ export default function RouteMapInner({
     return pins;
   }, [paths, origin, destination, viaPoints, extraEnds]);
 
-  const tileSkin = nightChart
-    ? "map-tiles-night"
-    : resolved === "dark" && basemap === "satellite"
-      ? "map-tiles-sat-night"
-      : "";
+  const tileSkin =
+    resolved === "dark" && basemap === "satellite" ? "map-tiles-sat-night" : "";
 
   return (
     <div className={`h-full w-full ${tileSkin}`.trim()}>
     <MapContainer
       center={EUROPE_CENTER}
       zoom={4}
+      minZoom={1}
       scrollWheelZoom
       zoomControl={false}
       preferCanvas
       className="h-full w-full"
     >
       <MapTileSkin skin={tileSkin} />
-      <TileLayer
-        key={basemap}
-        attribution={tiles.attribution}
-        url={tiles.url}
-        maxZoom={tiles.maxZoom}
-      />
-      {basemap === "satellite" && (
-        <TileLayer url={SATELLITE_LABELS} pane="overlayPane" />
+      {basemap === "map" ? (
+        <OpenFreeMapLayer
+          styleUrl={nightMap ? OPENFREEMAP_DARK : OPENFREEMAP_LIBERTY}
+          attribution={OPENFREEMAP_ATTR}
+        />
+      ) : (
+        <>
+          <TileLayer
+            attribution={SATELLITE.attribution}
+            url={SATELLITE.url}
+            maxZoom={SATELLITE.maxZoom}
+          />
+          <TileLayer url={SATELLITE_LABELS} pane="overlayPane" />
+        </>
       )}
       <FitPoints points={fitPoints} fitKey={fitKey} />
       <MapResizer />
@@ -495,6 +484,37 @@ function ChromeButton({
   );
 }
 
+function OpenFreeMapLayer({
+  styleUrl,
+  attribution,
+}: {
+  styleUrl: string;
+  attribution: string;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    const layer = maplibreGL({
+      style: styleUrl,
+      attributionControl: false,
+      interactive: false,
+    });
+    map.addLayer(layer);
+    const attrib = map.attributionControl;
+    attrib?.addAttribution(attribution);
+    const gl = layer.getMaplibreMap();
+    const resize = () => gl.resize();
+    gl.once("load", resize);
+    return () => {
+      gl.off("load", resize);
+      attrib?.removeAttribution(attribution);
+      map.removeLayer(layer);
+    };
+  }, [map, styleUrl, attribution]);
+
+  return null;
+}
+
 function MapTileSkin({ skin }: { skin: string }) {
   const map = useMap();
 
@@ -512,7 +532,14 @@ function MapResizer() {
 
   useEffect(() => {
     const container = map.getContainer();
-    const frame = () => map.invalidateSize({ animate: false });
+    const frame = () => {
+      map.invalidateSize({ animate: false });
+      map.eachLayer((layer) => {
+        if ("getMaplibreMap" in layer && typeof layer.getMaplibreMap === "function") {
+          layer.getMaplibreMap().resize();
+        }
+      });
+    };
     frame();
     const observer = new ResizeObserver(() => frame());
     observer.observe(container);

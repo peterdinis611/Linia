@@ -40,6 +40,8 @@ describe("CarrierCompare", () => {
       "true",
     );
     expect(screen.getByTestId("carrier-ledger")).toHaveTextContent("Fastest");
+    expect(screen.getByTestId("carrier-ledger")).toHaveTextContent("Time");
+    expect(screen.getByTestId("carrier-ledger")).toHaveTextContent("4h 30");
     expect(screen.getByTestId("carrier-ledger")).toHaveTextContent("Best");
 
     const stamps = screen.getAllByRole("button", { name: zssk.legs[0]!.agencyName });

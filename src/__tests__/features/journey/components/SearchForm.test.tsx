@@ -59,6 +59,10 @@ describe("SearchForm", () => {
     const { props } = renderForm();
     await user.click(screen.getByTestId("distance-suburban"));
     expect(props.onDistanceFilterChange).toHaveBeenCalledWith("suburban");
+    expect(screen.getByTestId("distance-suburban")).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
     expect(screen.getByRole("combobox", { name: "City" })).toBeInTheDocument();
     expect(screen.getByText("Name the city first. Then stamp long-distance or suburban.")).toBeInTheDocument();
   });
