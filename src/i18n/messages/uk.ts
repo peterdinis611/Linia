@@ -254,6 +254,7 @@ export const uk: Messages = {
     serviceFromKicker: "Прогалина в розкладі",
     serviceFromWait: "Наступний рейс за {wait}",
     serviceFrom: "Рух з {time}",
+    toTop: "Вгору",
   },
   share: {
     open: "Поділитися",

@@ -52,6 +52,11 @@ const OPENFREEMAP_DARK = "https://tiles.openfreemap.org/styles/dark";
 const OPENFREEMAP_ATTR =
   '&copy; <a href="https://openfreemap.org/">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
+const STREET_LIGHT =
+  "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}";
+const STREET_DARK =
+  "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}";
+
 const SATELLITE = {
   url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
   attribution:
@@ -243,15 +248,25 @@ export default function RouteMapInner({
       minZoom={1}
       scrollWheelZoom
       zoomControl={false}
+      attributionControl={false}
       preferCanvas
       className="h-full w-full"
     >
       <MapTileSkin skin={tileSkin} />
       {basemap === "map" ? (
-        <OpenFreeMapLayer
-          styleUrl={nightMap ? OPENFREEMAP_DARK : OPENFREEMAP_LIBERTY}
-          attribution={OPENFREEMAP_ATTR}
-        />
+        <>
+          <TileLayer
+            url={nightMap ? STREET_DARK : STREET_LIGHT}
+            maxZoom={16}
+            keepBuffer={4}
+            updateWhenIdle={false}
+            className="map-underlay"
+          />
+          <OpenFreeMapLayer
+            styleUrl={nightMap ? OPENFREEMAP_DARK : OPENFREEMAP_LIBERTY}
+            attribution={OPENFREEMAP_ATTR}
+          />
+        </>
       ) : (
         <>
           <TileLayer
@@ -484,6 +499,31 @@ function ChromeButton({
   );
 }
 
+type GlLeafletLayer = L.Layer & {
+  _resizeContainer?: () => void;
+  _update?: () => void;
+  getMaplibreMap?: () => {
+    resize: () => void;
+    on: (event: string, handler: (event?: { id: string }) => void) => void;
+    off: (event: string, handler: (event?: { id: string }) => void) => void;
+    once: (event: string, handler: () => void) => void;
+    hasImage: (id: string) => boolean;
+    addImage: (id: string, image: ImageData) => void;
+  };
+};
+
+function syncGlOverlay(map: L.Map) {
+  const size = map.getSize();
+  if (size.x < 8 || size.y < 8) return;
+  map.invalidateSize({ animate: false });
+  map.eachLayer((layer) => {
+    const glLayer = layer as GlLeafletLayer;
+    glLayer._resizeContainer?.();
+    glLayer._update?.();
+    glLayer.getMaplibreMap?.().resize();
+  });
+}
+
 function OpenFreeMapLayer({
   styleUrl,
   attribution,
@@ -498,15 +538,42 @@ function OpenFreeMapLayer({
       style: styleUrl,
       attributionControl: false,
       interactive: false,
-    });
+      fadeDuration: 0,
+      padding: 0.2,
+      updateInterval: 16,
+    } as Parameters<typeof maplibreGL>[0]);
     map.addLayer(layer);
     const attrib = map.attributionControl;
     attrib?.addAttribution(attribution);
-    const gl = layer.getMaplibreMap();
-    const resize = () => gl.resize();
-    gl.once("load", resize);
+    const gl = (layer as GlLeafletLayer).getMaplibreMap?.();
+
+    function fillMissingImage(event?: { id: string }) {
+      const id = event?.id;
+      if (!id || !gl || gl.hasImage(id)) return;
+      gl.addImage(id, new ImageData(11, 11));
+    }
+
+    function paint() {
+      syncGlOverlay(map);
+    }
+
+    gl?.on("styleimagemissing", fillMissingImage);
+    gl?.once("load", paint);
+    gl?.once("idle", paint);
+    const frame = requestAnimationFrame(() => {
+      paint();
+      requestAnimationFrame(paint);
+    });
+    const later = window.setTimeout(paint, 280);
+    map.on("moveend zoomend", paint);
+
     return () => {
-      gl.off("load", resize);
+      cancelAnimationFrame(frame);
+      window.clearTimeout(later);
+      map.off("moveend zoomend", paint);
+      gl?.off("styleimagemissing", fillMissingImage);
+      gl?.off("load", paint);
+      gl?.off("idle", paint);
       attrib?.removeAttribution(attribution);
       map.removeLayer(layer);
     };
@@ -532,14 +599,7 @@ function MapResizer() {
 
   useEffect(() => {
     const container = map.getContainer();
-    const frame = () => {
-      map.invalidateSize({ animate: false });
-      map.eachLayer((layer) => {
-        if ("getMaplibreMap" in layer && typeof layer.getMaplibreMap === "function") {
-          layer.getMaplibreMap().resize();
-        }
-      });
-    };
+    const frame = () => syncGlOverlay(map);
     frame();
     const observer = new ResizeObserver(() => frame());
     observer.observe(container);

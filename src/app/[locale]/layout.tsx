@@ -60,6 +60,8 @@ export default async function LocaleLayout({
     >
       <head>
         <link rel="sitemap" type="application/xml" title="Sitemap" href={sitemapHref()} />
+        <link rel="preconnect" href="https://tiles.openfreemap.org" />
+        <link rel="preconnect" href="https://server.arcgisonline.com" />
       </head>
       <body className="h-full overflow-hidden font-sans text-ink">
         <script

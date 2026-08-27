@@ -1,9 +1,4 @@
-import {
-  formatDuration,
-  isTransitMode,
-  legColor,
-  type TranslateFn,
-} from "@/lib/format";
+import { isTransitMode, legColor } from "@/lib/format";
 import type { Itinerary, Leg } from "@/lib/transit/types";
 
 export type CarrierStats = {
@@ -148,10 +143,6 @@ export function compareCarriers(itineraries: Itinerary[]): CarrierStats[] {
     });
 }
 
-export function formatCarrierDuration(seconds: number, t?: TranslateFn): string {
-  return formatDuration(seconds, t);
-}
-
 export function formatCarrierDurationTight(seconds: number): string {
   const totalMinutes = Math.max(0, Math.round(seconds / 60));
   const hours = Math.floor(totalMinutes / 60);
@@ -159,4 +150,8 @@ export function formatCarrierDurationTight(seconds: number): string {
   if (hours === 0) return `${minutes}m`;
   if (minutes === 0) return `${hours}h`;
   return `${hours}h ${String(minutes).padStart(2, "0")}`;
+}
+
+export function formatCarrierDuration(seconds: number): string {
+  return formatCarrierDurationTight(seconds);
 }

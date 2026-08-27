@@ -350,6 +350,77 @@ html:not(.dark) .board-clock .kicker {
   -webkit-overflow-scrolling: touch;
 }
 
+.panel-desk {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.panel-desk .panel-scroll {
+  flex: 1 1 0;
+}
+
+.hall-lift {
+  position: absolute;
+  right: 0.8rem;
+  bottom: 0.8rem;
+  z-index: 8;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  border: 1.5px solid var(--ink);
+  background: var(--paper-raised);
+  padding: 0.48rem 0.7rem 0.45rem 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  box-shadow:
+    0 10px 22px color-mix(in srgb, var(--board) 18%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 55%, transparent);
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.hall-lift[data-on="true"] {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.hall-lift:hover {
+  color: var(--signal);
+  border-color: var(--signal);
+  background: color-mix(in srgb, var(--signal) 8%, var(--paper-raised));
+}
+
+.dark .hall-lift {
+  border-color: var(--amber);
+  background: var(--board);
+  color: var(--amber);
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 color-mix(in srgb, var(--amber) 16%, transparent);
+}
+
+.dark .hall-lift:hover {
+  color: var(--paper-raised);
+  background: color-mix(in srgb, var(--amber) 18%, var(--board));
+}
+
+.hall-lift-mark {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
 .hall-body {
   display: grid;
   min-height: 0;
@@ -3131,7 +3202,8 @@ details[open] .stops-chevron {
   .searching-road::after,
   .searching-railway::before,
   .searching-ribbon::after,
-  .board-mast-dot {
+  .board-mast-dot,
+  .hall-lift {
     animation: none !important;
     transition: none !important;
   }

@@ -254,6 +254,7 @@ export const nl: Messages = {
     serviceFromKicker: "Gat in de dienstregeling",
     serviceFromWait: "Volgende rit over {wait}",
     serviceFrom: "Dienst vanaf {time}",
+    toTop: "Omhoog",
   },
   share: {
     open: "Delen",

@@ -253,6 +253,7 @@ export const sk: Messages = {
     serviceFromKicker: "Diera v cestovnom poriadku",
     serviceFromWait: "Ďalší spoj až o {wait}",
     serviceFrom: "Premávka od {time}",
+    toTop: "Na pult",
   },
   share: {
     open: "Zdieľať",

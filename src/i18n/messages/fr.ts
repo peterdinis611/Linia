@@ -254,6 +254,7 @@ export const fr: Messages = {
     serviceFromKicker: "Trou dans l'horaire",
     serviceFromWait: "Prochaine liaison dans {wait}",
     serviceFrom: "Service à partir de {time}",
+    toTop: "En haut",
   },
   share: {
     open: "Partager",

@@ -47,6 +47,14 @@ export function IconMonitor(props: IconProps) {
   );
 }
 
+export function IconChevronUp(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M6 15l6-6 6 6" />
+    </Svg>
+  );
+}
+
 export function IconChevronLeft(props: IconProps) {
   return (
     <Svg {...props}>

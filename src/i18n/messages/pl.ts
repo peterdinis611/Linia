@@ -254,6 +254,7 @@ export const pl: Messages = {
     serviceFromKicker: "Luka w rozkładzie",
     serviceFromWait: "Następne połączenie za {wait}",
     serviceFrom: "Kurs od {time}",
+    toTop: "Do góry",
   },
   share: {
     open: "Udostępnij",

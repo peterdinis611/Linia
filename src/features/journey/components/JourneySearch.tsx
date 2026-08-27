@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { startOfLocalDay, toLocalDateTimeValue } from "@/lib/format";
 import { ThemeSwitcher } from "@/components/theme/ThemeSwitcher";
 import { LanguageSwitcher } from "@/i18n/language-switcher";
@@ -8,6 +8,7 @@ import { useI18n } from "@/i18n/provider";
 import { splitDateTime } from "../lib/datetime";
 import { EmptyBoard, SearchingBoard, StationClock } from "./Board";
 import { BoardMast } from "./BoardMast";
+import { HallLift } from "./HallLift";
 import { ShareJourney } from "./ShareJourney";
 import { HowToButton } from "./HowToUse";
 import { ItineraryDetail } from "./ItineraryDetail";
@@ -23,6 +24,7 @@ import { useJourneySearch } from "../hooks/use-journey-search";
 export function JourneySearch() {
   const search = useJourneySearch();
   const { t } = useI18n();
+  const panelRef = useRef<HTMLDivElement>(null);
   const [mapOpen, setMapOpen] = useState(false);
   const startTour = useHallTour({
     onShowMap: () => {
@@ -80,7 +82,12 @@ export function JourneySearch() {
       </header>
 
       <main className="hall-body" data-map={mapOpen ? "open" : "pocket"}>
-        <section className="panel-scroll min-h-0 min-w-0 overflow-x-hidden overflow-y-auto border-rule p-4 sm:p-6 lg:border-r">
+        <section className="panel-desk min-h-0 min-w-0 border-rule lg:border-r">
+          <div
+            ref={panelRef}
+            className="panel-scroll min-h-0 min-w-0 overflow-x-hidden overflow-y-auto p-4 sm:p-6"
+            data-testid="panel-scroll"
+          >
           <div className="flex flex-col gap-6">
             <SearchForm
             from={search.from}
@@ -320,6 +327,8 @@ export function JourneySearch() {
             </>
           )}
           </div>
+          </div>
+          <HallLift targetRef={panelRef} />
         </section>
 
         <section className="hall-map" data-tour="map">

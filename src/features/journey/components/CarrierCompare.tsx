@@ -4,7 +4,7 @@ import type { CSSProperties } from "react";
 import { useI18n } from "@/i18n/provider";
 import {
   compareCarriers,
-  formatCarrierDurationTight,
+  formatCarrierDuration,
   shortCarrierName,
 } from "@/lib/carriers";
 import type { Itinerary } from "@/lib/transit/types";
@@ -105,7 +105,7 @@ export function CarrierCompare({
             const on = selectedCarriers.includes(carrier.name);
             const isFastest = carrier.fastestDuration === fastestDuration;
             const isFewest = carrier.fewestTransfers === fewestTransfers;
-            const duration = formatCarrierDurationTight(carrier.fastestDuration);
+            const duration = formatCarrierDuration(carrier.fastestDuration);
             const transfers =
               carrier.fewestTransfers === 0
                 ? t("detail.direct")

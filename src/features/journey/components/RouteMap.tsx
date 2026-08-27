@@ -125,13 +125,13 @@ export function RouteMap({
     }
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setMapReady(Boolean(entry?.isIntersecting));
+        if (entry?.isIntersecting) setMapReady(true);
       },
-      { threshold: 0.02 },
+      { rootMargin: "160px", threshold: 0 },
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [full, pocketed]);
+  }, [full]);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {

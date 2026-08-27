@@ -255,6 +255,7 @@ export const es: Messages = {
     serviceFromKicker: "Hueco en el horario",
     serviceFromWait: "Siguiente conexión en {wait}",
     serviceFrom: "Servicio desde las {time}",
+    toTop: "Arriba",
   },
   share: {
     open: "Compartir",

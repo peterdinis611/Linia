@@ -254,6 +254,7 @@ export const cs: Messages = {
     serviceFromKicker: "Díra v jízdním řádu",
     serviceFromWait: "Další spoj až za {wait}",
     serviceFrom: "Provoz od {time}",
+    toTop: "Nahoru",
   },
   share: {
     open: "Sdílet",

@@ -254,6 +254,7 @@ export const de: Messages = {
     serviceFromKicker: "Lücke im Fahrplan",
     serviceFromWait: "Nächste Verbindung in {wait}",
     serviceFrom: "Verkehr ab {time}",
+    toTop: "Nach oben",
   },
   share: {
     open: "Teilen",

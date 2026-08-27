@@ -254,6 +254,7 @@ export const hu: Messages = {
     serviceFromKicker: "Rés a menetrendben",
     serviceFromWait: "Következő járat {wait} múlva",
     serviceFrom: "Közlekedés {time}-tól",
+    toTop: "Fel",
   },
   share: {
     open: "Megosztás",

@@ -251,6 +251,7 @@ export const en = {
     serviceFromKicker: "Timetable gap",
     serviceFromWait: "Next connection in {wait}",
     serviceFrom: "Service from {time}",
+    toTop: "To the desk",
   },
   share: {
     open: "Share",

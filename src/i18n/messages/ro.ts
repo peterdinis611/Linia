@@ -254,6 +254,7 @@ export const ro: Messages = {
     serviceFromKicker: "Gol în orar",
     serviceFromWait: "Următoarea cursă în {wait}",
     serviceFrom: "Circulație de la {time}",
+    toTop: "Sus",
   },
   share: {
     open: "Distribuie",

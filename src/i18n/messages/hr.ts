@@ -254,6 +254,7 @@ export const hr: Messages = {
     serviceFromKicker: "Rupa u voznom redu",
     serviceFromWait: "Sljedeća veza za {wait}",
     serviceFrom: "Promet od {time}",
+    toTop: "Gore",
   },
   share: {
     open: "Podijeli",
