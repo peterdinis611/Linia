@@ -116,4 +116,21 @@ describe("EmptyBoard", () => {
     await user.click(screen.getByTestId("pinned-home"));
     expect(onPinnedSelect).toHaveBeenCalledWith(home);
   });
+
+  it("explains a timetable gap after a search", () => {
+    renderHall(
+      <EmptyBoard
+        hasSearched
+        kicker="Nothing on this departure"
+        title="No connections found"
+        body="Try another hour."
+        serviceFrom="2026-12-01T18:40:00Z"
+      />,
+    );
+
+    const gap = screen.getByTestId("service-gap");
+    expect(gap).toHaveTextContent("Timetable gap");
+    expect(gap).toHaveTextContent("Next connection in");
+    expect(gap).toHaveTextContent("Service from");
+  });
 });

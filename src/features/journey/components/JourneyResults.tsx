@@ -9,6 +9,7 @@ import {
   type IndexedItinerary,
   type ResultSort,
 } from "../lib/filters";
+import { ServiceGap } from "./Board";
 import { CarrierCompare } from "./CarrierCompare";
 import { ItineraryDetail } from "./ItineraryDetail";
 import { ItineraryList } from "./ItineraryList";
@@ -24,6 +25,7 @@ type JourneyResultsProps = {
   selectedCarriers: string[];
   transferFilter: TransferFilter;
   shareUrl: string;
+  serviceFrom?: string | null;
   refreshing?: boolean;
   liveAt?: number | null;
   liveFresh?: boolean;
@@ -47,6 +49,7 @@ export function JourneyResults({
   selectedCarriers,
   transferFilter,
   shareUrl,
+  serviceFrom = null,
   refreshing = false,
   liveAt = null,
   liveFresh = false,
@@ -86,6 +89,7 @@ export function JourneyResults({
       {loading || refreshing ? (
         <div className="searching-ribbon" aria-hidden="true" />
       ) : null}
+      {serviceFrom ? <ServiceGap iso={serviceFrom} /> : null}
       <div className="flex items-end justify-between gap-3">
         <div>
           <p className="kicker">{t("results.departures")}</p>

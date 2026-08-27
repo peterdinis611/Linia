@@ -30,7 +30,13 @@ import "leaflet/dist/leaflet.css";
 import { useI18n } from "@/i18n/provider";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { carrierName } from "@/lib/carriers";
-import { isTransitMode, legColor, legName } from "@/lib/format";
+import {
+  delayMinutes,
+  isTransitMode,
+  legColor,
+  legName,
+  liveTransitLegIndex,
+} from "@/lib/format";
 import { pathPointsForLeg } from "@/lib/transit/path";
 import type { Itinerary, SelectedPlace } from "@/lib/transit/types";
 import type { MapPickMode } from "../hooks/use-journey-search";
@@ -39,16 +45,25 @@ const EUROPE_CENTER: LatLngExpression = [50.1, 10];
 
 type Basemap = "map" | "satellite";
 
+const CARTO_KEY = process.env.NEXT_PUBLIC_CARTO_KEY?.trim();
+
 const TILES: Record<
   Basemap,
   { url: string; attribution: string; maxZoom: number }
 > = {
-  map: {
-    url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    maxZoom: 20,
-  },
+  map: CARTO_KEY
+    ? {
+        url: `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(CARTO_KEY)}`,
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        maxZoom: 20,
+      }
+    : {
+        url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+        attribution:
+          "Tiles &copy; Esri &mdash; Source: Esri, USGS, NOAA",
+        maxZoom: 19,
+      },
   satellite: {
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     attribution:
@@ -86,6 +101,8 @@ type PathLeg = {
   color: string;
   dashed: boolean;
   faded: boolean;
+  live: boolean;
+  delayed: boolean;
   label: string;
 };
 
@@ -152,28 +169,46 @@ export default function RouteMapInner({
       : "#faf6ec";
 
   const paths = useMemo<PathLeg[]>(
-    () =>
-      itinerary?.legs
-        .map((leg) => {
+    () => {
+      if (!itinerary) return [];
+      const liveIndex = liveTransitLegIndex(itinerary);
+      return itinerary.legs
+        .map((leg, index) => {
           const agency = carrierName(leg);
           const faded =
             highlightCarriers.length > 0 &&
             Boolean(agency) &&
             !highlightCarriers.includes(agency!);
+          const delay = delayMinutes(leg);
+          const delayed = (delay ?? 0) > 0;
+          const live = index === liveIndex && isTransitMode(leg.mode);
           return {
             positions: pathPointsForLeg(leg),
-            color: nightMap ? liftChartColor(legColor(leg)) : legColor(leg),
+            color: delayed
+              ? nightMap
+                ? liftChartColor("#c8102e")
+                : "#c8102e"
+              : nightMap
+                ? liftChartColor(legColor(leg))
+                : legColor(leg),
             dashed: !isTransitMode(leg.mode),
             faded,
+            live,
+            delayed,
             label: [
               isTransitMode(leg.mode) ? legName(leg) : t(`modes.${leg.mode}`),
               agency,
+              live ? t("detail.now") : null,
+              delayed && delay != null
+                ? t("detail.delayLate", { minutes: delay })
+                : null,
             ]
               .filter(Boolean)
               .join(" · "),
           };
         })
-        .filter((path) => path.positions.length > 1) ?? [],
+        .filter((path) => path.positions.length > 1);
+    },
     [itinerary, highlightCarriers, nightMap, t],
   );
 
@@ -535,21 +570,28 @@ function JourneyPaths({
     }
 
     for (const path of paths) {
+      const liveWeight = path.live ? 2 : 0;
       layers.push(
         L.polyline(path.positions, {
           color: halo,
-          weight: path.dashed ? 6 : 8,
-          opacity: path.faded ? 0.12 : 0.85,
+          weight: (path.dashed ? 6 : 8) + liveWeight,
+          opacity: path.faded ? 0.12 : path.live ? 0.95 : 0.85,
           dashArray: path.dashed ? "6 8" : undefined,
           className: "journey-path-halo",
         }).addTo(map),
       );
       const line = L.polyline(path.positions, {
         color: path.color,
-        weight: path.dashed ? 3 : path.faded ? 3 : 5,
+        weight: (path.dashed ? 3 : path.faded ? 3 : 5) + liveWeight,
         opacity: path.faded ? 0.28 : 0.96,
         dashArray: path.dashed ? "6 8" : undefined,
-        className: "journey-path",
+        className: [
+          "journey-path",
+          path.live ? "journey-path-live" : "",
+          path.delayed ? "journey-path-delayed" : "",
+        ]
+          .filter(Boolean)
+          .join(" "),
       }).addTo(map);
       if (path.label) line.bindPopup(path.label);
       layers.push(line);

@@ -5,7 +5,12 @@ import dynamic from "next/dynamic";
 import { HallLoader } from "@/components/status/HallLoader";
 import { useI18n } from "@/i18n/provider";
 import { transitAgencies } from "@/lib/carriers";
-import { isTransitMode, legName } from "@/lib/format";
+import {
+  delayMinutes,
+  isTransitMode,
+  legName,
+  liveTransitLegIndex,
+} from "@/lib/format";
 import { pathPointsForLeg } from "@/lib/transit/path";
 import type { Itinerary, SelectedPlace } from "@/lib/transit/types";
 import type { MapPickMode, RouteMode } from "../hooks/use-journey-search";
@@ -94,6 +99,10 @@ export function RouteMap({
   const carriers = itinerary ? transitAgencies(itinerary) : [];
   const transitLegs =
     itinerary?.legs.filter((leg) => isTransitMode(leg.mode)).slice(0, 4) ?? [];
+  const liveIndex = itinerary ? liveTransitLegIndex(itinerary) : -1;
+  const liveLeg = liveIndex >= 0 ? itinerary?.legs[liveIndex] : undefined;
+  const liveDelay = liveLeg ? delayMinutes(liveLeg) : null;
+  const liveLine = liveLeg ? legName(liveLeg) : "";
 
   const approximate = Boolean(
     itinerary &&
@@ -239,6 +248,20 @@ export function RouteMap({
           ) : null}
           {approximate ? (
             <p className="map-plaque-hint">{t("map.approximate")}</p>
+          ) : null}
+          {liveLeg && liveLine ? (
+            <p
+              className="map-plaque-live"
+              data-testid="map-live-leg"
+              data-delayed={liveDelay != null && liveDelay > 0}
+            >
+              {liveDelay != null && liveDelay > 0
+                ? t("map.delayedLeg", {
+                    line: liveLine,
+                    delay: t("detail.delayLate", { minutes: liveDelay }),
+                  })
+                : t("map.liveLeg", { line: liveLine })}
+            </p>
           ) : null}
           {(carriers.length > 0 || transitLegs.length > 0) && (
             <div className="map-plaque-chips">

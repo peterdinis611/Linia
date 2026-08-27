@@ -194,6 +194,7 @@ export function useJourneySearch() {
     prev?: string;
     next?: string;
   }>({});
+  const [serviceFrom, setServiceFrom] = useState<string | null>(null);
   const hydratedShare = useRef(false);
   const lastPlan = useRef<ShareSnapshot | null>(null);
   const selectedRef = useRef<Itinerary | null>(null);
@@ -333,6 +334,7 @@ export function useJourneySearch() {
     setBoardEvent(null);
     setBoardEnds([]);
     setBoardCursors({});
+    setServiceFrom(null);
     setHasSearched(false);
     setError(null);
   }
@@ -618,6 +620,7 @@ export function useJourneySearch() {
       });
       setItineraries([]);
       setInboundItineraries([]);
+      setServiceFrom(null);
       const ends = await resolveBoardEnds(
         result.stopTimes,
         snapshot.from,
@@ -820,6 +823,7 @@ export function useJourneySearch() {
       };
       setItineraries(journeys);
       setInboundItineraries(backJourneys);
+      setServiceFrom(outResult.serviceFrom ?? null);
       setSelectedIndex(findItineraryIndex(journeys, snapshot.tripKey));
       setInboundSelectedIndex(
         findItineraryIndex(backJourneys, snapshot.returnTripKey),
@@ -837,6 +841,7 @@ export function useJourneySearch() {
       if (!silent) {
         setItineraries([]);
         setInboundItineraries([]);
+        setServiceFrom(null);
         setError(
           err instanceof Error &&
             (err.message.startsWith("errors.") ||
@@ -1427,6 +1432,7 @@ export function useJourneySearch() {
     pins,
     shareQuery,
     shareUrl,
+    serviceFrom,
     setArriveBy,
     setModeFilter,
     setDistanceFilter,

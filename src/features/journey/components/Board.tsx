@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { SearchingTrack } from "@/components/status/SearchingTrack";
 import { localizePlaceName } from "@/i18n/place-name";
 import { useI18n } from "@/i18n/provider";
+import { formatTime, waitUntil } from "@/lib/format";
 import { HowToGuide } from "./HowToUse";
 import type { RecentSearch } from "../lib/recent";
 import type { PinnedSearch } from "../lib/pinned";
@@ -56,6 +57,23 @@ export function SearchingBoard() {
   );
 }
 
+export function ServiceGap({ iso }: { iso: string }) {
+  const { locale, t } = useI18n();
+  const wait = waitUntil(iso, t);
+  if (!wait) return null;
+  return (
+    <aside className="service-gap" data-testid="service-gap" role="status">
+      <p className="kicker">{t("results.serviceFromKicker")}</p>
+      <p className="service-gap-wait">
+        {t("results.serviceFromWait", { wait })}
+      </p>
+      <p className="service-gap-when">
+        {t("results.serviceFrom", { time: formatTime(iso, locale) })}
+      </p>
+    </aside>
+  );
+}
+
 export function EmptyBoard({
   hasSearched,
   kicker,
@@ -63,6 +81,7 @@ export function EmptyBoard({
   body,
   recents = [],
   pins = [],
+  serviceFrom = null,
   onRecentSelect,
   onPinnedSelect,
   onTour,
@@ -73,6 +92,7 @@ export function EmptyBoard({
   body: string;
   recents?: RecentSearch[];
   pins?: PinnedSearch[];
+  serviceFrom?: string | null;
   onRecentSelect?: (item: RecentSearch) => void;
   onPinnedSelect?: (item: PinnedSearch) => void;
   onTour?: () => void;
@@ -94,6 +114,11 @@ export function EmptyBoard({
       <p className="mt-3 max-w-prose text-sm leading-relaxed text-ink-muted">
         {body}
       </p>
+      {hasSearched && serviceFrom ? (
+        <div className="mt-5">
+          <ServiceGap iso={serviceFrom} />
+        </div>
+      ) : null}
       {!hasSearched && pins.length > 0 && onPinnedSelect ? (
         <div className="mt-5" data-testid="pinned-searches">
           <p className="kicker">{t("pinned.kicker")}</p>

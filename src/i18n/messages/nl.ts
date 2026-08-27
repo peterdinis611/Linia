@@ -224,6 +224,8 @@ export const nl: Messages = {
     fold: "Kaart vouwen",
     pocketKicker: "Wandkaart",
     approximate: "De lijn is bij benadering tot het actuele pad drukt.",
+    liveLeg: "Nu op {line}",
+    delayedLeg: "{line} vertraagd {delay}",
   },
   results: {
     departures: "Vertrekken",
@@ -248,6 +250,9 @@ export const nl: Messages = {
     resetFilters: "Filters wissen",
     stale: "Tijden kunnen zijn veranderd",
     onTheLine: "Onderweg",
+    serviceFromKicker: "Gat in de dienstregeling",
+    serviceFromWait: "Volgende rit over {wait}",
+    serviceFrom: "Dienst vanaf {time}",
   },
   share: {
     open: "Delen",
@@ -264,6 +269,10 @@ export const nl: Messages = {
     nativeShare: "Delen…",
     ticketKicker: "Uitgegeven kaartje",
     printedOn: "Gedrukt op",
+    boardOpen: "Bord delen",
+    boardKicker: "Bordkopie",
+    boardTitle: "Dit bord delen",
+    boardBody: "Stuur een openbare link naar live vertrekken vanaf deze halte.",
   },
   recent: {
     kicker: "Recente kaartjes",
@@ -302,6 +311,7 @@ export const nl: Messages = {
     transfers: "Overst.",
     routes: "Ritten",
     fastest: "Snelste",
+    fewest: "Minste overstappen",
     clear: "Wis vervoerdersfilter",
   },
   placeType: {

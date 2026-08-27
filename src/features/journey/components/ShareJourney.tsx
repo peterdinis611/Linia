@@ -10,6 +10,7 @@ type ShareJourneyProps = {
   itinerary: Itinerary | null;
   fromName?: string;
   toName?: string;
+  kind?: "ticket" | "board";
 };
 
 export function ShareJourney({
@@ -17,12 +18,14 @@ export function ShareJourney({
   itinerary,
   fromName,
   toName,
+  kind = "ticket",
 }: ShareJourneyProps) {
   const { t } = useI18n();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const [copied, setCopied] = useState(false);
   const [canShare, setCanShare] = useState(false);
+  const board = kind === "board";
 
   useEffect(() => {
     setCanShare(typeof navigator.share === "function");
@@ -47,8 +50,14 @@ export function ShareJourney({
   const origin = fromName ?? itinerary?.legs[0]?.from.name;
   const destination =
     toName ?? itinerary?.legs[itinerary.legs.length - 1]?.to.name;
-  const shareTitle =
-    origin && destination ? `${origin} → ${destination}` : "Linia";
+  const shareTitle = board
+    ? (origin ?? t("share.boardTitle"))
+    : origin && destination
+      ? `${origin} → ${destination}`
+      : "Linia";
+  const shareText = board ? t("share.boardBody") : t("share.title");
+  const canPrint = Boolean(itinerary);
+  const canCalendar = Boolean(itinerary && origin && (board || destination));
 
   async function copyLink() {
     try {
@@ -70,7 +79,7 @@ export function ShareJourney({
   function addToCalendar() {
     if (!itinerary) return;
     downloadIcs(
-      icsFilename(origin ?? "origin", destination ?? "destination"),
+      icsFilename(origin ?? "origin", destination ?? "board"),
       itineraryIcs({ itinerary, from: null, to: null, url }),
     );
   }
@@ -78,11 +87,11 @@ export function ShareJourney({
   async function nativeShare() {
     const data: ShareData = {
       title: shareTitle,
-      text: t("share.title"),
+      text: shareText,
       url,
     };
     try {
-      if (itinerary && origin && destination) {
+      if (!board && itinerary && origin && destination) {
         const file = new File(
           [itineraryIcs({ itinerary, from: null, to: null, url })],
           icsFilename(origin, destination),
@@ -108,7 +117,10 @@ export function ShareJourney({
       void nativeShare();
       return;
     }
-    dialogRef.current?.showModal();
+    const dialog = dialogRef.current;
+    if (dialog && typeof dialog.showModal === "function") {
+      dialog.showModal();
+    }
   }
 
   return (
@@ -119,22 +131,31 @@ export function ShareJourney({
         data-testid="share-open"
         onClick={openShare}
       >
-        {t("share.open")}
+        {board ? t("share.boardOpen") : t("share.open")}
       </button>
       <dialog
         ref={dialogRef}
         className="howto-dialog"
         aria-labelledby={titleId}
         data-testid="share-dialog"
+        data-kind={kind}
       >
         <div className="howto-dialog-sheet">
-          <p className="kicker">{t("share.kicker")}</p>
+          <p className="kicker">
+            {board ? t("share.boardKicker") : t("share.kicker")}
+          </p>
           <h2 id={titleId} className="font-display mt-1 text-2xl italic">
-            {t("share.title")}
+            {board ? t("share.boardTitle") : t("share.title")}
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-ink-muted">
-            {t("share.body")}
+            {board ? t("share.boardBody") : t("share.body")}
           </p>
+          {board && origin ? (
+            <p className="share-board-stub" data-testid="share-board-stub">
+              <span className="kicker">{t("board.stationDepartures")}</span>
+              <span className="share-board-stub-name">{origin}</span>
+            </p>
+          ) : null}
           <label className="mt-5 block">
             <span className="kicker">{t("share.link")}</span>
             <input
@@ -160,7 +181,12 @@ export function ShareJourney({
                 {copied ? t("share.copied") : t("share.copy")}
               </button>
             )}
-            <button type="button" className="stamp w-full" onClick={printTicket}>
+            <button
+              type="button"
+              className="stamp w-full"
+              onClick={printTicket}
+              disabled={!canPrint}
+            >
               {t("share.print")}
             </button>
             <button
@@ -168,7 +194,7 @@ export function ShareJourney({
               className="stamp w-full"
               data-testid="share-calendar"
               onClick={addToCalendar}
-              disabled={!itinerary}
+              disabled={!canCalendar}
             >
               {t("share.calendar")}
             </button>

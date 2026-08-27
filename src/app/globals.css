@@ -739,6 +739,106 @@ html:not(.dark) .board-clock .kicker {
   background: color-mix(in srgb, var(--paper-raised) 88%, transparent);
 }
 
+.carrier-ledger {
+  margin-top: 0.75rem;
+  border-top: 1px solid var(--rule);
+}
+
+.carrier-ledger-row {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, 1.6fr) 4.6rem 4.4rem 3.2rem;
+  gap: 0.4rem;
+  align-items: center;
+  width: 100%;
+  min-height: 2.35rem;
+  padding: 0.4rem 0.15rem 0.4rem 0;
+  border: 0;
+  border-bottom: 1px dotted var(--rule);
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+}
+
+.carrier-ledger-head {
+  min-height: 0;
+  padding-top: 0.55rem;
+  padding-bottom: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  cursor: default;
+}
+
+.carrier-ledger-row:not(.carrier-ledger-head) {
+  cursor: pointer;
+}
+
+.carrier-ledger-row:not(.carrier-ledger-head):hover {
+  background: color-mix(in srgb, var(--amber) 10%, transparent);
+}
+
+.carrier-ledger-row[data-on="true"] {
+  color: var(--signal);
+}
+
+.carrier-ledger-row[data-fastest="true"] {
+  background: color-mix(in srgb, var(--signal) 6%, transparent);
+}
+
+.carrier-ledger-name {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.carrier-ledger-mark {
+  width: 3px;
+  align-self: stretch;
+  min-height: 1.1rem;
+  background: var(--carrier, var(--rule-strong));
+}
+
+.carrier-ledger-short {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.carrier-ledger-tag {
+  display: inline-block;
+  margin-top: 0.12rem;
+  margin-right: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+
+.carrier-ledger-tag-fewest {
+  color: var(--ink-muted);
+}
+
+.carrier-ledger-row > span:nth-child(2),
+.carrier-ledger-row > span:nth-child(3),
+.carrier-ledger-row > span:nth-child(4) {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 420px) {
+  .carrier-ledger-row {
+    grid-template-columns: minmax(5.5rem, 1.4fr) 3.8rem 3.6rem 2.4rem;
+    font-size: 0.74rem;
+  }
+}
+
 .mode-switch {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1784,6 +1884,27 @@ details[open] .stops-chevron {
   color: var(--ink-muted);
 }
 
+.map-plaque-live {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.map-plaque-live[data-delayed="true"] {
+  color: var(--signal-text);
+}
+
+.leaflet-interactive.journey-path-live {
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--signal) 70%, transparent));
+}
+
+.leaflet-interactive.journey-path-delayed {
+  stroke-linecap: round;
+}
+
 .map-stage-picking .map-plaque-hint,
 .map-plaque-assign + .map-plaque-hint {
   display: block;
@@ -2101,6 +2222,65 @@ details[open] .stops-chevron {
   text-transform: uppercase;
   transform: rotate(-8deg);
   opacity: 0.85;
+}
+
+.service-gap {
+  position: relative;
+  padding: 0.9rem 1rem 1rem;
+  border: 1px dashed var(--signal);
+  background:
+    repeating-linear-gradient(
+      -18deg,
+      transparent,
+      transparent 10px,
+      color-mix(in srgb, var(--signal) 6%, transparent) 10px,
+      color-mix(in srgb, var(--signal) 6%, transparent) 11px
+    ),
+    var(--paper-raised);
+  box-shadow: 5px 5px 0 color-mix(in srgb, var(--signal) 14%, transparent);
+}
+
+.service-gap-wait {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.35rem;
+  line-height: 1.12;
+  margin-top: 0.15rem;
+  color: var(--signal-text);
+}
+
+.service-gap-when {
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  margin-top: 0.5rem;
+  color: var(--ink-muted);
+}
+
+.share-board-stub {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 1rem;
+  padding: 0.85rem 1rem 1rem;
+  border: 1.5px solid var(--ink);
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--ink) 0 2px,
+      transparent 2px 5px
+    )
+    0 100% / 42% 6px no-repeat,
+    var(--ticket);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.share-board-stub-name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.55rem;
+  line-height: 1.05;
 }
 
 .howto-open {

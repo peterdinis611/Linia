@@ -224,6 +224,8 @@ export const hu: Messages = {
     fold: "Térkép összecsukása",
     pocketKicker: "Fali térkép",
     approximate: "A vonal közelítő, amíg az élő út ki nem nyomtatódik.",
+    liveLeg: "Most: {line}",
+    delayedLeg: "{line} késik {delay}",
   },
   results: {
     departures: "Indulások",
@@ -248,6 +250,9 @@ export const hu: Messages = {
     resetFilters: "Szűrők törlése",
     stale: "Az idők változhattak",
     onTheLine: "Úton",
+    serviceFromKicker: "Rés a menetrendben",
+    serviceFromWait: "Következő járat {wait} múlva",
+    serviceFrom: "Közlekedés {time}-tól",
   },
   share: {
     open: "Megosztás",
@@ -264,6 +269,10 @@ export const hu: Messages = {
     nativeShare: "Megosztás…",
     ticketKicker: "Kiállított jegy",
     printedOn: "Nyomtatva",
+    boardOpen: "Tábla megosztása",
+    boardKicker: "Táblamásolat",
+    boardTitle: "Ezt a táblát oszd meg",
+    boardBody: "Küldj nyilvános linket az élő indulásokhoz erről a megállóról.",
   },
   recent: {
     kicker: "Legutóbbi jegyek",
@@ -302,6 +311,7 @@ export const hu: Messages = {
     transfers: "Átsz.",
     routes: "Járatok",
     fastest: "Leggyorsabb",
+    fewest: "Legkevesebb átszállás",
     clear: "Szolgáltatószűrő törlése",
   },
   placeType: {

@@ -224,6 +224,8 @@ export const cs: Messages = {
     fold: "Složit mapu",
     pocketKicker: "Nástěnná mapa",
     approximate: "Čára je přibližná, dokud se nevytiskne trasa živě.",
+    liveLeg: "Teď na {line}",
+    delayedLeg: "{line} má zpoždění {delay}",
   },
   results: {
     departures: "Odjezdy",
@@ -248,6 +250,9 @@ export const cs: Messages = {
     resetFilters: "Zrušit filtry",
     stale: "Časy se mohly změnit",
     onTheLine: "Na trati",
+    serviceFromKicker: "Díra v jízdním řádu",
+    serviceFromWait: "Další spoj až za {wait}",
+    serviceFrom: "Provoz od {time}",
   },
   share: {
     open: "Sdílet",
@@ -264,6 +269,10 @@ export const cs: Messages = {
     nativeShare: "Odeslat…",
     ticketKicker: "Vydaná jízdenka",
     printedOn: "Tištěno dne",
+    boardOpen: "Sdílet tabuli",
+    boardKicker: "Kopie tabule",
+    boardTitle: "Sdílet tuto tabuli",
+    boardBody: "Pošlete veřejný odkaz na živé odjezdy z této zastávky.",
   },
   recent: {
     kicker: "Nedávné jízdenky",
@@ -302,6 +311,7 @@ export const cs: Messages = {
     transfers: "Přest.",
     routes: "Spoje",
     fastest: "Nejrychlejší",
+    fewest: "Nejméně přestupů",
     clear: "Zrušit filtr dopravců",
   },
   placeType: {

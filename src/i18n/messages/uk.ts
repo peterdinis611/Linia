@@ -224,6 +224,8 @@ export const uk: Messages = {
     fold: "Згорнути мапу",
     pocketKicker: "Настінна мапа",
     approximate: "Лінія приблизна, доки не надрукується шлях наживо.",
+    liveLeg: "Зараз на {line}",
+    delayedLeg: "{line} затримується на {delay}",
   },
   results: {
     departures: "Відправлення",
@@ -248,6 +250,9 @@ export const uk: Messages = {
     resetFilters: "Скинути фільтри",
     stale: "Час міг змінитися",
     onTheLine: "У дорозі",
+    serviceFromKicker: "Прогалина в розкладі",
+    serviceFromWait: "Наступний рейс за {wait}",
+    serviceFrom: "Рух з {time}",
   },
   share: {
     open: "Поділитися",
@@ -264,6 +269,10 @@ export const uk: Messages = {
     nativeShare: "Поділитися…",
     ticketKicker: "Виданий квиток",
     printedOn: "Надруковано",
+    boardOpen: "Поділитися табло",
+    boardKicker: "Копія табло",
+    boardTitle: "Поділитися цим табло",
+    boardBody: "Надішліть публічне посилання на живі відправлення з цієї зупинки.",
   },
   recent: {
     kicker: "Нещодавні квитки",
@@ -302,6 +311,7 @@ export const uk: Messages = {
     transfers: "Перес.",
     routes: "Рейси",
     fastest: "Найшвидший",
+    fewest: "Найменше пересадок",
     clear: "Скинути фільтр перевізників",
   },
   placeType: {

@@ -33,6 +33,7 @@ describe("JourneyResults stress", () => {
         selectedCarriers={[]}
         transferFilter="all"
         shareUrl=""
+        serviceFrom="2026-12-01T18:40:00Z"
         liveAt={Date.now()}
         liveFresh
         onSelectedCarriersChange={onSelectedCarriersChange}
@@ -43,6 +44,7 @@ describe("JourneyResults stress", () => {
     );
 
     expect(screen.getByTestId("journey-results")).toHaveTextContent("72 connections");
+    expect(screen.getByTestId("service-gap")).toHaveTextContent("Timetable gap");
     expect(screen.getAllByRole("option")).toHaveLength(72);
     expect(performance.now() - started).toBeLessThan(1_200);
 

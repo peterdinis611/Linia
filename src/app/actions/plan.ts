@@ -128,11 +128,11 @@ export const planJourneyAction = actionClient
         nextStamp &&
         Date.parse(nextStamp) - requested > 3 * 60 * 60 * 1000
       ) {
+        serviceFrom = nextStamp;
         params.delete("pageCursor");
         params.set("time", nextStamp);
         const later = await fetchPlanPage(params, parsedInput.language, revalidate);
         kept = uniqueJourneys(later.itineraries);
-        if (kept.length > 0) serviceFrom = nextStamp;
       }
     }
 

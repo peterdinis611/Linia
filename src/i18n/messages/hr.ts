@@ -224,6 +224,8 @@ export const hr: Messages = {
     fold: "Skupi kartu",
     pocketKicker: "Zidna karta",
     approximate: "Crta je približna dok se ne ispiše put uživo.",
+    liveLeg: "Sada na {line}",
+    delayedLeg: "{line} kasni {delay}",
   },
   results: {
     departures: "Odlasci",
@@ -248,6 +250,9 @@ export const hr: Messages = {
     resetFilters: "Poništi filtre",
     stale: "Vremena su se mogla promijeniti",
     onTheLine: "U vožnji",
+    serviceFromKicker: "Rupa u voznom redu",
+    serviceFromWait: "Sljedeća veza za {wait}",
+    serviceFrom: "Promet od {time}",
   },
   share: {
     open: "Podijeli",
@@ -264,6 +269,10 @@ export const hr: Messages = {
     nativeShare: "Podijeli…",
     ticketKicker: "Izdana karta",
     printedOn: "Tiskano",
+    boardOpen: "Podijeli ploču",
+    boardKicker: "Kopija ploče",
+    boardTitle: "Podijeli ovu ploču",
+    boardBody: "Pošalji javnu poveznicu na žive odlaske s ovog stajališta.",
   },
   recent: {
     kicker: "Nedavne karte",
@@ -302,6 +311,7 @@ export const hr: Messages = {
     transfers: "Presj.",
     routes: "Linije",
     fastest: "Najbrže",
+    fewest: "Najmanje presjedanja",
     clear: "Ukloni filtar prijevoznika",
   },
   placeType: {

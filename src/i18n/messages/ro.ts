@@ -224,6 +224,8 @@ export const ro: Messages = {
     fold: "Strânge harta",
     pocketKicker: "Harta de perete",
     approximate: "Linia e aproximativă până se tipărește traseul în direct.",
+    liveLeg: "Acum pe {line}",
+    delayedLeg: "{line} întârziat {delay}",
   },
   results: {
     departures: "Plecări",
@@ -248,6 +250,9 @@ export const ro: Messages = {
     resetFilters: "Resetează filtrele",
     stale: "Orele s-ar putea să se fi schimbat",
     onTheLine: "În cursă",
+    serviceFromKicker: "Gol în orar",
+    serviceFromWait: "Următoarea cursă în {wait}",
+    serviceFrom: "Circulație de la {time}",
   },
   share: {
     open: "Distribuie",
@@ -264,6 +269,10 @@ export const ro: Messages = {
     nativeShare: "Distribuie…",
     ticketKicker: "Bilet emis",
     printedOn: "Tipărit pe",
+    boardOpen: "Distribuie tabla",
+    boardKicker: "Copie a tablei",
+    boardTitle: "Distribuie această tablă",
+    boardBody: "Trimite un link public către plecările live de la această stație.",
   },
   recent: {
     kicker: "Bilete recente",
@@ -302,6 +311,7 @@ export const ro: Messages = {
     transfers: "Trans.",
     routes: "Rute",
     fastest: "Cel mai rapid",
+    fewest: "Cele mai puține transbordări",
     clear: "Șterge filtrul de operatori",
   },
   placeType: {

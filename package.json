@@ -15,9 +15,11 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@maplibre/maplibre-gl-leaflet": "^0.1.4",
     "date-fns": "^4.4.0",
     "driver.js": "^1.8.0",
     "leaflet": "^1.9.4",
+    "maplibre-gl": "^6.6.0",
     "next": "16.3.0",
     "next-safe-action": "^8.6.0",
     "react": "19.2.8",

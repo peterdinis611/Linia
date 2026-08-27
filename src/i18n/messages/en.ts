@@ -221,6 +221,8 @@ export const en = {
     fold: "Fold the map",
     pocketKicker: "Wall chart",
     approximate: "Line is approximate until the live path prints.",
+    liveLeg: "Now on {line}",
+    delayedLeg: "{line} delayed {delay}",
   },
   results: {
     departures: "Departures",
@@ -245,6 +247,9 @@ export const en = {
     resetFilters: "Reset filters",
     stale: "Times may have changed",
     onTheLine: "On this line",
+    serviceFromKicker: "Timetable gap",
+    serviceFromWait: "Next connection in {wait}",
+    serviceFrom: "Service from {time}",
   },
   share: {
     open: "Share",
@@ -261,6 +266,10 @@ export const en = {
     nativeShare: "Share…",
     ticketKicker: "Issued ticket",
     printedOn: "Printed on",
+    boardOpen: "Share the board",
+    boardKicker: "Station copy",
+    boardTitle: "Share this board",
+    boardBody: "Send a public link to live departures from this stop.",
   },
   recent: {
     kicker: "Recent tickets",
@@ -299,6 +308,7 @@ export const en = {
     transfers: "Xfers",
     routes: "Routes",
     fastest: "Fastest",
+    fewest: "Fewest transfers",
     clear: "Clear carrier filter",
   },
   placeType: {

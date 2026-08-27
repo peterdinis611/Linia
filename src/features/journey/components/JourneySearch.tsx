@@ -7,6 +7,7 @@ import { LanguageSwitcher } from "@/i18n/language-switcher";
 import { useI18n } from "@/i18n/provider";
 import { splitDateTime } from "../lib/datetime";
 import { EmptyBoard, SearchingBoard, StationClock } from "./Board";
+import { ShareJourney } from "./ShareJourney";
 import { HowToButton } from "./HowToUse";
 import { ItineraryDetail } from "./ItineraryDetail";
 import { JourneyResults } from "./JourneyResults";
@@ -197,6 +198,7 @@ export function JourneySearch() {
               body={t(search.emptyCopy.body)}
               recents={search.recents}
               pins={search.pins}
+              serviceFrom={search.serviceFrom}
               onRecentSelect={search.handleRecentSelect}
               onPinnedSelect={search.handlePinnedSelect}
               onTour={startTour}
@@ -218,15 +220,25 @@ export function JourneySearch() {
                       : t("board.stationDepartures")}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  className="stamp"
-                  data-testid="refresh-live"
-                  onClick={search.handleRefresh}
-                  disabled={search.refreshing || search.loading}
-                >
-                  {t("results.refresh")}
-                </button>
+                <div className="flex items-center gap-2">
+                  {search.shareUrl ? (
+                    <ShareJourney
+                      kind="board"
+                      url={search.shareUrl}
+                      itinerary={search.boardTrip}
+                      fromName={search.from?.name}
+                    />
+                  ) : null}
+                  <button
+                    type="button"
+                    className="stamp"
+                    data-testid="refresh-live"
+                    onClick={search.handleRefresh}
+                    disabled={search.refreshing || search.loading}
+                  >
+                    {t("results.refresh")}
+                  </button>
+                </div>
               </div>
               <div className="mode-switch" data-cols="2" role="group">
                 <button
@@ -314,6 +326,7 @@ export function JourneySearch() {
                 selectedCarriers={search.selectedCarriers}
                 transferFilter={search.transferFilter}
                 shareUrl={search.shareUrl}
+                serviceFrom={search.serviceFrom}
                 refreshing={search.refreshing}
                 liveAt={search.liveAt}
                 liveFresh={liveFresh}

@@ -6,7 +6,7 @@ import {
   parse,
   startOfDay,
 } from "date-fns";
-import type { Leg, TransitMode } from "./transit/types";
+import type { Itinerary, Leg, TransitMode } from "./transit/types";
 
 const MODE_COLORS: Record<string, string> = {
   WALK: "#8a8378",
@@ -108,6 +108,34 @@ export function delayMinutes(leg: Leg): number | null {
 export function arrivalDelayMinutes(leg: Leg): number | null {
   if (!leg.realTime) return null;
   return delayMinutesBetween(leg.endTime, leg.scheduledEndTime);
+}
+
+export function waitUntil(
+  iso: string,
+  t?: TranslateFn,
+  now = Date.now(),
+): string | null {
+  const target = Date.parse(iso);
+  if (!Number.isFinite(target)) return null;
+  const seconds = Math.max(0, Math.round((target - now) / 1000));
+  return formatDuration(seconds, t);
+}
+
+export function liveTransitLegIndex(
+  itinerary: Itinerary,
+  now = Date.now(),
+): number {
+  const transit = itinerary.legs
+    .map((leg, index) => ({ leg, index }))
+    .filter(({ leg }) => isTransitMode(leg.mode));
+  if (transit.length === 0) return -1;
+  for (const item of transit) {
+    const start = Date.parse(item.leg.startTime);
+    const end = Date.parse(item.leg.endTime);
+    if (now >= start && now <= end) return item.index;
+  }
+  const upcoming = transit.find((item) => Date.parse(item.leg.startTime) > now);
+  return (upcoming ?? transit.at(-1)!).index;
 }
 
 export function formatDistance(meters: number | undefined): string | null {

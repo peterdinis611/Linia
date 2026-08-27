@@ -225,6 +225,8 @@ export const es: Messages = {
     fold: "Plegar el mapa",
     pocketKicker: "Mapa de pared",
     approximate: "La línea es aproximada hasta que se imprima el trayecto en directo.",
+    liveLeg: "Ahora en {line}",
+    delayedLeg: "{line} con retraso de {delay}",
   },
   results: {
     departures: "Salidas",
@@ -249,6 +251,9 @@ export const es: Messages = {
     resetFilters: "Quitar filtros",
     stale: "Los horarios pueden haber cambiado",
     onTheLine: "En ruta",
+    serviceFromKicker: "Hueco en el horario",
+    serviceFromWait: "Siguiente conexión en {wait}",
+    serviceFrom: "Servicio desde las {time}",
   },
   share: {
     open: "Compartir",
@@ -265,6 +270,10 @@ export const es: Messages = {
     nativeShare: "Compartir…",
     ticketKicker: "Billete emitido",
     printedOn: "Impreso el",
+    boardOpen: "Compartir el panel",
+    boardKicker: "Copia del panel",
+    boardTitle: "Compartir este panel",
+    boardBody: "Envía un enlace público a las salidas en directo de esta parada.",
   },
   recent: {
     kicker: "Billetes recientes",
@@ -303,6 +312,7 @@ export const es: Messages = {
     transfers: "Trans.",
     routes: "Rutas",
     fastest: "Más rápido",
+    fewest: "Menos transbordos",
     clear: "Quitar filtro de operadores",
   },
   placeType: {

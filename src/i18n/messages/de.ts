@@ -224,6 +224,8 @@ export const de: Messages = {
     fold: "Karte falten",
     pocketKicker: "Wandkarte",
     approximate: "Die Linie ist ungefähr, bis der Live-Weg gedruckt ist.",
+    liveLeg: "Jetzt auf {line}",
+    delayedLeg: "{line} verspätet {delay}",
   },
   results: {
     departures: "Abfahrten",
@@ -248,6 +250,9 @@ export const de: Messages = {
     resetFilters: "Filter zurücksetzen",
     stale: "Zeiten können sich geändert haben",
     onTheLine: "Unterwegs",
+    serviceFromKicker: "Lücke im Fahrplan",
+    serviceFromWait: "Nächste Verbindung in {wait}",
+    serviceFrom: "Verkehr ab {time}",
   },
   share: {
     open: "Teilen",
@@ -264,6 +269,10 @@ export const de: Messages = {
     nativeShare: "Teilen…",
     ticketKicker: "Ausgestelltes Ticket",
     printedOn: "Gedruckt am",
+    boardOpen: "Tafel teilen",
+    boardKicker: "Tafelkopie",
+    boardTitle: "Diese Tafel teilen",
+    boardBody: "Sende einen öffentlichen Link zu den Live-Abfahrten von diesem Halt.",
   },
   recent: {
     kicker: "Letzte Tickets",
@@ -302,6 +311,7 @@ export const de: Messages = {
     transfers: "Ums.",
     routes: "Linien",
     fastest: "Schnellste",
+    fewest: "Wenigste Umstiege",
     clear: "Betreiberfilter löschen",
   },
   placeType: {

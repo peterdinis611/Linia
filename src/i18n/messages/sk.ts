@@ -223,6 +223,8 @@ export const sk: Messages = {
     fold: "Zložiť mapu",
     pocketKicker: "Stenová mapa",
     approximate: "Čiara je približná, kým sa nevytlačí trasa naživo.",
+    liveLeg: "Teraz na {line}",
+    delayedLeg: "{line} mešká {delay}",
   },
   results: {
     departures: "Odchody",
@@ -247,6 +249,9 @@ export const sk: Messages = {
     resetFilters: "Zrušiť filtre",
     stale: "Časy sa mohli zmeniť",
     onTheLine: "Na trati",
+    serviceFromKicker: "Diera v cestovnom poriadku",
+    serviceFromWait: "Ďalší spoj až o {wait}",
+    serviceFrom: "Premávka od {time}",
   },
   share: {
     open: "Zdieľať",
@@ -263,6 +268,10 @@ export const sk: Messages = {
     nativeShare: "Poslať…",
     ticketKicker: "Vydaný lístok",
     printedOn: "Tlačené na",
+    boardOpen: "Zdieľať tabuľu",
+    boardKicker: "Kópia tabule",
+    boardTitle: "Zdieľať túto tabuľu",
+    boardBody: "Pošlite verejný odkaz na živé odchody z tejto zastávky.",
   },
   recent: {
     kicker: "Nedávne lístky",
@@ -301,6 +310,7 @@ export const sk: Messages = {
     transfers: "Prest.",
     routes: "Spoje",
     fastest: "Najrýchlejší",
+    fewest: "Najmenej prestupov",
     clear: "Zrušiť filter dopravcov",
   },
   placeType: {
