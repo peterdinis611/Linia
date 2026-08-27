@@ -9,6 +9,7 @@ import {
   type IndexedItinerary,
   type ResultSort,
 } from "../lib/filters";
+import { lastDepartureKey } from "../lib/ticket-notes";
 import { ServiceGap } from "./Board";
 import { BoardCount, BoardMast } from "./BoardMast";
 import { CarrierCompare } from "./CarrierCompare";
@@ -27,6 +28,7 @@ type JourneyResultsProps = {
   transferFilter: TransferFilter;
   shareUrl: string;
   serviceFrom?: string | null;
+  allDay?: boolean;
   refreshing?: boolean;
   liveAt?: number | null;
   liveFresh?: boolean;
@@ -51,6 +53,7 @@ export function JourneyResults({
   transferFilter,
   shareUrl,
   serviceFrom = null,
+  allDay = false,
   refreshing = false,
   liveAt = null,
   liveFresh = false,
@@ -177,6 +180,7 @@ export function JourneyResults({
             0,
             sorted.findIndex((item) => item.index === selectedIndex),
           )}
+          lastOfDayKey={allDay ? lastDepartureKey(itineraries) : null}
           onSelect={(index) =>
             onSelectedIndexChange(sorted[index]?.index ?? 0)
           }

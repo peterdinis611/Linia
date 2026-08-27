@@ -133,4 +133,26 @@ describe("EmptyBoard", () => {
     expect(gap).toHaveTextContent("Next connection in");
     expect(gap).toHaveTextContent("Service from");
   });
+
+  it("prints last today and tomorrow from on an empty board", () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(4, 12, 0, 0);
+    const last = new Date();
+    last.setHours(23, 40, 0, 0);
+
+    renderHall(
+      <EmptyBoard
+        hasSearched
+        kicker="Nothing on this departure"
+        title="No connections found"
+        body="Try another hour."
+        lastAt={last.toISOString()}
+        serviceFrom={tomorrow.toISOString()}
+      />,
+    );
+
+    expect(screen.getByTestId("last-today")).toHaveTextContent("Last today at");
+    expect(screen.getByTestId("service-gap")).toHaveTextContent("Tomorrow from");
+  });
 });

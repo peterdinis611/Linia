@@ -75,6 +75,9 @@ describe("StationBoard", () => {
     expect(row).toHaveAttribute("aria-selected", "true");
     expect(row).toHaveTextContent("Cancelled");
     expect(row).toHaveTextContent("+12 min");
+    expect(row).toHaveAttribute("data-fault", "true");
+    expect(screen.getByTestId("board-cancelled")).toHaveClass("ticket-fault");
+    expect(screen.getByTestId("board-delayed")).toHaveClass("ticket-fault");
     expect(screen.getByTestId("alert-ribbon")).toHaveTextContent("Changed service");
   });
 });

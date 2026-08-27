@@ -554,6 +554,56 @@ html:not(.dark) .board-clock .kicker {
     0 16px 36px color-mix(in srgb, var(--signal) 28%, transparent);
 }
 
+.ticket[data-fault="true"] {
+  border-color: color-mix(in srgb, var(--signal) 72%, var(--rule));
+}
+
+.ticket-walk {
+  margin-top: 0.4rem;
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+
+.ticket-marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.ticket-fault {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--signal);
+  background: color-mix(in srgb, var(--signal) 12%, var(--paper-raised));
+  color: var(--signal);
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ticket-last {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.board-open-stamp {
+  margin-top: 0.35rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+}
+
 .spine {
   display: flex;
   height: 5px;
@@ -1725,6 +1775,22 @@ html.dark .leaflet-container {
   pointer-events: none;
 }
 
+.map-tiles-paper.leaflet-container {
+  background: #e6dfd1;
+}
+
+.map-tiles-paper .leaflet-gl-layer {
+  filter: sepia(0.2) saturate(0.78) hue-rotate(-12deg) contrast(1.06) brightness(1.03);
+}
+
+.dark .map-tiles-ink.leaflet-container {
+  background: #121820;
+}
+
+.dark .map-tiles-ink .leaflet-gl-layer {
+  filter: saturate(0.86) brightness(1.05) hue-rotate(-6deg) contrast(1.04);
+}
+
 .leaflet-gl-layer .maplibregl-ctrl-top-left,
 .leaflet-gl-layer .maplibregl-ctrl-top-right,
 .leaflet-gl-layer .maplibregl-ctrl-bottom-left,
@@ -2103,6 +2169,34 @@ details[open] .stops-chevron {
   opacity: 1;
 }
 
+.call-kind {
+  margin-left: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.call-clock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  line-height: 1.15;
+  color: var(--ink-soft);
+}
+
+.call-clock-depart {
+  font-size: 0.62rem;
+  color: var(--ink-muted);
+}
+
+.call-dwell {
+  margin-top: 0.12rem;
+  font-size: 0.7rem;
+  color: var(--ink-muted);
+}
+
 .now-stamp {
   display: inline-block;
   font-family: var(--font-mono, ui-monospace, monospace);
@@ -2385,6 +2479,11 @@ details[open] .stops-chevron {
   font-size: 0.7rem;
   margin-top: 0.5rem;
   color: var(--ink-muted);
+}
+
+.service-gap[data-kind="last"] {
+  border-color: var(--ink);
+  box-shadow: 5px 5px 0 color-mix(in srgb, var(--ink) 12%, transparent);
 }
 
 .share-board-stub {

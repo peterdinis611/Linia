@@ -142,6 +142,7 @@ export type PlanResponse = {
   itineraries: Itinerary[];
   direct?: Itinerary[];
   serviceFrom?: string;
+  lastAt?: string;
 };
 
 export type StopTimeEvent = {
@@ -167,6 +168,8 @@ export type StopTimesResponse = {
   stopTimes: StopTimeEvent[];
   previousPageCursor?: string;
   nextPageCursor?: string;
+  serviceFrom?: string;
+  lastAt?: string;
 };
 
 export function areaLabel(areas: Area[] | undefined): string | undefined {

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { SearchingTrack } from "@/components/status/SearchingTrack";
 import { localizePlaceName } from "@/i18n/place-name";
 import { useI18n } from "@/i18n/provider";
-import { formatTime, waitUntil } from "@/lib/format";
+import { formatTime, serviceDay, waitUntil } from "@/lib/format";
 import { HowToGuide } from "./HowToUse";
 import type { RecentSearch } from "../lib/recent";
 import type { PinnedSearch } from "../lib/pinned";
@@ -60,15 +60,38 @@ export function SearchingBoard() {
 export function ServiceGap({ iso }: { iso: string }) {
   const { locale, t } = useI18n();
   const wait = waitUntil(iso, t);
-  if (!wait) return null;
+  const day = serviceDay(iso);
+  if (!wait && day === "today") return null;
   return (
     <aside className="service-gap" data-testid="service-gap" role="status">
       <p className="kicker">{t("results.serviceFromKicker")}</p>
-      <p className="service-gap-wait">
-        {t("results.serviceFromWait", { wait })}
-      </p>
+      {wait ? (
+        <p className="service-gap-wait">
+          {t("results.serviceFromWait", { wait })}
+        </p>
+      ) : null}
       <p className="service-gap-when">
-        {t("results.serviceFrom", { time: formatTime(iso, locale) })}
+        {t(
+          day === "tomorrow" ? "results.serviceTomorrow" : "results.serviceFrom",
+          { time: formatTime(iso, locale) },
+        )}
+      </p>
+    </aside>
+  );
+}
+
+export function LastToday({ iso }: { iso: string }) {
+  const { locale, t } = useI18n();
+  return (
+    <aside
+      className="service-gap"
+      data-kind="last"
+      data-testid="last-today"
+      role="status"
+    >
+      <p className="kicker">{t("results.lastTodayKicker")}</p>
+      <p className="service-gap-when">
+        {t("results.lastToday", { time: formatTime(iso, locale) })}
       </p>
     </aside>
   );
@@ -82,6 +105,7 @@ export function EmptyBoard({
   recents = [],
   pins = [],
   serviceFrom = null,
+  lastAt = null,
   onRecentSelect,
   onPinnedSelect,
   onTour,
@@ -93,6 +117,7 @@ export function EmptyBoard({
   recents?: RecentSearch[];
   pins?: PinnedSearch[];
   serviceFrom?: string | null;
+  lastAt?: string | null;
   onRecentSelect?: (item: RecentSearch) => void;
   onPinnedSelect?: (item: PinnedSearch) => void;
   onTour?: () => void;
@@ -114,9 +139,10 @@ export function EmptyBoard({
       <p className="mt-3 max-w-prose text-sm leading-relaxed text-ink-muted">
         {body}
       </p>
-      {hasSearched && serviceFrom ? (
-        <div className="mt-5">
-          <ServiceGap iso={serviceFrom} />
+      {hasSearched && (lastAt || serviceFrom) ? (
+        <div className="mt-5 space-y-3">
+          {lastAt ? <LastToday iso={lastAt} /> : null}
+          {serviceFrom ? <ServiceGap iso={serviceFrom} /> : null}
         </div>
       ) : null}
       {!hasSearched && pins.length > 0 && onPinnedSelect ? (

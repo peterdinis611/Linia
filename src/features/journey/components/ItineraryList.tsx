@@ -4,7 +4,6 @@ import { useI18n } from "@/i18n/provider";
 import { transitAgencies } from "@/lib/carriers";
 import {
   contrastText,
-  delayMinutes,
   formatClockRange,
   formatDuration,
   isTransitMode,
@@ -13,17 +12,24 @@ import {
 import type { Itinerary, Leg } from "@/lib/transit/types";
 import { alertsFromItinerary } from "../lib/alerts";
 import { itineraryIsLive, legPhase } from "../lib/progress";
+import {
+  departureKey,
+  ticketFault,
+  walkNotes,
+} from "../lib/ticket-notes";
 import { AlertStrip } from "./AlertStrip";
 
 type ItineraryListProps = {
   itineraries: Itinerary[];
   selectedIndex: number;
+  lastOfDayKey?: string | null;
   onSelect: (index: number) => void;
 };
 
 export function ItineraryList({
   itineraries,
   selectedIndex,
+  lastOfDayKey = null,
   onSelect,
 }: ItineraryListProps) {
   const { locale, t, tp } = useI18n();
@@ -36,10 +42,12 @@ export function ItineraryList({
       {itineraries.map((itinerary, index) => {
         const selected = index === selectedIndex;
         const transitLegs = itinerary.legs.filter((leg) => isTransitMode(leg.mode));
-        const delayed = itinerary.legs.some((leg) => (delayMinutes(leg) ?? 0) > 0);
+        const fault = ticketFault(itinerary);
+        const walks = walkNotes(itinerary);
         const carriers = transitAgencies(itinerary);
         const alerts = alertsFromItinerary(itinerary);
         const live = itineraryIsLive(itinerary);
+        const lastToday = Boolean(lastOfDayKey && departureKey(itinerary) === lastOfDayKey);
 
         return (
           <li key={`${itinerary.startTime}-${itinerary.endTime}-${index}`} role="none">
@@ -48,6 +56,7 @@ export function ItineraryList({
               role="option"
               onClick={() => onSelect(index)}
               data-selected={selected}
+              data-fault={fault.cancelled || fault.delayMinutes != null}
               aria-selected={selected}
               className="ticket w-full px-4 py-3.5 text-left"
             >
@@ -64,9 +73,24 @@ export function ItineraryList({
                   ? t("results.direct")
                   : tp("transfers", itinerary.transfers)}
                 {live ? ` · ${t("results.onTheLine")}` : ""}
-                {delayed ? ` · ${t("results.liveDelay")}` : ""}
                 {carriers.length > 0 ? ` · ${carriers.join(" · ")}` : ""}
               </p>
+              {walks.length > 0 ? (
+                <p className="ticket-walk" data-testid="ticket-walk">
+                  {walks
+                    .map((note) =>
+                      note.kind === "access" && note.name
+                        ? t("results.walkTo", {
+                            time: formatDuration(note.seconds, t),
+                            name: note.name,
+                          })
+                        : t("results.walkTransfer", {
+                            time: formatDuration(note.seconds, t),
+                          }),
+                    )
+                    .join(" · ")}
+                </p>
+              ) : null}
               <div className="spine mt-3" aria-hidden="true">
                 {itinerary.legs.map((leg, legIndex) => (
                   <span
@@ -86,6 +110,25 @@ export function ItineraryList({
                   ),
                 )}
               </div>
+              {fault.cancelled || fault.delayMinutes != null || lastToday ? (
+                <div className="ticket-marks">
+                  {fault.cancelled ? (
+                    <span className="ticket-fault" data-testid="ticket-cancelled">
+                      {t("detail.cancelled")}
+                    </span>
+                  ) : null}
+                  {fault.delayMinutes != null ? (
+                    <span className="ticket-fault" data-testid="ticket-delayed">
+                      {t("detail.delayLate", { minutes: fault.delayMinutes })}
+                    </span>
+                  ) : null}
+                  {lastToday ? (
+                    <span className="ticket-last" data-testid="ticket-last">
+                      {t("results.lastOnBoard")}
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
               {alerts.length > 0 ? (
                 <div className="mt-2">
                   <AlertStrip alerts={alerts} compact />

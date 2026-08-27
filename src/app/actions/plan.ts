@@ -10,6 +10,11 @@ import {
   placeSchema,
 } from "@/lib/schemas";
 import { motisFetch, placeQueryParam, transitModesFor } from "@/lib/transit/client";
+import {
+  canPeekStop,
+  isSameServiceDay,
+  peekStopTime,
+} from "@/lib/transit/peek-stop";
 import { resolveStopId } from "@/lib/transit/resolve-stop";
 import type { Itinerary } from "@/lib/transit/types";
 
@@ -110,29 +115,44 @@ export const planJourneyAction = actionClient
       ? itineraries.filter((item) => isoOnLocalDate(item.startTime, stamp))
       : itineraries;
     let serviceFrom: string | undefined;
+    let lastAt: string | undefined;
 
-    if (
-      kept.length === 0 &&
-      !allDay &&
-      !parsedInput.arriveBy &&
-      parsedInput.from.type === "STOP" &&
-      parsedInput.from.id &&
-      !parsedInput.from.id.startsWith("coord:")
-    ) {
-      const nextStamp = await peekFirstDeparture(
-        parsedInput.from.id,
-        parsedInput.language,
-      );
+    if (kept.length === 0 && canPeekStop(parsedInput.from)) {
       const requested = stamp ? Date.parse(stamp) : Date.now();
+      const stopId = parsedInput.from.id;
+      const [nextStamp, prevStamp] = await Promise.all([
+        peekStopTime(stopId, {
+          language: parsedInput.language,
+          time: stamp,
+        }),
+        peekStopTime(stopId, {
+          language: parsedInput.language,
+          arriveBy: true,
+          time: stamp,
+        }),
+      ]);
       if (
-        nextStamp &&
-        Date.parse(nextStamp) - requested > 3 * 60 * 60 * 1000
+        prevStamp &&
+        Date.parse(prevStamp) <= requested &&
+        isSameServiceDay(prevStamp, stamp)
       ) {
-        serviceFrom = nextStamp;
-        params.delete("pageCursor");
-        params.set("time", nextStamp);
-        const later = await fetchPlanPage(params, parsedInput.language, revalidate);
-        kept = uniqueJourneys(later.itineraries);
+        lastAt = prevStamp;
+      }
+      if (nextStamp && Date.parse(nextStamp) > requested) {
+        const gap = Date.parse(nextStamp) - requested;
+        if (gap > 3 * 60 * 60 * 1000) {
+          serviceFrom = nextStamp;
+          if (!allDay && !parsedInput.arriveBy) {
+            params.delete("pageCursor");
+            params.set("time", nextStamp);
+            const later = await fetchPlanPage(
+              params,
+              parsedInput.language,
+              revalidate,
+            );
+            kept = uniqueJourneys(later.itineraries);
+          }
+        }
       }
     }
 
@@ -142,26 +162,9 @@ export const planJourneyAction = actionClient
       itineraries: kept,
       direct: first.direct,
       serviceFrom,
+      lastAt,
     };
   });
-
-async function peekFirstDeparture(stopId: string, language?: string) {
-  try {
-    const params = new URLSearchParams({
-      stopId,
-      n: "1",
-      arriveBy: "false",
-    });
-    const body = await motisFetch("/v5/stoptimes", params, { language });
-    const event = Array.isArray((body as { stopTimes?: unknown }).stopTimes)
-      ? (body as { stopTimes: Array<{ place?: { departure?: string; scheduledDeparture?: string } }> }).stopTimes[0]
-      : undefined;
-    const stamp = event?.place?.departure ?? event?.place?.scheduledDeparture;
-    return typeof stamp === "string" && stamp ? stamp : undefined;
-  } catch {
-    return undefined;
-  }
-}
 
 async function fetchPlanPage(
   params: URLSearchParams,

@@ -44,4 +44,4 @@ End-to-end tests start a mock MOTIS server and a Next.js app. They do not call t
 
 ## Data
 
-Routing and geocoding come from [Transitous](https://transitous.org/sources/), built on open timetable feeds. The map uses [OpenStreetMap](https://www.openstreetmap.org/copyright) via [OpenFreeMap](https://openfreemap.org/) Liberty, and Esri imagery for satellite.
+Routing and geocoding come from [Transitous](https://transitous.org/sources/), built on open timetable feeds. The map uses [OpenStreetMap](https://www.openstreetmap.org/copyright) via [OpenFreeMap](https://openfreemap.org/) Positron, and Esri imagery for satellite.

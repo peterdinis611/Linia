@@ -12,7 +12,8 @@ import {
   isTransitMode,
   legColor,
   legName,
-  stopTime,
+  stopArrival,
+  stopDeparture,
 } from "@/lib/format";
 import {
   stopsBetween,
@@ -56,7 +57,9 @@ export function ItineraryDetail({ itinerary, onOpenStation }: ItineraryDetailPro
           <LegBlock
             key={`${leg.startTime}-${index}`}
             leg={leg}
+            isFirst={index === 0}
             isLast={index === itinerary.legs.length - 1}
+            prevToStopId={itinerary.legs[index - 1]?.to.stopId}
             now={now}
             onOpenStation={onOpenStation}
           />
@@ -78,12 +81,16 @@ function useNow(live: boolean) {
 
 function LegBlock({
   leg,
+  isFirst,
   isLast,
+  prevToStopId,
   now,
   onOpenStation,
 }: {
   leg: Leg;
+  isFirst: boolean;
   isLast: boolean;
+  prevToStopId?: string;
   now: number;
   onOpenStation?: (place: Place) => void;
 }) {
@@ -91,13 +98,12 @@ function LegBlock({
   const color = legColor(leg);
   const transit = isTransitMode(leg.mode);
   const phase = legPhase(leg, now);
-  const [wantStops, setWantStops] = useState(false);
   const {
     stops: intermediates,
     loading: loadingStops,
     failed: failedStops,
     retry: retryStops,
-  } = useIntermediateStops(leg, wantStops);
+  } = useIntermediateStops(leg, true);
   const delay = delayMinutes(leg);
   const arriveDelay = arrivalDelayMinutes(leg);
   const liveStop = phase === "current" ? currentStopIndex(intermediates, now) : -1;
@@ -122,6 +128,11 @@ function LegBlock({
           <p className="text-sm font-semibold tracking-tight">
             <StationName place={leg.from} onOpenStation={onOpenStation} />
           </p>
+          <StationBoardStamp
+            place={leg.from}
+            kind={isFirst ? "from" : "change"}
+            onOpenStation={onOpenStation}
+          />
           <p className="mt-1 text-xs text-ink-muted">
             {phase === "current" ? `${t("detail.now")} · ` : ""}
             {t(`modes.${leg.mode}`)} · {formatDuration(leg.duration, t)}
@@ -131,9 +142,16 @@ function LegBlock({
             <span className="font-mono text-[11px] text-ink-muted">
               {formatTime(leg.endTime, locale)}
             </span>
-            <p className="text-sm text-ink-soft">
-              <StationName place={leg.to} onOpenStation={onOpenStation} />
-            </p>
+            <div>
+              <p className="text-sm text-ink-soft">
+                <StationName place={leg.to} onOpenStation={onOpenStation} />
+              </p>
+              <StationBoardStamp
+                place={leg.to}
+                kind={isLast ? "to" : isFirst ? "from" : "change"}
+                onOpenStation={onOpenStation}
+              />
+            </div>
           </div>
         </div>
       </li>
@@ -156,7 +174,15 @@ function LegBlock({
         <div className="pb-3">
           <p className="text-sm font-semibold tracking-tight">
             <StationName place={leg.from} onOpenStation={onOpenStation} />
+            <span className="call-kind">{t("detail.departs")}</span>
           </p>
+          {leg.from.stopId !== prevToStopId ? (
+            <StationBoardStamp
+              place={leg.from}
+              kind="from"
+              onOpenStation={onOpenStation}
+            />
+          ) : null}
           <div className="mt-1.5 flex flex-wrap items-center gap-2">
             <span
               className="px-1.5 py-0.5 font-mono text-[10px] font-medium tracking-wide uppercase"
@@ -190,29 +216,6 @@ function LegBlock({
         </div>
       </div>
 
-      {!wantStops &&
-        intermediates.length === 0 &&
-        !loadingStops &&
-        !failedStops &&
-        Boolean(leg.tripId) && (
-        <p className="grid grid-cols-[3.4rem_14px_1fr] gap-x-3 text-xs">
-          <span />
-          <span className="flex justify-center">
-            <span className="w-[3px] min-h-4" style={{ background: color }} />
-          </span>
-          <span className="py-1">
-            <button
-              type="button"
-              className="stamp"
-              data-testid="load-stops"
-              onClick={() => setWantStops(true)}
-            >
-              {t("detail.retryStops")}
-            </button>
-          </span>
-        </p>
-      )}
-
       {loadingStops && intermediates.length === 0 && (
         <p className="grid grid-cols-[3.4rem_14px_1fr] gap-x-3 text-xs text-ink-muted">
           <span />
@@ -234,10 +237,8 @@ function LegBlock({
             <button
               type="button"
               className="stamp"
-              onClick={() => {
-                setWantStops(true);
-                retryStops();
-              }}
+              data-testid="retry-stops"
+              onClick={() => retryStops()}
             >
               {t("detail.retryStops")}
             </button>
@@ -246,7 +247,7 @@ function LegBlock({
       )}
 
       {intermediates.length > 0 && (
-        <details className="group">
+        <details className="group" open>
           <summary className="grid cursor-pointer grid-cols-[3.4rem_14px_1fr] gap-x-3 list-none [&::-webkit-details-marker]:hidden">
             <span />
             <span className="flex flex-col items-center">
@@ -257,7 +258,7 @@ function LegBlock({
               {tp("stops", intermediates.length)}
             </span>
           </summary>
-          <ol>
+          <ol data-testid="call-board">
             {intermediates.map((stop, stopIndex) => (
               <IntermediateStop
                 key={`${stop.name}-${stop.lat}-${stopIndex}`}
@@ -290,7 +291,13 @@ function LegBlock({
         <div className={isLast ? "pb-2" : "pb-6"}>
           <p className="text-sm font-semibold tracking-tight">
             <StationName place={leg.to} onOpenStation={onOpenStation} />
+            <span className="call-kind">{t("detail.arrives")}</span>
           </p>
+          <StationBoardStamp
+            place={leg.to}
+            kind={isLast ? "to" : "change"}
+            onOpenStation={onOpenStation}
+          />
           <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
             {leg.to.track ? t("detail.platform", { track: leg.to.track }) : null}
             {arriveDelay != null && <DelayLabel minutes={arriveDelay} />}
@@ -369,10 +376,18 @@ function IntermediateStop({
   onOpenStation?: (place: Place) => void;
 }) {
   const { locale, t } = useI18n();
+  const arrives = stopArrival(stop, locale);
+  const departs = stopDeparture(stop, locale);
+  const dwells = Boolean(arrives && departs && arrives !== departs);
   return (
-    <li className="grid grid-cols-[3.4rem_14px_1fr] gap-x-3" data-progress={current ? "current" : undefined}>
-      <div className="py-1 text-right font-mono text-[11px] tabular-nums text-ink-muted">
-        {stopTime(stop, locale)}
+    <li
+      className="grid grid-cols-[3.4rem_14px_1fr] gap-x-3"
+      data-progress={current ? "current" : undefined}
+      data-testid="call-at"
+    >
+      <div className="call-clock py-1 text-right font-mono text-[11px] tabular-nums">
+        <span className="call-clock-arrive">{arrives}</span>
+        {dwells ? <span className="call-clock-depart">{departs}</span> : null}
       </div>
       <div className="flex flex-col items-center">
         <span
@@ -384,10 +399,16 @@ function IntermediateStop({
       <div className="pb-2.5">
         <p className="text-[13px] leading-snug text-ink-soft">
           <StationName place={stop} onOpenStation={onOpenStation} />
+          <span className="call-kind">{t("detail.arrives")}</span>
           {current ? (
             <span className="now-stamp ml-2">{t("detail.now")}</span>
           ) : null}
         </p>
+        {dwells ? (
+          <p className="call-dwell">
+            {t("detail.departs")} {departs}
+          </p>
+        ) : null}
         {stop.track && (
           <p className="text-[11px] text-ink-muted">
             {t("detail.platform", { track: stop.track })}
@@ -395,6 +416,35 @@ function IntermediateStop({
         )}
       </div>
     </li>
+  );
+}
+
+function StationBoardStamp({
+  place,
+  kind,
+  onOpenStation,
+}: {
+  place: Place;
+  kind: "from" | "change" | "to";
+  onOpenStation?: (place: Place) => void;
+}) {
+  const { t } = useI18n();
+  if (!onOpenStation || !place.stopId) return null;
+  const label =
+    kind === "change"
+      ? t("detail.boardChange")
+      : kind === "to"
+        ? t("detail.boardTo")
+        : t("detail.boardFrom");
+  return (
+    <button
+      type="button"
+      className="stamp stamp-plain board-open-stamp"
+      data-testid={`board-stamp-${kind}`}
+      onClick={() => onOpenStation(place)}
+    >
+      {label}
+    </button>
   );
 }
 

@@ -47,7 +47,7 @@ const EUROPE_CENTER: LatLngExpression = [50.1, 10];
 
 type Basemap = "map" | "satellite";
 
-const OPENFREEMAP_LIBERTY = "https://tiles.openfreemap.org/styles/liberty";
+const OPENFREEMAP_LIGHT = "https://tiles.openfreemap.org/styles/positron";
 const OPENFREEMAP_DARK = "https://tiles.openfreemap.org/styles/dark";
 const OPENFREEMAP_ATTR =
   '&copy; <a href="https://openfreemap.org/">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
@@ -237,8 +237,13 @@ export default function RouteMapInner({
     return pins;
   }, [paths, origin, destination, viaPoints, extraEnds]);
 
-  const tileSkin =
-    resolved === "dark" && basemap === "satellite" ? "map-tiles-sat-night" : "";
+  const tileSkin = [
+    basemap === "map" && !nightMap ? "map-tiles-paper" : "",
+    basemap === "map" && nightMap ? "map-tiles-ink" : "",
+    nightMap && basemap === "satellite" ? "map-tiles-sat-night" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={`h-full w-full ${tileSkin}`.trim()}>
@@ -263,7 +268,7 @@ export default function RouteMapInner({
             className="map-underlay"
           />
           <OpenFreeMapLayer
-            styleUrl={nightMap ? OPENFREEMAP_DARK : OPENFREEMAP_LIBERTY}
+            styleUrl={nightMap ? OPENFREEMAP_DARK : OPENFREEMAP_LIGHT}
             attribution={OPENFREEMAP_ATTR}
           />
         </>
@@ -587,8 +592,15 @@ function MapTileSkin({ skin }: { skin: string }) {
 
   useEffect(() => {
     const el = map.getContainer();
-    el.classList.remove("map-tiles-night", "map-tiles-sat-night");
-    if (skin) el.classList.add(skin);
+    el.classList.remove(
+      "map-tiles-night",
+      "map-tiles-sat-night",
+      "map-tiles-paper",
+      "map-tiles-ink",
+    );
+    for (const name of skin.split(/\s+/).filter(Boolean)) {
+      el.classList.add(name);
+    }
   }, [map, skin]);
 
   return null;

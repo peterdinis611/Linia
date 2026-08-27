@@ -121,6 +121,19 @@ export function waitUntil(
   return formatDuration(seconds, t);
 }
 
+export function serviceDay(
+  iso: string,
+  now = new Date(),
+): "today" | "tomorrow" | "later" {
+  const target = new Date(iso);
+  if (!isValid(target)) return "today";
+  if (isSameDay(target, now)) return "today";
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  if (isSameDay(target, tomorrow)) return "tomorrow";
+  return "later";
+}
+
 export function liveTransitLegIndex(
   itinerary: Itinerary,
   now = Date.now(),
@@ -157,6 +170,42 @@ export function stopTime(
     place.departure ??
       place.arrival ??
       place.scheduledDeparture ??
+      place.scheduledArrival,
+    locale,
+  );
+}
+
+export function stopArrival(
+  place: {
+    departure?: string;
+    arrival?: string;
+    scheduledDeparture?: string;
+    scheduledArrival?: string;
+  },
+  locale?: string,
+): string {
+  return formatTime(
+    place.arrival ??
+      place.scheduledArrival ??
+      place.departure ??
+      place.scheduledDeparture,
+    locale,
+  );
+}
+
+export function stopDeparture(
+  place: {
+    departure?: string;
+    arrival?: string;
+    scheduledDeparture?: string;
+    scheduledArrival?: string;
+  },
+  locale?: string,
+): string {
+  return formatTime(
+    place.departure ??
+      place.scheduledDeparture ??
+      place.arrival ??
       place.scheduledArrival,
     locale,
   );

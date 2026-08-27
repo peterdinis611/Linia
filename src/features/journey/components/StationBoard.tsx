@@ -61,6 +61,7 @@ export function StationBoard({
         );
         const alerts = alertsFromStopTime(event);
         const cancelled = Boolean(event.cancelled || event.tripCancelled);
+        const delayed = delayMinutesValue != null && delayMinutesValue > 0;
 
         return (
           <li
@@ -72,6 +73,7 @@ export function StationBoard({
               role="option"
               className="ticket w-full px-4 py-3.5 text-left"
               data-selected={selected}
+              data-fault={cancelled || delayed}
               aria-selected={selected}
               data-testid={`station-row-${index}`}
               onClick={() => onSelect(event)}
@@ -95,11 +97,23 @@ export function StationBoard({
                 {event.place.track
                   ? ` · ${t("detail.platform", { track: event.place.track })}`
                   : ""}
-                {delayMinutesValue != null && delayMinutesValue > 0
-                  ? ` · ${t("detail.delayLate", { minutes: delayMinutesValue })}`
-                  : ""}
-                {cancelled ? ` · ${t("detail.cancelled")}` : ""}
               </p>
+              {cancelled || delayed ? (
+                <div className="ticket-marks">
+                  {cancelled ? (
+                    <span className="ticket-fault" data-testid="board-cancelled">
+                      {t("detail.cancelled")}
+                    </span>
+                  ) : null}
+                  {delayed ? (
+                    <span className="ticket-fault" data-testid="board-delayed">
+                      {t("detail.delayLate", {
+                        minutes: delayMinutesValue ?? 0,
+                      })}
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
               {alerts.length > 0 ? (
                 <div className="mt-2">
                   <AlertStrip alerts={alerts} compact />

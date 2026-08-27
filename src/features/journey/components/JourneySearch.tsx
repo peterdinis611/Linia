@@ -207,6 +207,7 @@ export function JourneySearch() {
               recents={search.recents}
               pins={search.pins}
               serviceFrom={search.serviceFrom}
+              lastAt={search.lastAt}
               onRecentSelect={search.handleRecentSelect}
               onPinnedSelect={search.handlePinnedSelect}
               onTour={startTour}
@@ -314,6 +315,7 @@ export function JourneySearch() {
                 transferFilter={search.transferFilter}
                 shareUrl={search.shareUrl}
                 serviceFrom={search.serviceFrom}
+                allDay={search.allDay}
                 refreshing={search.refreshing}
                 liveAt={search.liveAt}
                 liveFresh={liveFresh}

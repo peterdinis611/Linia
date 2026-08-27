@@ -7,6 +7,11 @@ import {
   stopTimesResponseSchema,
 } from "@/lib/schemas";
 import { motisFetch, transitModesFor } from "@/lib/transit/client";
+import {
+  canPeekStop,
+  isSameServiceDay,
+  peekStopTime,
+} from "@/lib/transit/peek-stop";
 import { resolveStopId } from "@/lib/transit/resolve-stop";
 
 export const getStopTimesAction = actionClient
@@ -52,5 +57,44 @@ export const getStopTimesAction = actionClient
     if (!parsed.success) {
       throw new TransitError("errors.searchFailed");
     }
-    return parsed.data;
+    if (parsed.data.stopTimes.length > 0) {
+      return parsed.data;
+    }
+
+    let lastAt: string | undefined;
+    let serviceFrom: string | undefined;
+    if (canPeekStop({ type: "STOP", id: stopId })) {
+      const requested = parsedInput.time
+        ? Date.parse(parsedInput.time)
+        : Date.now();
+      const [nextStamp, prevStamp] = await Promise.all([
+        peekStopTime(stopId, {
+          language: parsedInput.language,
+          time: parsedInput.time,
+        }),
+        peekStopTime(stopId, {
+          language: parsedInput.language,
+          arriveBy: true,
+          time: parsedInput.time,
+        }),
+      ]);
+      if (
+        prevStamp &&
+        Date.parse(prevStamp) <= requested &&
+        isSameServiceDay(prevStamp, parsedInput.time)
+      ) {
+        lastAt = prevStamp;
+      }
+      if (nextStamp && Date.parse(nextStamp) > requested) {
+        if (Date.parse(nextStamp) - requested > 3 * 60 * 60 * 1000) {
+          serviceFrom = nextStamp;
+        }
+      }
+    }
+
+    return {
+      ...parsed.data,
+      lastAt,
+      serviceFrom,
+    };
   });

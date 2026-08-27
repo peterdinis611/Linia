@@ -195,6 +195,7 @@ export function useJourneySearch() {
     next?: string;
   }>({});
   const [serviceFrom, setServiceFrom] = useState<string | null>(null);
+  const [lastAt, setLastAt] = useState<string | null>(null);
   const hydratedShare = useRef(false);
   const lastPlan = useRef<ShareSnapshot | null>(null);
   const selectedRef = useRef<Itinerary | null>(null);
@@ -335,6 +336,7 @@ export function useJourneySearch() {
     setBoardEnds([]);
     setBoardCursors({});
     setServiceFrom(null);
+    setLastAt(null);
     setHasSearched(false);
     setError(null);
   }
@@ -634,7 +636,8 @@ export function useJourneySearch() {
       });
       setItineraries([]);
       setInboundItineraries([]);
-      setServiceFrom(null);
+      setServiceFrom(result.serviceFrom ?? null);
+      setLastAt(result.lastAt ?? null);
       const ends = await resolveBoardEnds(
         result.stopTimes,
         snapshot.from,
@@ -673,6 +676,8 @@ export function useJourneySearch() {
         setBoardTrip(null);
         setBoardEvent(null);
         setBoardEnds([]);
+        setServiceFrom(null);
+        setLastAt(null);
         setError(
           err instanceof Error &&
             (err.message.startsWith("errors.") ||
@@ -838,6 +843,7 @@ export function useJourneySearch() {
       setItineraries(journeys);
       setInboundItineraries(backJourneys);
       setServiceFrom(outResult.serviceFrom ?? null);
+      setLastAt(outResult.lastAt ?? null);
       setSelectedIndex(findItineraryIndex(journeys, snapshot.tripKey));
       setInboundSelectedIndex(
         findItineraryIndex(backJourneys, snapshot.returnTripKey),
@@ -856,6 +862,7 @@ export function useJourneySearch() {
         setItineraries([]);
         setInboundItineraries([]);
         setServiceFrom(null);
+        setLastAt(null);
         setError(
           err instanceof Error &&
             (err.message.startsWith("errors.") ||
@@ -1447,6 +1454,7 @@ export function useJourneySearch() {
     shareQuery,
     shareUrl,
     serviceFrom,
+    lastAt,
     setArriveBy,
     setModeFilter,
     setDistanceFilter,

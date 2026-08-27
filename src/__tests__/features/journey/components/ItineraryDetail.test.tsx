@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { berlin, prague, railItinerary } from "@/test/fixtures";
+import { berlin, dresden, prague, railItinerary } from "@/test/fixtures";
 import { renderHall } from "@/test/render";
 import { ItineraryDetail } from "@/features/journey/components/ItineraryDetail";
 
@@ -69,6 +69,14 @@ describe("ItineraryDetail", () => {
     expect(onOpenStation).toHaveBeenCalledWith(
       expect.objectContaining({ stopId: berlin.id, name: berlin.name }),
     );
+    await user.click(screen.getByTestId("board-stamp-from"));
+    expect(onOpenStation).toHaveBeenCalledWith(
+      expect.objectContaining({ stopId: berlin.id }),
+    );
+    await user.click(screen.getByTestId("board-stamp-to"));
+    expect(onOpenStation).toHaveBeenCalledWith(
+      expect.objectContaining({ stopId: prague.id }),
+    );
   });
 
   it("leaves a nameless stop as plain text", () => {
@@ -96,8 +104,16 @@ describe("ItineraryDetail", () => {
     expect(screen.getByTestId("leg-now")).toHaveTextContent("Now");
   });
 
-  it("does not fetch trip stops until the stamp is pressed", async () => {
-    const user = userEvent.setup();
+  it("prints when the train calls at each station", () => {
+    renderHall(<ItineraryDetail itinerary={railItinerary()} />);
+    const call = screen.getByTestId("call-at");
+    expect(call).toHaveTextContent("Dresden Hbf");
+    expect(call).toHaveTextContent("Arrives");
+    expect(call).toHaveTextContent("Departs");
+    expect(screen.getByTestId("call-board")).toBeVisible();
+  });
+
+  it("fetches trip stops as soon as the ticket is selected", async () => {
     fetchTrip.mockResolvedValue(railItinerary());
     const itinerary = railItinerary({
       legs: [
@@ -109,9 +125,62 @@ describe("ItineraryDetail", () => {
     });
     renderHall(<ItineraryDetail itinerary={itinerary} />);
 
-    expect(fetchTrip).not.toHaveBeenCalled();
-    await user.click(screen.getByTestId("load-stops"));
     expect(fetchTrip).toHaveBeenCalledWith("trip-ec-172");
-    expect(await screen.findByText("1 stop")).toBeInTheDocument();
+    expect(await screen.findByText("Dresden Hbf")).toBeInTheDocument();
+    expect(screen.getByTestId("call-at")).toHaveTextContent("Arrives");
+  });
+
+  it("opens a transfer board from a change of trains", async () => {
+    fetchTrip.mockResolvedValue(railItinerary());
+    const user = userEvent.setup();
+    const onOpenStation = vi.fn();
+    const rail = railItinerary().legs[0]!;
+    const itinerary = railItinerary({
+      transfers: 1,
+      legs: [
+        {
+          ...rail,
+          from: {
+            name: berlin.name,
+            lat: berlin.lat,
+            lon: berlin.lon,
+            stopId: berlin.id,
+          },
+          to: {
+            name: dresden.name,
+            lat: dresden.lat,
+            lon: dresden.lon,
+            stopId: dresden.id,
+          },
+          intermediateStops: [],
+        },
+        {
+          ...rail,
+          startTime: "2026-08-14T10:20:00Z",
+          endTime: "2026-08-14T12:30:00Z",
+          from: {
+            name: dresden.name,
+            lat: dresden.lat,
+            lon: dresden.lon,
+            stopId: dresden.id,
+          },
+          to: {
+            name: prague.name,
+            lat: prague.lat,
+            lon: prague.lon,
+            stopId: prague.id,
+          },
+          intermediateStops: [],
+        },
+      ],
+    });
+    renderHall(
+      <ItineraryDetail itinerary={itinerary} onOpenStation={onOpenStation} />,
+    );
+
+    await user.click(screen.getByTestId("board-stamp-change"));
+    expect(onOpenStation).toHaveBeenCalledWith(
+      expect.objectContaining({ stopId: dresden.id, name: dresden.name }),
+    );
   });
 });

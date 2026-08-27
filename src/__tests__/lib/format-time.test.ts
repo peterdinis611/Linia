@@ -3,7 +3,10 @@ import {
   isoOnLocalDate,
   liveTransitLegIndex,
   parseHallDateTime,
+  serviceDay,
   startOfLocalDay,
+  stopArrival,
+  stopDeparture,
   toLocalDateTimeValue,
   waitUntil,
 } from "@/lib/format";
@@ -88,5 +91,26 @@ describe("service wait and live legs", () => {
     expect(liveTransitLegIndex(itinerary, Date.parse("2026-08-14T13:00:00Z"))).toBe(
       2,
     );
+  });
+});
+
+describe("stop call times", () => {
+  it("prints arrival first at a dwell", () => {
+    const stop = {
+      arrival: "2026-08-14T10:00:00Z",
+      departure: "2026-08-14T10:05:00Z",
+    };
+    expect(stopArrival(stop, "en")).not.toBe(stopDeparture(stop, "en"));
+    expect(stopArrival(stop, "en")).toBeTruthy();
+  });
+});
+
+describe("service day", () => {
+  it("tells today from tomorrow", () => {
+    const now = new Date(2026, 7, 27, 23, 10);
+    expect(serviceDay("2026-08-27T21:40:00", now)).toBe("today");
+    const tomorrow = new Date(2026, 7, 28, 4, 12);
+    expect(serviceDay(tomorrow.toISOString(), now)).toBe("tomorrow");
+    expect(serviceDay("2026-08-30T08:00:00", now)).toBe("later");
   });
 });

@@ -366,6 +366,7 @@ export const planResponseSchema = z.looseObject({
   itineraries: z.array(itinerarySchema).optional().default([]),
   direct: z.array(itinerarySchema).optional().default([]),
   serviceFrom: z.string().optional(),
+  lastAt: z.string().optional(),
 });
 
 export const stopTimesInputSchema = z.object({
@@ -403,6 +404,8 @@ export const stopTimesResponseSchema = z.looseObject({
   stopTimes: z.array(stopTimeEventSchema).optional().default([]),
   previousPageCursor: z.string().optional(),
   nextPageCursor: z.string().optional(),
+  serviceFrom: z.string().optional(),
+  lastAt: z.string().optional(),
 });
 
 export type ModeFilter = z.infer<typeof modeFilterSchema>;
