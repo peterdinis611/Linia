@@ -17,18 +17,18 @@ import {
   IconSatellite,
 } from "@/components/icons";
 import L from "leaflet";
-import { maplibreGL } from "@maplibre/maplibre-gl-leaflet";
-import {
-  Marker,
-  MapContainer,
-  Popup,
-  TileLayer,
-  useMap,
-  useMapEvents,
-} from "react-leaflet";
+import { Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import type { LatLngBoundsExpression, LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "maplibre-gl/dist/maplibre-gl.css";
+import {
+  Map,
+  MapTileLayer,
+  STREET_ATTR,
+  STREET_DARK,
+  STREET_DARK_LABELS,
+  STREET_LIGHT,
+  STREET_LIGHT_LABELS,
+} from "@/components/ui/map";
 import { useI18n } from "@/i18n/provider";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { carrierName } from "@/lib/carriers";
@@ -46,16 +46,6 @@ import type { MapPickMode } from "../hooks/use-journey-search";
 const EUROPE_CENTER: LatLngExpression = [50.1, 10];
 
 type Basemap = "map" | "satellite";
-
-const OPENFREEMAP_LIGHT = "https://tiles.openfreemap.org/styles/positron";
-const OPENFREEMAP_DARK = "https://tiles.openfreemap.org/styles/dark";
-const OPENFREEMAP_ATTR =
-  '&copy; <a href="https://openfreemap.org/">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
-
-const STREET_LIGHT =
-  "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}";
-const STREET_DARK =
-  "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}";
 
 const SATELLITE = {
   url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
@@ -247,39 +237,42 @@ export default function RouteMapInner({
 
   return (
     <div className={`h-full w-full ${tileSkin}`.trim()}>
-    <MapContainer
+    <Map
       center={EUROPE_CENTER}
       zoom={4}
       minZoom={1}
       scrollWheelZoom
-      zoomControl={false}
-      attributionControl={false}
       preferCanvas
-      className="h-full w-full"
+      className={`h-full w-full ${tileSkin}`.trim()}
     >
       <MapTileSkin skin={tileSkin} />
       {basemap === "map" ? (
         <>
-          <TileLayer
-            url={nightMap ? STREET_DARK : STREET_LIGHT}
+          <MapTileLayer
+            key={nightMap ? "esri-dark" : "esri-light"}
+            url={STREET_LIGHT}
+            darkUrl={STREET_DARK}
+            attribution={STREET_ATTR}
+            darkAttribution={STREET_ATTR}
             maxZoom={16}
-            keepBuffer={4}
-            updateWhenIdle={false}
-            className="map-underlay"
           />
-          <OpenFreeMapLayer
-            styleUrl={nightMap ? OPENFREEMAP_DARK : OPENFREEMAP_LIGHT}
-            attribution={OPENFREEMAP_ATTR}
+          <TileLayer
+            key={nightMap ? "esri-dark-labels" : "esri-light-labels"}
+            url={nightMap ? STREET_DARK_LABELS : STREET_LIGHT_LABELS}
+            pane="basemapLabels"
+            maxZoom={16}
           />
         </>
       ) : (
         <>
-          <TileLayer
-            attribution={SATELLITE.attribution}
+          <MapTileLayer
             url={SATELLITE.url}
+            darkUrl={SATELLITE.url}
+            attribution={SATELLITE.attribution}
+            darkAttribution={SATELLITE.attribution}
             maxZoom={SATELLITE.maxZoom}
           />
-          <TileLayer url={SATELLITE_LABELS} pane="overlayPane" />
+          <TileLayer url={SATELLITE_LABELS} pane="basemapLabels" />
         </>
       )}
       <FitPoints points={fitPoints} fitKey={fitKey} />
@@ -365,7 +358,7 @@ export default function RouteMapInner({
           <Popup>{pendingPick.name}</Popup>
         </Marker>
       )}
-    </MapContainer>
+    </Map>
     </div>
   );
 }
@@ -504,91 +497,14 @@ function ChromeButton({
   );
 }
 
-type GlLeafletLayer = L.Layer & {
-  _resizeContainer?: () => void;
-  _update?: () => void;
-  getMaplibreMap?: () => {
-    resize: () => void;
-    on: (event: string, handler: (event?: { id: string }) => void) => void;
-    off: (event: string, handler: (event?: { id: string }) => void) => void;
-    once: (event: string, handler: () => void) => void;
-    hasImage: (id: string) => boolean;
-    addImage: (id: string, image: ImageData) => void;
-  };
-};
-
-function syncGlOverlay(map: L.Map) {
-  const size = map.getSize();
-  if (size.x < 8 || size.y < 8) return;
-  map.invalidateSize({ animate: false });
-  map.eachLayer((layer) => {
-    const glLayer = layer as GlLeafletLayer;
-    glLayer._resizeContainer?.();
-    glLayer._update?.();
-    glLayer.getMaplibreMap?.().resize();
-  });
-}
-
-function OpenFreeMapLayer({
-  styleUrl,
-  attribution,
-}: {
-  styleUrl: string;
-  attribution: string;
-}) {
-  const map = useMap();
-
-  useEffect(() => {
-    const layer = maplibreGL({
-      style: styleUrl,
-      attributionControl: false,
-      interactive: false,
-      fadeDuration: 0,
-      padding: 0.2,
-      updateInterval: 16,
-    } as Parameters<typeof maplibreGL>[0]);
-    map.addLayer(layer);
-    const attrib = map.attributionControl;
-    attrib?.addAttribution(attribution);
-    const gl = (layer as GlLeafletLayer).getMaplibreMap?.();
-
-    function fillMissingImage(event?: { id: string }) {
-      const id = event?.id;
-      if (!id || !gl || gl.hasImage(id)) return;
-      gl.addImage(id, new ImageData(11, 11));
-    }
-
-    function paint() {
-      syncGlOverlay(map);
-    }
-
-    gl?.on("styleimagemissing", fillMissingImage);
-    gl?.once("load", paint);
-    gl?.once("idle", paint);
-    const frame = requestAnimationFrame(() => {
-      paint();
-      requestAnimationFrame(paint);
-    });
-    const later = window.setTimeout(paint, 280);
-    map.on("moveend zoomend", paint);
-
-    return () => {
-      cancelAnimationFrame(frame);
-      window.clearTimeout(later);
-      map.off("moveend zoomend", paint);
-      gl?.off("styleimagemissing", fillMissingImage);
-      gl?.off("load", paint);
-      gl?.off("idle", paint);
-      attrib?.removeAttribution(attribution);
-      map.removeLayer(layer);
-    };
-  }, [map, styleUrl, attribution]);
-
-  return null;
-}
-
 function MapTileSkin({ skin }: { skin: string }) {
   const map = useMap();
+
+  if (!map.getPane("basemapLabels")) {
+    const pane = map.createPane("basemapLabels");
+    pane.style.zIndex = "350";
+    pane.style.pointerEvents = "none";
+  }
 
   useEffect(() => {
     const el = map.getContainer();
@@ -611,7 +527,7 @@ function MapResizer() {
 
   useEffect(() => {
     const container = map.getContainer();
-    const frame = () => syncGlOverlay(map);
+    const frame = () => map.invalidateSize({ animate: false });
     frame();
     const observer = new ResizeObserver(() => frame());
     observer.observe(container);

@@ -398,7 +398,7 @@ export const cs: Messages = {
     printedFrom: "Tištěno z",
     sources: "zdrojů Transitous",
     mapCopyright: "Mapa ©",
-    contributors: "přispěvatelé · mapové dlaždice OpenFreeMap / Esri.",
+    contributors: "přispěvatelé · mapové dlaždice Esri.",
   },
   errors: {
     searchFailed: "Hledání selhalo",

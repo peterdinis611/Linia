@@ -398,7 +398,7 @@ export const pl: Messages = {
     printedFrom: "Drukowane z",
     sources: "źródeł Transitous",
     mapCopyright: "Mapa ©",
-    contributors: "współtwórcy · kafelki OpenFreeMap / Esri.",
+    contributors: "współtwórcy · kafelki Esri.",
   },
   errors: {
     searchFailed: "Wyszukiwanie nie powiodło się",

@@ -402,7 +402,7 @@ export const it: Messages = {
     printedFrom: "Stampato da",
     sources: "fonti Transitous",
     mapCopyright: "Mappa ©",
-    contributors: "contributori · tessere mappa OpenFreeMap / Esri.",
+    contributors: "contributori · tessere mappa Esri.",
   },
   errors: {
     searchFailed: "Ricerca non riuscita",

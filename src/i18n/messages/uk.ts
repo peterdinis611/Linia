@@ -399,7 +399,7 @@ export const uk: Messages = {
     printedFrom: "Надруковано з",
     sources: "джерел Transitous",
     mapCopyright: "Карта ©",
-    contributors: "учасники · плитки карти OpenFreeMap / Esri.",
+    contributors: "учасники · плитки карти Esri.",
   },
   errors: {
     searchFailed: "Пошук не вдався",

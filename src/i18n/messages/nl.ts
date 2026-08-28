@@ -399,7 +399,7 @@ export const nl: Messages = {
     printedFrom: "Gedrukt van",
     sources: "Transitous-bronnen",
     mapCopyright: "Kaart ©",
-    contributors: "bijdragers · kaarttegels OpenFreeMap / Esri.",
+    contributors: "bijdragers · kaarttegels Esri.",
   },
   errors: {
     searchFailed: "Zoeken mislukt",

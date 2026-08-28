@@ -399,7 +399,7 @@ export const ro: Messages = {
     printedFrom: "Tipărit din",
     sources: "surse Transitous",
     mapCopyright: "Hartă ©",
-    contributors: "contributori · dale de hartă OpenFreeMap / Esri.",
+    contributors: "contributori · dale de hartă Esri.",
   },
   errors: {
     searchFailed: "Căutarea a eșuat",

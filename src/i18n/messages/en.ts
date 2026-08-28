@@ -395,7 +395,7 @@ export const en = {
     printedFrom: "Printed from",
     sources: "Transitous sources",
     mapCopyright: "Map ©",
-    contributors: "contributors · map tiles OpenFreeMap / Esri.",
+    contributors: "contributors · map tiles Esri.",
   },
   errors: {
     searchFailed: "Search failed",

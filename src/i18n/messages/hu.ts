@@ -398,7 +398,7 @@ export const hu: Messages = {
     printedFrom: "Nyomtatva",
     sources: "Transitous forrásokból",
     mapCopyright: "Térkép ©",
-    contributors: "közreműködők · csempék OpenFreeMap / Esri.",
+    contributors: "közreműködők · csempék Esri.",
   },
   errors: {
     searchFailed: "A keresés sikertelen",

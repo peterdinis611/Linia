@@ -399,7 +399,7 @@ export const hr: Messages = {
     printedFrom: "Tiskano iz",
     sources: "izvora Transitous",
     mapCopyright: "Karta ©",
-    contributors: "suradnici · pločice karte OpenFreeMap / Esri.",
+    contributors: "suradnici · pločice karte Esri.",
   },
   errors: {
     searchFailed: "Pretraga nije uspjela",

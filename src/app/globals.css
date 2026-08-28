@@ -1736,7 +1736,7 @@ html:not(.dark) .board-clock .kicker {
 
 html.dark .map-stage,
 html.dark .leaflet-container {
-  background: #10161f;
+  background: #121820;
 }
 
 @media (min-width: 64rem) {
@@ -1771,64 +1771,15 @@ html.dark .leaflet-container {
   cursor: crosshair;
 }
 
-.leaflet-gl-layer {
-  pointer-events: none;
+.map-tiles-paper.leaflet-container,
+.map-tiles-paper .leaflet-container {
+  background: #e6e6e6;
 }
 
-.map-tiles-paper.leaflet-container {
-  background: #e6dfd1;
-}
-
-.map-tiles-paper .leaflet-gl-layer {
-  filter: sepia(0.2) saturate(0.78) hue-rotate(-12deg) contrast(1.06) brightness(1.03);
-}
-
-.dark .map-tiles-ink.leaflet-container {
-  background: #121820;
-}
-
-.dark .map-tiles-ink .leaflet-gl-layer {
-  filter: saturate(0.86) brightness(1.05) hue-rotate(-6deg) contrast(1.04);
-}
-
-.leaflet-gl-layer .maplibregl-ctrl-top-left,
-.leaflet-gl-layer .maplibregl-ctrl-top-right,
-.leaflet-gl-layer .maplibregl-ctrl-bottom-left,
-.leaflet-gl-layer .maplibregl-ctrl-bottom-right {
-  display: none;
-}
-
-.map-tiles-night .leaflet-tile-pane,
-.map-tiles-sat-night .leaflet-tile-pane {
-  will-change: filter;
-  transform: translateZ(0);
-}
-
-.map-tiles-night .leaflet-tile-pane {
-  filter:
-    invert(1)
-    hue-rotate(192deg)
-    saturate(2.15)
-    brightness(1.34)
-    contrast(0.86);
-}
-
-.map-tiles-night .leaflet-map-pane::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 250;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(120, 48, 28, 0.2),
-    rgba(12, 10, 8, 0.22)
-  );
-  mix-blend-mode: soft-light;
-}
-
-.map-tiles-sat-night .leaflet-tile-pane {
-  filter: brightness(0.72) saturate(1.2) contrast(1.08) hue-rotate(-12deg);
+.map-tiles-ink.leaflet-container,
+.map-tiles-ink .leaflet-container,
+html.dark .map-tiles-ink.leaflet-container {
+  background: #1a1a1a;
 }
 
 .map-pin {

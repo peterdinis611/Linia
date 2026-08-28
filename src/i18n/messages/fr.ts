@@ -398,7 +398,7 @@ export const fr: Messages = {
     printedFrom: "Imprimé depuis",
     sources: "sources Transitous",
     mapCopyright: "Carte ©",
-    contributors: "contributeurs · tuiles OpenFreeMap / Esri.",
+    contributors: "contributeurs · tuiles Esri.",
   },
   errors: {
     searchFailed: "La recherche a échoué",

@@ -397,7 +397,7 @@ export const sk: Messages = {
     printedFrom: "Tlačené z",
     sources: "zdrojov Transitous",
     mapCopyright: "Mapa ©",
-    contributors: "prispievatelia · mapové dlaždice OpenFreeMap / Esri.",
+    contributors: "prispievatelia · mapové dlaždice Esri.",
   },
   errors: {
     searchFailed: "Hľadanie zlyhalo",

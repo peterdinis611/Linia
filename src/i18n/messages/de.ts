@@ -398,7 +398,7 @@ export const de: Messages = {
     printedFrom: "Gedruckt aus",
     sources: "Transitous-Quellen",
     mapCopyright: "Karte ©",
-    contributors: "Mitwirkende · Kacheln OpenFreeMap / Esri.",
+    contributors: "Mitwirkende · Kacheln Esri.",
   },
   errors: {
     searchFailed: "Suche fehlgeschlagen",

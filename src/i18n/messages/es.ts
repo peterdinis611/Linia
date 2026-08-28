@@ -400,7 +400,7 @@ export const es: Messages = {
     printedFrom: "Impreso desde",
     sources: "fuentes Transitous",
     mapCopyright: "Mapa ©",
-    contributors: "colaboradores · teselas OpenFreeMap / Esri.",
+    contributors: "colaboradores · teselas Esri.",
   },
   errors: {
     searchFailed: "La búsqueda falló",
