@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   IconCollapse,
   IconExpand,
@@ -39,9 +40,10 @@ import {
   legName,
   liveTransitLegIndex,
 } from "@/lib/format";
-import { pathPointsForLeg } from "@/lib/transit/path";
-import type { Itinerary, SelectedPlace } from "@/lib/transit/types";
+import { pathPointsForLeg, mapCallStops } from "@/lib/transit/path";
+import type { Itinerary, Place, SelectedPlace } from "@/lib/transit/types";
 import type { MapPickMode } from "../hooks/use-journey-search";
+import { itineraryIsLive, legPhase, livePositionOnLeg } from "../lib/progress";
 
 const EUROPE_CENTER: LatLngExpression = [50.1, 10];
 
@@ -76,6 +78,7 @@ type RouteMapInnerProps = {
     lon: number,
   ) => void;
   onToggleFull?: () => void;
+  onOpenStation?: (place: Place) => void;
 };
 
 type PathLeg = {
@@ -92,12 +95,21 @@ function samePin(a: SelectedPlace, b: SelectedPlace) {
   return Math.abs(a.lat - b.lat) < 1e-4 && Math.abs(a.lon - b.lon) < 1e-4;
 }
 
-function pinIcon(kind: "from" | "to" | "via" | "pending") {
-  return L.divIcon({
+const pinIcons: Partial<
+  Record<"from" | "to" | "via" | "pending" | "call" | "now", L.DivIcon>
+> = {};
+
+function pinIcon(kind: "from" | "to" | "via" | "pending" | "call" | "now") {
+  const cached = pinIcons[kind];
+  if (cached) return cached;
+  const size = kind === "call" ? 12 : kind === "now" ? 16 : 18;
+  const icon = L.divIcon({
     className: `map-pin map-pin-${kind}`,
-    iconSize: [18, 18],
-    iconAnchor: [9, 9],
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
   });
+  pinIcons[kind] = icon;
+  return icon;
 }
 
 function liftChartColor(hex: string): string {
@@ -137,8 +149,10 @@ export default function RouteMapInner({
   onMapClick,
   onMarkerDrag,
   onToggleFull,
+  onOpenStation,
 }: RouteMapInnerProps) {
   const { t } = useI18n();
+  const now = useNow(Boolean(itinerary && itineraryIsLive(itinerary)));
   const [basemap, setBasemap] = useState<Basemap>("map");
   const { resolved } = useTheme();
   const nightMap = resolved === "dark";
@@ -194,7 +208,10 @@ export default function RouteMapInner({
 
   const origin = from ? ([from.lat, from.lon] as LatLngExpression) : null;
   const destination = to ? ([to.lat, to.lon] as LatLngExpression) : null;
-  const viaPoints = via.filter((stop): stop is SelectedPlace => Boolean(stop));
+  const viaPoints = useMemo(
+    () => via.filter((stop): stop is SelectedPlace => Boolean(stop)),
+    [via],
+  );
   const extraEnds = useMemo(
     () =>
       ends.filter(
@@ -203,6 +220,20 @@ export default function RouteMapInner({
       ),
     [ends, from, to],
   );
+  const callStops = useMemo(() => {
+    if (!itinerary) return [];
+    const skip = [from, to, pendingPick, ...viaPoints].filter(
+      (place): place is SelectedPlace => Boolean(place),
+    );
+    return mapCallStops(itinerary, skip);
+  }, [itinerary, from, to, pendingPick, viaPoints]);
+  const livePoint = useMemo(() => {
+    if (!itinerary) return null;
+    const riding = itinerary.legs.find(
+      (leg) => isTransitMode(leg.mode) && legPhase(leg, now) === "current",
+    );
+    return riding ? livePositionOnLeg(riding, now) : null;
+  }, [itinerary, now]);
   const previewLine = useMemo<LatLngExpression[]>(() => {
     const pins: LatLngExpression[] = [];
     if (origin) pins.push(origin);
@@ -240,8 +271,12 @@ export default function RouteMapInner({
     <Map
       center={EUROPE_CENTER}
       zoom={4}
-      minZoom={1}
-      scrollWheelZoom
+      minZoom={2}
+      maxZoom={19}
+      scrollWheelZoom="center"
+      doubleClickZoom
+      touchZoom="center"
+      boxZoom
       preferCanvas
       className={`h-full w-full ${tileSkin}`.trim()}
     >
@@ -254,13 +289,18 @@ export default function RouteMapInner({
             darkUrl={STREET_DARK}
             attribution={STREET_ATTR}
             darkAttribution={STREET_ATTR}
-            maxZoom={16}
+            maxNativeZoom={16}
+            maxZoom={19}
           />
           <TileLayer
             key={nightMap ? "esri-dark-labels" : "esri-light-labels"}
             url={nightMap ? STREET_DARK_LABELS : STREET_LIGHT_LABELS}
             pane="basemapLabels"
-            maxZoom={16}
+            maxNativeZoom={16}
+            maxZoom={19}
+            updateWhenIdle
+            updateWhenZooming={false}
+            keepBuffer={2}
           />
         </>
       ) : (
@@ -271,6 +311,7 @@ export default function RouteMapInner({
             attribution={SATELLITE.attribution}
             darkAttribution={SATELLITE.attribution}
             maxZoom={SATELLITE.maxZoom}
+            maxNativeZoom={SATELLITE.maxZoom}
           />
           <TileLayer url={SATELLITE_LABELS} pane="basemapLabels" />
         </>
@@ -291,6 +332,37 @@ export default function RouteMapInner({
         previewColor={previewColor}
         halo={halo}
       />
+      {callStops.map((stop, index) => {
+        const canBoard = Boolean(stop.stopId && onOpenStation && pickMode === "idle");
+        return (
+          <Marker
+            key={stop.stopId ?? `${stop.name}-${stop.lat}-${index}`}
+            position={[stop.lat, stop.lon]}
+            icon={pinIcon("call")}
+            zIndexOffset={-80}
+            title={t("map.callAt", { name: stop.name })}
+            alt={t("map.callAt", { name: stop.name })}
+            eventHandlers={{
+              click: () => {
+                if (!canBoard || !onOpenStation) return;
+                onOpenStation(stop);
+              },
+            }}
+          >
+            {canBoard ? null : <Popup>{stop.name}</Popup>}
+          </Marker>
+        );
+      })}
+      {livePoint ? (
+        <Marker
+          position={livePoint}
+          icon={pinIcon("now")}
+          zIndexOffset={1400}
+          interactive={false}
+          title={t("detail.now")}
+          alt={t("detail.now")}
+        />
+      ) : null}
       {from && origin && (
         <Marker
           position={origin}
@@ -363,6 +435,16 @@ export default function RouteMapInner({
   );
 }
 
+function useNow(live: boolean) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!live) return;
+    const id = window.setInterval(() => setNow(Date.now()), 5_000);
+    return () => window.clearInterval(id);
+  }, [live]);
+  return now;
+}
+
 function MapClickCatcher({
   pickMode,
   onClick,
@@ -409,12 +491,21 @@ function MapToolbar({
 }) {
   const map = useMap();
   const { t } = useI18n();
+  const [host, setHost] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const stage = map.getContainer().closest(".map-stage");
+    setHost(stage instanceof HTMLElement ? stage : null);
+  }, [map]);
 
   function locateHere() {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        map.setView([position.coords.latitude, position.coords.longitude], 14);
+        map.setView(
+          [position.coords.latitude, position.coords.longitude],
+          Math.max(map.getZoom(), 15),
+        );
       },
       () => {
         // permission or timeout — stay put
@@ -423,7 +514,7 @@ function MapToolbar({
     );
   }
 
-  return (
+  const chrome = (
     <div className="map-chrome">
       <ChromeButton
         label={t("map.mapLabel")}
@@ -456,14 +547,26 @@ function MapToolbar({
           {full ? <IconCollapse /> : <IconExpand />}
         </ChromeButton>
       ) : null}
-      <ChromeButton label={t("map.zoomIn")} className="map-chrome-zoom" onClick={() => map.zoomIn()}>
+      <ChromeButton
+        label={t("map.zoomIn")}
+        className="map-chrome-zoom"
+        testId="map-zoom-in"
+        onClick={() => map.zoomIn()}
+      >
         <IconPlus />
       </ChromeButton>
-      <ChromeButton label={t("map.zoomOut")} className="map-chrome-zoom" onClick={() => map.zoomOut()}>
+      <ChromeButton
+        label={t("map.zoomOut")}
+        className="map-chrome-zoom"
+        testId="map-zoom-out"
+        onClick={() => map.zoomOut()}
+      >
         <IconMinus />
       </ChromeButton>
     </div>
   );
+
+  return host ? createPortal(chrome, host) : null;
 }
 
 function ChromeButton({
@@ -490,6 +593,7 @@ function ChromeButton({
       title={label}
       data-on={pressed || undefined}
       data-testid={testId}
+      onPointerDown={(event) => event.stopPropagation()}
       onClick={onClick}
     >
       {children}
@@ -500,11 +604,13 @@ function ChromeButton({
 function MapTileSkin({ skin }: { skin: string }) {
   const map = useMap();
 
-  if (!map.getPane("basemapLabels")) {
-    const pane = map.createPane("basemapLabels");
-    pane.style.zIndex = "350";
-    pane.style.pointerEvents = "none";
-  }
+  useEffect(() => {
+    if (!map.getPane("basemapLabels")) {
+      const pane = map.createPane("basemapLabels");
+      pane.style.zIndex = "350";
+      pane.style.pointerEvents = "none";
+    }
+  }, [map]);
 
   useEffect(() => {
     const el = map.getContainer();
@@ -527,14 +633,32 @@ function MapResizer() {
 
   useEffect(() => {
     const container = map.getContainer();
-    const frame = () => map.invalidateSize({ animate: false });
-    frame();
-    const observer = new ResizeObserver(() => frame());
+    let lastWidth = 0;
+    let lastHeight = 0;
+    let frame = 0;
+
+    const apply = () => {
+      frame = 0;
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      if (width === lastWidth && height === lastHeight) return;
+      lastWidth = width;
+      lastHeight = height;
+      map.invalidateSize({ animate: false });
+    };
+    const schedule = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(apply);
+    };
+
+    apply();
+    const observer = new ResizeObserver(schedule);
     observer.observe(container);
-    window.addEventListener("resize", frame);
+    window.addEventListener("resize", schedule);
     return () => {
       observer.disconnect();
-      window.removeEventListener("resize", frame);
+      window.removeEventListener("resize", schedule);
+      if (frame) window.cancelAnimationFrame(frame);
     };
   }, [map]);
 
@@ -592,6 +716,7 @@ function JourneyPaths({
           weight: (path.dashed ? 6 : 8) + liveWeight,
           opacity: path.faded ? 0.12 : path.live ? 0.95 : 0.85,
           dashArray: path.dashed ? "6 8" : undefined,
+          interactive: false,
           className: "journey-path-halo",
         }).addTo(map),
       );
@@ -634,24 +759,27 @@ function FitPoints({
   const lastCount = useRef(0);
 
   useEffect(() => {
-    map.invalidateSize({ animate: false });
+    const appeared = lastCount.current === 0 && points.length > 0;
+    const keyChanged = lastKey.current !== fitKey;
+    lastCount.current = points.length;
+
     if (points.length === 0) {
       if (lastKey.current !== null) map.setView(EUROPE_CENTER, 4);
       lastKey.current = fitKey;
-      lastCount.current = 0;
       return;
     }
-    if (lastKey.current === fitKey && lastCount.current === points.length) return;
     lastKey.current = fitKey;
-    lastCount.current = points.length;
+    if (!keyChanged && !appeared) return;
+
     if (points.length >= 2) {
       map.fitBounds(points as LatLngBoundsExpression, {
-        padding: [48, 72],
-        maxZoom: 14,
+        padding: [36, 56],
+        maxZoom: 16,
+        animate: false,
       });
       return;
     }
-    map.setView(points[0], 12);
+    map.setView(points[0], 15);
   }, [map, points, fitKey]);
 
   return null;

@@ -226,6 +226,7 @@ export const nl: Messages = {
     approximate: "De lijn is bij benadering tot het actuele pad drukt.",
     liveLeg: "Nu op {line}",
     delayedLeg: "{line} vertraagd {delay}",
+    callAt: "Halte {name}",
   },
   results: {
     departures: "Vertrekken",
@@ -301,6 +302,7 @@ export const nl: Messages = {
     direct: "direct",
     toHeadsign: "naar {name}",
     platform: "sp. {track}",
+    trackChange: "sp. {track} · was {was}",
     loadingStops: "Haltes laden…",
     cancelled: "Vervallen",
     delayLate: "+{minutes} min",

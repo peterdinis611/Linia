@@ -12,7 +12,7 @@ import {
   liveTransitLegIndex,
 } from "@/lib/format";
 import { pathPointsForLeg } from "@/lib/transit/path";
-import type { Itinerary, SelectedPlace } from "@/lib/transit/types";
+import type { Itinerary, Place, SelectedPlace } from "@/lib/transit/types";
 import type { MapPickMode, RouteMode } from "../hooks/use-journey-search";
 import { roleForMapClick } from "../lib/pins";
 
@@ -53,6 +53,7 @@ type RouteMapProps = {
     lon: number,
   ) => void;
   onAssignPending: (role: "from" | "to" | "via") => void;
+  onOpenStation?: (place: Place) => void;
 };
 
 export function RouteMap({
@@ -74,6 +75,7 @@ export function RouteMap({
   onMapClick,
   onMarkerDrag,
   onAssignPending,
+  onOpenStation,
 }: RouteMapProps) {
   const { t } = useI18n();
   const stageId = useId();
@@ -183,6 +185,14 @@ export function RouteMap({
           onMapClick={onMapClick}
           onMarkerDrag={onMarkerDrag}
           onToggleFull={() => setFull((value) => !value)}
+          onOpenStation={
+            onOpenStation
+              ? (place) => {
+                  if (full) setFull(false);
+                  onOpenStation(place);
+                }
+              : undefined
+          }
         />
       ) : (
         <div className="h-full w-full" data-testid="map-pending" />

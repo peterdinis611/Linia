@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   lastDepartureKey,
   ticketFault,
+  ticketTrackChange,
+  trackChange,
   walkNotes,
 } from "@/features/journey/lib/ticket-notes";
 import { berlin, dresden, prague, railItinerary } from "@/test/fixtures";
@@ -101,5 +103,43 @@ describe("ticket notes", () => {
     expect(lastDepartureKey([first, last])).toBe(
       `${last.startTime}|${last.endTime}`,
     );
+  });
+
+  it("stamps a platform change as loud as a delay", () => {
+    expect(
+      trackChange({
+        name: berlin.name,
+        lat: berlin.lat,
+        lon: berlin.lon,
+        track: "4",
+        scheduledTrack: "12",
+      }),
+    ).toEqual({ track: "4", was: "12" });
+    expect(
+      trackChange({
+        name: berlin.name,
+        lat: berlin.lat,
+        lon: berlin.lon,
+        track: "12",
+        scheduledTrack: "12",
+      }),
+    ).toBeNull();
+
+    const moved = railItinerary({
+      legs: [
+        {
+          ...railItinerary().legs[0]!,
+          from: {
+            name: berlin.name,
+            lat: berlin.lat,
+            lon: berlin.lon,
+            track: "4",
+            scheduledTrack: "12",
+          },
+        },
+      ],
+    });
+    expect(ticketTrackChange(moved)).toEqual({ track: "4", was: "12" });
+    expect(ticketTrackChange(railItinerary())).toBeNull();
   });
 });

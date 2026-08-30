@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/i18n/provider";
 import {
   arrivalDelayMinutes,
@@ -24,7 +24,9 @@ import {
 import { fetchTrip } from "@/lib/transit/queries";
 import { alertsFromItinerary, uniqueAlerts } from "../lib/alerts";
 import { currentStopIndex, itineraryIsLive, legPhase } from "../lib/progress";
+import { trackChange } from "../lib/ticket-notes";
 import { AlertStrip } from "./AlertStrip";
+import { TrackFault } from "./TrackFault";
 
 type ItineraryDetailProps = {
   itinerary: Itinerary;
@@ -210,8 +212,15 @@ function LegBlock({
           <p className="mt-1 text-xs text-ink-muted">
             {formatDuration(leg.duration, t)}
             {leg.agencyName ? ` · ${leg.agencyName}` : ""}
-            {leg.from.track ? ` · ${t("detail.platform", { track: leg.from.track })}` : ""}
+            {leg.from.track && !trackChange(leg.from)
+              ? ` · ${t("detail.platform", { track: leg.from.track })}`
+              : ""}
           </p>
+          {trackChange(leg.from) ? (
+            <div className="ticket-marks">
+              <TrackFault place={leg.from} testId="detail-track-from" />
+            </div>
+          ) : null}
           <AlertStrip alerts={uniqueAlerts([...(leg.alerts ?? []), ...(leg.from.alerts ?? [])])} />
         </div>
       </div>
@@ -299,7 +308,12 @@ function LegBlock({
             onOpenStation={onOpenStation}
           />
           <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
-            {leg.to.track ? t("detail.platform", { track: leg.to.track }) : null}
+            {leg.to.track && !trackChange(leg.to)
+              ? t("detail.platform", { track: leg.to.track })
+              : null}
+            {trackChange(leg.to) ? (
+              <TrackFault place={leg.to} testId="detail-track-to" />
+            ) : null}
             {arriveDelay != null && <DelayLabel minutes={arriveDelay} />}
           </p>
         </div>
@@ -321,12 +335,21 @@ function useIntermediateStops(
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
   const [tick, setTick] = useState(0);
+  const loadedTrip = useRef<string | null>(null);
 
   useEffect(() => {
     const existing = leg.intermediateStops ?? [];
-    setStops(existing);
-    setFailed(false);
-    if (!isTransitMode(leg.mode) || existing.length > 0 || !leg.tripId) {
+    if (existing.length > 0) {
+      loadedTrip.current = leg.tripId ?? null;
+      setStops(existing);
+      setFailed(false);
+      setLoading(false);
+      return;
+    }
+    if (!isTransitMode(leg.mode) || !leg.tripId) {
+      loadedTrip.current = null;
+      setStops(existing);
+      setFailed(false);
       setLoading(false);
       return;
     }
@@ -334,17 +357,26 @@ function useIntermediateStops(
       setLoading(false);
       return;
     }
+    if (loadedTrip.current === leg.tripId) {
+      setLoading(false);
+      return;
+    }
 
+    const tripId = leg.tripId;
+    const from = leg.from;
+    const to = leg.to;
     const controller = new AbortController();
     setLoading(true);
-    fetchTrip(leg.tripId)
+    fetchTrip(tripId)
       .then((trip) => {
         if (controller.signal.aborted) return;
-        setStops(stopsBetween(trip, leg.from, leg.to));
+        loadedTrip.current = tripId;
+        setStops(stopsBetween(trip, from, to));
         setFailed(false);
       })
       .catch(() => {
         if (!controller.signal.aborted) {
+          loadedTrip.current = null;
           setStops([]);
           setFailed(true);
         }
@@ -354,13 +386,16 @@ function useIntermediateStops(
       });
 
     return () => controller.abort();
-  }, [leg, tick, enabled]);
+  }, [enabled, tick, leg.mode, leg.tripId, leg.intermediateStops]);
 
   return {
     stops,
     loading,
     failed,
-    retry: () => setTick((value) => value + 1),
+    retry: () => {
+      loadedTrip.current = null;
+      setTick((value) => value + 1);
+    },
   };
 }
 
@@ -409,11 +444,15 @@ function IntermediateStop({
             {t("detail.departs")} {departs}
           </p>
         ) : null}
-        {stop.track && (
+        {trackChange(stop) ? (
+          <div className="ticket-marks">
+            <TrackFault place={stop} testId="detail-track-call" />
+          </div>
+        ) : stop.track ? (
           <p className="text-[11px] text-ink-muted">
             {t("detail.platform", { track: stop.track })}
           </p>
-        )}
+        ) : null}
       </div>
     </li>
   );

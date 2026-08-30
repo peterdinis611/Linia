@@ -1,6 +1,7 @@
+import { isTransitMode } from "@/lib/format";
 import { decodePolyline } from "@/lib/polyline";
 import { hasMappableCoords } from "./geocode-rank";
-import { placeToSelected } from "./place";
+import { placeToSelected, samePlace } from "./place";
 import type { Itinerary, Leg, Place, SelectedPlace, StopTimeEvent } from "./types";
 
 function pushStop(points: [number, number][], stop: Place) {
@@ -34,6 +35,97 @@ export function pathPointsForLeg(leg: Leg): [number, number][] {
     if (decoded.length > 1) return decoded;
   }
   return stopPointsForLeg(leg);
+}
+
+function nearPoint(
+  points: [number, number][],
+  lat: number,
+  lon: number,
+) {
+  let best = 0;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (let index = 0; index < points.length; index += 1) {
+    const point = points[index]!;
+    const distance = Math.hypot(point[0] - lat, point[1] - lon);
+    if (distance < bestDistance) {
+      best = index;
+      bestDistance = distance;
+    }
+  }
+  return best;
+}
+
+export function pathSliceBetween(
+  points: [number, number][],
+  from: { lat: number; lon: number },
+  to: { lat: number; lon: number },
+): [number, number][] {
+  if (points.length === 0) return [];
+  if (points.length === 1) return [points[0]!];
+  const start = nearPoint(points, from.lat, from.lon);
+  const end = nearPoint(points, to.lat, to.lon);
+  if (start === end) return [points[start]!];
+  return start < end
+    ? points.slice(start, end + 1)
+    : points.slice(end, start + 1).reverse();
+}
+
+export function pointAlongPath(
+  points: [number, number][],
+  fraction: number,
+): [number, number] | null {
+  if (points.length === 0) return null;
+  if (points.length === 1) return points[0]!;
+  const clamped = Math.min(1, Math.max(0, fraction));
+  const lengths: number[] = [];
+  let total = 0;
+  for (let index = 1; index < points.length; index += 1) {
+    const prev = points[index - 1]!;
+    const next = points[index]!;
+    const length = Math.hypot(next[0] - prev[0], next[1] - prev[1]);
+    lengths.push(length);
+    total += length;
+  }
+  if (total === 0) return points[0]!;
+  let remain = clamped * total;
+  for (let index = 0; index < lengths.length; index += 1) {
+    const length = lengths[index]!;
+    const last = index === lengths.length - 1;
+    if (remain <= length || last) {
+      const mix = length === 0 ? 0 : Math.min(1, remain / length);
+      const prev = points[index]!;
+      const next = points[index + 1]!;
+      return [
+        prev[0] + (next[0] - prev[0]) * mix,
+        prev[1] + (next[1] - prev[1]) * mix,
+      ];
+    }
+    remain -= length;
+  }
+  return points.at(-1) ?? null;
+}
+
+export function mapCallStops(
+  itinerary: Itinerary,
+  skip: Array<{ lat: number; lon: number }> = [],
+): Place[] {
+  const calls: Place[] = [];
+  const seen = new Set<string>();
+  for (const leg of itinerary.legs) {
+    if (!isTransitMode(leg.mode)) continue;
+    const chain = [leg.from, ...(leg.intermediateStops ?? []), leg.to];
+    for (const stop of chain) {
+      if (!hasMappableCoords(stop.lat, stop.lon)) continue;
+      if (skip.some((pin) => samePlace(pin, stop))) continue;
+      const key =
+        stop.stopId ||
+        `${stop.name}:${stop.lat.toFixed(4)},${stop.lon.toFixed(4)}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      calls.push(stop);
+    }
+  }
+  return calls;
 }
 
 export function itineraryEndPlace(itinerary: Itinerary): SelectedPlace | null {

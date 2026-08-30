@@ -1,5 +1,5 @@
 import { delayMinutes, isTransitMode } from "@/lib/format";
-import type { Itinerary } from "@/lib/transit/types";
+import type { Itinerary, Place } from "@/lib/transit/types";
 
 export type WalkNote = {
   kind: "access" | "transfer";
@@ -34,6 +34,28 @@ export function walkNotes(itinerary: Itinerary): WalkNote[] {
     }
   }
   return notes;
+}
+
+export function trackChange(place: Place): { track: string; was: string } | null {
+  const track = place.track?.trim();
+  const was = place.scheduledTrack?.trim();
+  if (!track || !was || track === was) return null;
+  return { track, was };
+}
+
+export function ticketTrackChange(itinerary: Itinerary) {
+  for (const leg of itinerary.legs) {
+    if (!isTransitMode(leg.mode)) continue;
+    const boarding = trackChange(leg.from);
+    if (boarding) return boarding;
+    const alighting = trackChange(leg.to);
+    if (alighting) return alighting;
+    for (const stop of leg.intermediateStops ?? []) {
+      const call = trackChange(stop);
+      if (call) return call;
+    }
+  }
+  return null;
 }
 
 export function ticketFault(itinerary: Itinerary): {

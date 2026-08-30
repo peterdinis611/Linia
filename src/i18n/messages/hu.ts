@@ -226,6 +226,7 @@ export const hu: Messages = {
     approximate: "A vonal közelítő, amíg az élő út ki nem nyomtatódik.",
     liveLeg: "Most: {line}",
     delayedLeg: "{line} késik {delay}",
+    callAt: "Megálló {name}",
   },
   results: {
     departures: "Indulások",
@@ -301,6 +302,7 @@ export const hu: Messages = {
     direct: "közvetlen",
     toHeadsign: "{name} felé",
     platform: "vág. {track}",
+    trackChange: "vág. {track} · volt {was}",
     loadingStops: "Megállók betöltése…",
     cancelled: "Törölve",
     delayLate: "+{minutes} perc",

@@ -226,6 +226,7 @@ export const de: Messages = {
     approximate: "Die Linie ist ungefähr, bis der Live-Weg gedruckt ist.",
     liveLeg: "Jetzt auf {line}",
     delayedLeg: "{line} verspätet {delay}",
+    callAt: "Halt {name}",
   },
   results: {
     departures: "Abfahrten",
@@ -301,6 +302,7 @@ export const de: Messages = {
     direct: "direkt",
     toHeadsign: "nach {name}",
     platform: "Gl. {track}",
+    trackChange: "Gl. {track} · war {was}",
     loadingStops: "Halte werden geladen…",
     cancelled: "Ausgefallen",
     delayLate: "+{minutes} min",

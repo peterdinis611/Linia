@@ -174,4 +174,26 @@ describe("ItineraryList", () => {
     expect(tickets[0]).not.toHaveTextContent("Last today");
     expect(tickets[1]).toHaveTextContent("Last today");
   });
+
+  it("inks a platform change on the ticket", () => {
+    const moved = railItinerary({
+      legs: [
+        {
+          ...railItinerary().legs[0]!,
+          from: {
+            name: "Berlin Hbf",
+            lat: 52.525,
+            lon: 13.369,
+            track: "4",
+            scheduledTrack: "12",
+          },
+        },
+      ],
+    });
+    renderHall(
+      <ItineraryList itineraries={[moved]} selectedIndex={0} onSelect={vi.fn()} />,
+    );
+    expect(screen.getByTestId("ticket-track")).toHaveTextContent("plat. 4 · was 12");
+    expect(screen.getByRole("option")).toHaveAttribute("data-fault", "true");
+  });
 });

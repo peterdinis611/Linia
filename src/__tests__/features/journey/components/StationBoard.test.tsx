@@ -80,4 +80,27 @@ describe("StationBoard", () => {
     expect(screen.getByTestId("board-delayed")).toHaveClass("ticket-fault");
     expect(screen.getByTestId("alert-ribbon")).toHaveTextContent("Changed service");
   });
+
+  it("inks a platform change as a red stamp", () => {
+    const moved: StopTimeEvent = {
+      ...event,
+      place: {
+        ...event.place,
+        track: "4",
+        scheduledTrack: "12",
+      },
+    };
+    renderHall(
+      <StationBoard
+        stopTimes={[moved]}
+        arriveBy={false}
+        selectedTripId={null}
+        onSelect={vi.fn()}
+      />,
+    );
+    const row = screen.getByTestId("station-row-0");
+    expect(row).toHaveAttribute("data-fault", "true");
+    expect(screen.getByTestId("board-track")).toHaveTextContent("plat. 4 · was 12");
+    expect(row).not.toHaveTextContent("plat. 12");
+  });
 });

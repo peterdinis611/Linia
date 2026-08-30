@@ -225,6 +225,7 @@ export const sk: Messages = {
     approximate: "Čiara je približná, kým sa nevytlačí trasa naživo.",
     liveLeg: "Teraz na {line}",
     delayedLeg: "{line} mešká {delay}",
+    callAt: "Zastávka {name}",
   },
   results: {
     departures: "Odchody",
@@ -300,6 +301,7 @@ export const sk: Messages = {
     direct: "priame",
     toHeadsign: "smer {name}",
     platform: "nást. {track}",
+    trackChange: "nást. {track} · bolo {was}",
     loadingStops: "Načítavam zastávky…",
     cancelled: "Zrušené",
     delayLate: "+{minutes} min",

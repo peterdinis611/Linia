@@ -4,8 +4,10 @@ import {
   boardDestinations,
   itineraryEndPlace,
   itineraryFromStopTime,
+  mapCallStops,
   mapDestination,
   pathPointsForLeg,
+  pointAlongPath,
   stopPointsForLeg,
 } from "@/lib/transit/path";
 
@@ -106,5 +108,16 @@ describe("pathPointsForLeg", () => {
         ],
       }),
     ).toMatchObject({ name: prague.name });
+  });
+
+  it("walks a fraction of the line", () => {
+    expect(pointAlongPath([[0, 0], [10, 0]], 0.4)).toEqual([4, 0]);
+    expect(pointAlongPath([[0, 0]], 0.5)).toEqual([0, 0]);
+    expect(pointAlongPath([], 0.5)).toBeNull();
+  });
+
+  it("dots intermediate calls, not the pinned ends", () => {
+    const calls = mapCallStops(railItinerary(), [berlin, prague]);
+    expect(calls).toMatchObject([{ name: dresden.name, lat: dresden.lat }]);
   });
 });

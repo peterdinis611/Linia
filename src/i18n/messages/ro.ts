@@ -226,6 +226,7 @@ export const ro: Messages = {
     approximate: "Linia e aproximativă până se tipărește traseul în direct.",
     liveLeg: "Acum pe {line}",
     delayedLeg: "{line} întârziat {delay}",
+    callAt: "Oprire {name}",
   },
   results: {
     departures: "Plecări",
@@ -301,6 +302,7 @@ export const ro: Messages = {
     direct: "direct",
     toHeadsign: "spre {name}",
     platform: "lin. {track}",
+    trackChange: "lin. {track} · era {was}",
     loadingStops: "Se încarcă opririle…",
     cancelled: "Anulat",
     delayLate: "+{minutes} min",

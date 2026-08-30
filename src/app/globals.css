@@ -1838,13 +1838,60 @@ html.dark .map-tiles-ink.leaflet-container {
     0 0 14px color-mix(in srgb, var(--amber) 28%, transparent);
 }
 
+.map-pin-call {
+  border-radius: 1px;
+  border-width: 1px;
+  background: var(--ink);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--board) 30%, transparent);
+  cursor: pointer;
+}
+
+.dark .map-pin-call {
+  background: #f7efe0;
+  border-color: #16130f;
+}
+
+.map-pin-now {
+  border-radius: 2px;
+  background: var(--signal);
+  transform: rotate(45deg);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--paper-raised) 90%, transparent),
+    0 0 12px color-mix(in srgb, var(--signal) 42%, transparent);
+  animation: map-now-ink 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.dark .map-pin-now {
+  background: var(--amber);
+  box-shadow:
+    0 0 0 2px #16130f,
+    0 0 16px color-mix(in srgb, var(--amber) 50%, transparent);
+}
+
+@keyframes map-now-ink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.72;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-pin-now {
+    animation: none;
+  }
+}
+
 .map-chrome {
   display: flex;
   flex-direction: column;
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
-  z-index: 1000;
+  z-index: 1100;
   overflow: hidden;
   border: 1px solid var(--rule);
   background: color-mix(in srgb, var(--paper-raised) 94%, transparent);
@@ -2092,12 +2139,6 @@ details[open] .stops-chevron {
 
   .map-plaque-hint {
     display: block;
-  }
-}
-
-@media (pointer: coarse) {
-  .map-chrome-zoom {
-    display: none;
   }
 }
 
@@ -3117,6 +3158,8 @@ details[open] .stops-chevron {
   font-size: 12px;
   width: 100%;
   height: 100%;
+  z-index: 0;
+  touch-action: pan-x pan-y;
 }
 
 .leaflet-control-attribution {

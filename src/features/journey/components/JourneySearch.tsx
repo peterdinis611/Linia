@@ -361,6 +361,7 @@ export function JourneySearch() {
             onMapClick={search.handleMapClick}
             onMarkerDrag={search.handleMarkerDrag}
             onAssignPending={search.assignPendingPick}
+            onOpenStation={search.handleOpenStation}
           />
         </section>
       </main>

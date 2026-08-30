@@ -223,6 +223,7 @@ export const en = {
     approximate: "Line is approximate until the live path prints.",
     liveLeg: "Now on {line}",
     delayedLeg: "{line} delayed {delay}",
+    callAt: "Call at {name}",
   },
   results: {
     departures: "Departures",
@@ -298,6 +299,7 @@ export const en = {
     direct: "direct",
     toHeadsign: "to {name}",
     platform: "plat. {track}",
+    trackChange: "plat. {track} · was {was}",
     loadingStops: "Loading stops…",
     cancelled: "Cancelled",
     delayLate: "+{minutes} min",

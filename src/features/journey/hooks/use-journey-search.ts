@@ -668,7 +668,7 @@ export function useJourneySearch() {
         }
       }
       setLiveAt(Date.now());
-      bumpFit();
+      if (!silent) bumpFit();
     } catch (err) {
       if (gen !== planGen.current) return;
       if (!silent) {
@@ -855,7 +855,7 @@ export function useJourneySearch() {
         );
       }
       setLiveAt(Date.now());
-      bumpFit();
+      if (!silent) bumpFit();
     } catch (err) {
       if (gen !== planGen.current) return;
       if (!silent) {

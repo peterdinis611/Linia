@@ -15,6 +15,7 @@ import { itineraryIsLive, legPhase } from "../lib/progress";
 import {
   departureKey,
   ticketFault,
+  ticketTrackChange,
   walkNotes,
 } from "../lib/ticket-notes";
 import { AlertStrip } from "./AlertStrip";
@@ -43,6 +44,7 @@ export function ItineraryList({
         const selected = index === selectedIndex;
         const transitLegs = itinerary.legs.filter((leg) => isTransitMode(leg.mode));
         const fault = ticketFault(itinerary);
+        const track = ticketTrackChange(itinerary);
         const walks = walkNotes(itinerary);
         const carriers = transitAgencies(itinerary);
         const alerts = alertsFromItinerary(itinerary);
@@ -56,7 +58,11 @@ export function ItineraryList({
               role="option"
               onClick={() => onSelect(index)}
               data-selected={selected}
-              data-fault={fault.cancelled || fault.delayMinutes != null}
+              data-fault={
+                fault.cancelled ||
+                fault.delayMinutes != null ||
+                Boolean(track)
+              }
               aria-selected={selected}
               className="ticket w-full px-4 py-3.5 text-left"
             >
@@ -110,7 +116,7 @@ export function ItineraryList({
                   ),
                 )}
               </div>
-              {fault.cancelled || fault.delayMinutes != null || lastToday ? (
+              {fault.cancelled || fault.delayMinutes != null || lastToday || track ? (
                 <div className="ticket-marks">
                   {fault.cancelled ? (
                     <span className="ticket-fault" data-testid="ticket-cancelled">
@@ -120,6 +126,14 @@ export function ItineraryList({
                   {fault.delayMinutes != null ? (
                     <span className="ticket-fault" data-testid="ticket-delayed">
                       {t("detail.delayLate", { minutes: fault.delayMinutes })}
+                    </span>
+                  ) : null}
+                  {track ? (
+                    <span className="ticket-fault" data-testid="ticket-track">
+                      {t("detail.trackChange", {
+                        track: track.track,
+                        was: track.was,
+                      })}
                     </span>
                   ) : null}
                   {lastToday ? (

@@ -228,6 +228,7 @@ export const it: Messages = {
     approximate: "La linea è approssimativa finché non si stampa il percorso in diretta.",
     liveLeg: "Ora su {line}",
     delayedLeg: "{line} in ritardo di {delay}",
+    callAt: "Fermata {name}",
   },
   results: {
     departures: "Partenze",
@@ -303,6 +304,7 @@ export const it: Messages = {
     direct: "diretto",
     toHeadsign: "per {name}",
     platform: "bin. {track}",
+    trackChange: "bin. {track} · era {was}",
     loadingStops: "Carico le fermate…",
     cancelled: "Cancellato",
     delayLate: "+{minutes} min",

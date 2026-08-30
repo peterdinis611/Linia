@@ -226,6 +226,7 @@ export const hr: Messages = {
     approximate: "Crta je približna dok se ne ispiše put uživo.",
     liveLeg: "Sada na {line}",
     delayedLeg: "{line} kasni {delay}",
+    callAt: "Stajalište {name}",
   },
   results: {
     departures: "Odlasci",
@@ -301,6 +302,7 @@ export const hr: Messages = {
     direct: "izravno",
     toHeadsign: "prema {name}",
     platform: "kol. {track}",
+    trackChange: "kol. {track} · bilo {was}",
     loadingStops: "Učitavam stajališta…",
     cancelled: "Otkazano",
     delayLate: "+{minutes} min",

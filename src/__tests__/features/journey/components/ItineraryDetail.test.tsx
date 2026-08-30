@@ -183,4 +183,25 @@ describe("ItineraryDetail", () => {
       expect.objectContaining({ stopId: dresden.id, name: dresden.name }),
     );
   });
+
+  it("stamps a platform change on the strip", () => {
+    const itinerary = railItinerary({
+      legs: [
+        {
+          ...railItinerary().legs[0]!,
+          from: {
+            name: berlin.name,
+            lat: berlin.lat,
+            lon: berlin.lon,
+            track: "4",
+            scheduledTrack: "12",
+          },
+        },
+      ],
+    });
+    renderHall(<ItineraryDetail itinerary={itinerary} />);
+    expect(screen.getByTestId("detail-track-from")).toHaveTextContent(
+      "plat. 4 · was 12",
+    );
+  });
 });

@@ -226,6 +226,7 @@ export const uk: Messages = {
     approximate: "Лінія приблизна, доки не надрукується шлях наживо.",
     liveLeg: "Зараз на {line}",
     delayedLeg: "{line} затримується на {delay}",
+    callAt: "Зупинка {name}",
   },
   results: {
     departures: "Відправлення",
@@ -301,6 +302,7 @@ export const uk: Messages = {
     direct: "прямий",
     toHeadsign: "до {name}",
     platform: "кол. {track}",
+    trackChange: "кол. {track} · було {was}",
     loadingStops: "Завантажую зупинки…",
     cancelled: "Скасовано",
     delayLate: "+{minutes} хв",

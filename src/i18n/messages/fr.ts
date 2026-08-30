@@ -226,6 +226,7 @@ export const fr: Messages = {
     approximate: "La ligne est approximative jusqu’à l’impression du trajet en direct.",
     liveLeg: "Maintenant sur {line}",
     delayedLeg: "{line} retardé de {delay}",
+    callAt: "Arrêt {name}",
   },
   results: {
     departures: "Départs",
@@ -301,6 +302,7 @@ export const fr: Messages = {
     direct: "direct",
     toHeadsign: "vers {name}",
     platform: "voie {track}",
+    trackChange: "voie {track} · était {was}",
     loadingStops: "Chargement des arrêts…",
     cancelled: "Supprimé",
     delayLate: "+{minutes} min",

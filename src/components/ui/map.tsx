@@ -5,7 +5,7 @@ import type {
   Map as LeafletMap,
   TileLayer as LeafletTileLayer,
 } from "leaflet";
-import type { Ref } from "react";
+import { useEffect, type Ref } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import type { MapContainerProps, TileLayerProps } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -25,7 +25,7 @@ export const STREET_ATTR =
 
 export function Map({
   zoom = 4,
-  maxZoom = 18,
+  maxZoom = 19,
   className,
   ...props
 }: Omit<MapContainerProps, "zoomControl"> & {
@@ -56,10 +56,6 @@ export function MapTileLayer({
   ref?: Ref<LeafletTileLayer>;
 }) {
   const map = useMap();
-  if (map.attributionControl) {
-    map.attributionControl.setPrefix("");
-  }
-
   const { resolved } = useTheme();
   const night = resolved === "dark";
   const resolvedUrl = night
@@ -70,11 +66,20 @@ export function MapTileLayer({
       ? darkAttribution
       : (attribution ?? STREET_ATTR);
 
+  useEffect(() => {
+    if (map.attributionControl) {
+      map.attributionControl.setPrefix("");
+    }
+  }, [map]);
+
   return (
     <TileLayer
       url={resolvedUrl}
       attribution={resolvedAttribution}
-      maxZoom={16}
+      maxZoom={19}
+      updateWhenIdle
+      updateWhenZooming={false}
+      keepBuffer={2}
       {...props}
     />
   );

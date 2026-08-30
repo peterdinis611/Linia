@@ -11,7 +11,9 @@ import {
 } from "@/lib/format";
 import type { StopTimeEvent } from "@/lib/transit/types";
 import { alertsFromStopTime } from "../lib/alerts";
+import { trackChange } from "../lib/ticket-notes";
 import { AlertStrip } from "./AlertStrip";
+import { TrackFault } from "./TrackFault";
 
 type StationBoardProps = {
   stopTimes: StopTimeEvent[];
@@ -62,6 +64,7 @@ export function StationBoard({
         const alerts = alertsFromStopTime(event);
         const cancelled = Boolean(event.cancelled || event.tripCancelled);
         const delayed = delayMinutesValue != null && delayMinutesValue > 0;
+        const platformChanged = Boolean(trackChange(event.place));
 
         return (
           <li
@@ -73,7 +76,7 @@ export function StationBoard({
               role="option"
               className="ticket w-full px-4 py-3.5 text-left"
               data-selected={selected}
-              data-fault={cancelled || delayed}
+              data-fault={cancelled || delayed || platformChanged}
               aria-selected={selected}
               data-testid={`station-row-${index}`}
               onClick={() => onSelect(event)}
@@ -94,11 +97,11 @@ export function StationBoard({
                   ? t("detail.toHeadsign", { name: destination })
                   : t(`modes.${event.mode}`)}
                 {event.agencyName ? ` · ${event.agencyName}` : ""}
-                {event.place.track
+                {event.place.track && !platformChanged
                   ? ` · ${t("detail.platform", { track: event.place.track })}`
                   : ""}
               </p>
-              {cancelled || delayed ? (
+              {cancelled || delayed || platformChanged ? (
                 <div className="ticket-marks">
                   {cancelled ? (
                     <span className="ticket-fault" data-testid="board-cancelled">
@@ -111,6 +114,9 @@ export function StationBoard({
                         minutes: delayMinutesValue ?? 0,
                       })}
                     </span>
+                  ) : null}
+                  {platformChanged ? (
+                    <TrackFault place={event.place} testId="board-track" />
                   ) : null}
                 </div>
               ) : null}

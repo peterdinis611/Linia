@@ -11,6 +11,8 @@ import {
   legName,
 } from "@/lib/format";
 import type { Itinerary, SelectedPlace } from "@/lib/transit/types";
+import { trackChange } from "../lib/ticket-notes";
+import { TrackFault } from "./TrackFault";
 
 type PrintTicketProps = {
   itinerary: Itinerary;
@@ -75,9 +77,14 @@ export function PrintTicket({ itinerary, from, to }: PrintTicketProps) {
               {leg.agencyName ? (
                 <p className="text-xs text-ink-muted">{leg.agencyName}</p>
               ) : null}
-              {leg.from.track ? (
+              {leg.from.track && !trackChange(leg.from) ? (
                 <p className="text-xs text-ink-muted">
                   {t("detail.platform", { track: leg.from.track })}
+                </p>
+              ) : null}
+              {trackChange(leg.from) ? (
+                <p className="mt-1">
+                  <TrackFault place={leg.from} testId="print-track" />
                 </p>
               ) : null}
             </li>
