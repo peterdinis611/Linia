@@ -43,13 +43,15 @@ function applyResolved(resolved: ResolvedTheme) {
 export function ThemeProvider({
   children,
   initialTheme,
+  initialResolved,
 }: {
   children: ReactNode;
   initialTheme?: Theme;
+  initialResolved?: ResolvedTheme;
 }) {
   const [theme, setThemeState] = useState<Theme>(initialTheme ?? "system");
-  const [resolved, setResolved] = useState<ResolvedTheme>(() =>
-    initialTheme === "dark" ? "dark" : "light",
+  const [resolved, setResolved] = useState<ResolvedTheme>(
+    () => initialResolved ?? (initialTheme === "dark" ? "dark" : "light"),
   );
   const [synced, setSynced] = useState(initialTheme != null);
 

@@ -18,12 +18,18 @@ function preferredLocale(request: NextRequest) {
   return negotiateLocale(request.headers.get("accept-language"));
 }
 
+function withColorSchemeHint(response: NextResponse) {
+  response.headers.append("Accept-CH", "Sec-CH-Prefers-Color-Scheme");
+  response.headers.append("Vary", "Sec-CH-Prefers-Color-Scheme");
+  return response;
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const current = pathnameLocale(pathname);
 
   if (current) {
-    const response = NextResponse.next();
+    const response = withColorSchemeHint(NextResponse.next());
     response.cookies.set(localeCookie, current, {
       path: "/",
       maxAge: 60 * 60 * 24 * 365,
@@ -34,7 +40,7 @@ export function proxy(request: NextRequest) {
 
   const locale = preferredLocale(request) ?? defaultLocale;
   request.nextUrl.pathname = `/${locale}${pathname === "/" ? "" : pathname}`;
-  const response = NextResponse.redirect(request.nextUrl);
+  const response = withColorSchemeHint(NextResponse.redirect(request.nextUrl));
   response.cookies.set(localeCookie, locale, {
     path: "/",
     maxAge: 60 * 60 * 24 * 365,

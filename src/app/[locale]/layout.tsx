@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import Script from "next/script";
+import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { isLocale, localeNeedsLatinExt, locales } from "@/i18n/config";
@@ -13,7 +13,11 @@ import {
   serializeJsonLd,
   sitemapHref,
 } from "@/lib/seo";
-import { themeInitScript } from "@/lib/theme";
+import {
+  resolveThemeOnServer,
+  themeCookie,
+  themeFromCookieValue,
+} from "@/lib/theme";
 import "../globals.css";
 
 export async function generateStaticParams() {
@@ -50,32 +54,36 @@ export default async function LocaleLayout({
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const messages = getDictionary(locale);
+  const cookieStore = await cookies();
+  const theme = themeFromCookieValue(cookieStore.get(themeCookie)?.value);
+  const resolved = resolveThemeOnServer(
+    theme,
+    (await headers()).get("sec-ch-prefers-color-scheme"),
+  );
 
   return (
     <html
       lang={locale}
       dir="ltr"
       suppressHydrationWarning
-      className={`${hallFontClass(localeNeedsLatinExt(locale))} h-full overflow-hidden antialiased`}
+      className={`${hallFontClass(localeNeedsLatinExt(locale))} h-full overflow-hidden antialiased${resolved === "dark" ? " dark" : ""}`}
+      style={{ colorScheme: resolved }}
     >
       <head>
         <link rel="sitemap" type="application/xml" title="Sitemap" href={sitemapHref()} />
         <link rel="preconnect" href="https://server.arcgisonline.com" />
-      </head>
-      <body className="h-full overflow-hidden font-sans text-ink">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: serializeJsonLd(hallJsonLd(locale, messages)),
           }}
         />
-        <Script
-          id="linia-theme"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: themeInitScript }}
-        />
+      </head>
+      <body className="h-full overflow-hidden font-sans text-ink">
         <I18nProvider locale={locale} messages={messages}>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider initialTheme={theme} initialResolved={resolved}>
+            {children}
+          </ThemeProvider>
         </I18nProvider>
       </body>
     </html>

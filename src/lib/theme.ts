@@ -7,15 +7,26 @@ export function isTheme(value: string | undefined | null): value is Theme {
   return value != null && (themes as readonly string[]).includes(value);
 }
 
-export function themeFromCookieString(cookie: string): Theme {
-  const match = cookie.match(new RegExp(`(?:^|; )${themeCookie}=([^;]*)`));
-  if (!match?.[1]) return "system";
+export function themeFromCookieValue(value: string | undefined | null): Theme {
+  if (value == null || value === "") return "system";
   try {
-    const value = decodeURIComponent(match[1]);
-    return isTheme(value) ? value : "system";
+    const next = decodeURIComponent(value);
+    return isTheme(next) ? next : "system";
   } catch {
     return "system";
   }
 }
 
-export const themeInitScript = `(function(){try{var m=document.cookie.match(/(?:^|; )${themeCookie}=([^;]*)/);var p=m?decodeURIComponent(m[1]):"system";var d=p==="dark"||(p!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",d);document.documentElement.style.colorScheme=d?"dark":"light";}catch(e){}})();`;
+export function themeFromCookieString(cookie: string): Theme {
+  const match = cookie.match(new RegExp(`(?:^|; )${themeCookie}=([^;]*)`));
+  return themeFromCookieValue(match?.[1]);
+}
+
+export function resolveThemeOnServer(
+  theme: Theme,
+  prefersColorScheme?: string | null,
+): ResolvedTheme {
+  if (theme === "dark") return "dark";
+  if (theme === "light") return "light";
+  return prefersColorScheme === "dark" ? "dark" : "light";
+}
