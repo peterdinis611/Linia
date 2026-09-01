@@ -1,4 +1,8 @@
-/** Byte-mode QR, ECC L, versions 1–20. Enough for a live Linia share URL. */
+/** Byte-mode QR, ECC L, versions 1–20. Enough for a live Linia share URL.
+ *
+ * Must match `python3 scripts/qrencode.py` (segno). Regenerate fixtures with
+ * `bun run qr:goldens`.
+ */
 
 const EXP = new Uint8Array(512);
 const LOG = new Uint8Array(256);
@@ -23,8 +27,8 @@ function rsRemainder(data: number[], ecCount: number) {
   for (let index = 0; index < ecCount; index += 1) {
     const next = new Array(gen.length + 1).fill(0);
     for (let pos = 0; pos < gen.length; pos += 1) {
-      next[pos] ^= gfMul(gen[pos]!, EXP[index]!);
-      next[pos + 1] ^= gen[pos]!;
+      next[pos] ^= gen[pos]!;
+      next[pos + 1] ^= gfMul(gen[pos]!, EXP[index]!);
     }
     gen = next;
   }
@@ -109,9 +113,14 @@ function encodeBytes(bytes: number[], version: number) {
   pushBits(bits, bytes.length, countBits);
   for (const byte of bytes) pushBits(bits, byte, 8);
   const capacity = dataCapacity(version) * 8;
+  // Terminator, then fill to a codeword boundary. A full extra byte when the
+  // terminator already sits on a boundary matches segno (scripts/qrencode.py).
   const remain = Math.min(4, capacity - bits.length);
   for (let index = 0; index < remain; index += 1) bits.push(0);
-  while (bits.length % 8 !== 0) bits.push(0);
+  const extra = 8 - (bits.length % 8);
+  if (extra && bits.length + extra <= capacity) {
+    for (let index = 0; index < extra; index += 1) bits.push(0);
+  }
   const pad = [0b11101100, 0b00010001];
   let padIndex = 0;
   while (bits.length < capacity) {
@@ -245,18 +254,38 @@ function drawFormat(grid: Uint8Array[], mask: number) {
   for (let index = 0; index < 6; index += 1) coords.push([8, index]);
   coords.push([8, 7], [8, 8], [7, 8]);
   for (let index = 5; index >= 0; index -= 1) coords.push([index, 8]);
-  for (let index = 0; index < 8; index += 1) {
-    const bit = (bits >>> (14 - index)) & 1;
+  for (let index = 0; index < 15; index += 1) {
     const [x, y] = coords[index]!;
-    grid[y]![x] = bit;
+    grid[y]![x] = (bits >>> index) & 1;
   }
   for (let index = 0; index < 8; index += 1) {
-    grid[8]![size - 1 - index] = (bits >>> (14 - index)) & 1;
+    grid[8]![size - 1 - index] = (bits >>> index) & 1;
   }
   for (let index = 0; index < 7; index += 1) {
-    grid[size - 7 + index]![8] = (bits >>> (6 - index)) & 1;
+    grid[size - 7 + index]![8] = (bits >>> (8 + index)) & 1;
   }
   grid[size - 8]![8] = 1;
+}
+
+function versionBits(version: number) {
+  let rem = version;
+  for (let index = 0; index < 12; index += 1) {
+    rem = (rem << 1) ^ ((rem >>> 11) * 0x1f25);
+  }
+  return (version << 12) | rem;
+}
+
+function drawVersion(grid: Uint8Array[], version: number) {
+  if (version < 7) return;
+  const size = grid.length;
+  const bits = versionBits(version);
+  for (let index = 0; index < 18; index += 1) {
+    const bit = (bits >>> index) & 1;
+    const a = size - 11 + (index % 3);
+    const b = Math.floor(index / 3);
+    grid[a]![b] = bit;
+    grid[b]![a] = bit;
+  }
 }
 
 function placeData(grid: Uint8Array[], reservedMap: Uint8Array[], bits: number[]) {
@@ -331,7 +360,12 @@ function drawFunctions(grid: Uint8Array[], version: number) {
   }
 }
 
-export function encodeQr(value: string): boolean[][] | null {
+export type EncodeQrOptions = {
+  /** Pin a mask (0–7). The hall picks the quietest mask when this is omitted. */
+  mask?: number;
+};
+
+export function encodeQr(value: string, options: EncodeQrOptions = {}): boolean[][] | null {
   const bytes = Array.from(new TextEncoder().encode(value));
   let version = 0;
   for (let index = 1; index <= 20; index += 1) {
@@ -348,9 +382,12 @@ export function encodeQr(value: string): boolean[][] | null {
   const bits: number[] = [];
   for (const word of data) pushBits(bits, word, 8);
   const reservedMap = reserved(size, version);
+  const pinned = options.mask;
+  const masks =
+    pinned == null ? [0, 1, 2, 3, 4, 5, 6, 7] : [Math.min(7, Math.max(0, pinned | 0))];
   let best: Uint8Array[] | null = null;
   let bestScore = Infinity;
-  for (let mask = 0; mask < 8; mask += 1) {
+  for (const mask of masks) {
     const grid = Array.from({ length: size }, () => new Uint8Array(size));
     drawFunctions(grid, version);
     placeData(grid, reservedMap, bits);
@@ -362,6 +399,7 @@ export function encodeQr(value: string): boolean[][] | null {
       }
     }
     drawFormat(grid, mask);
+    drawVersion(grid, version);
     const penalty = score(grid);
     if (penalty < bestScore) {
       bestScore = penalty;

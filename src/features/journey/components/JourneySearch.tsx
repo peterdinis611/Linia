@@ -61,17 +61,25 @@ export function JourneySearch() {
       watch.clear();
       return;
     }
-    const pool = [
-      ...search.itineraries,
-      ...search.inboundItineraries,
-      ...(search.boardTrip ? [search.boardTrip] : []),
-    ];
+    const pool = [...search.itineraries, ...search.inboundItineraries];
+    if (search.boardTrip) {
+      const busy = search.loading || search.refreshing;
+      const onBoard = search.stopTimes.some(
+        (event) =>
+          event.tripId &&
+          search.boardTrip?.legs.some((leg) => leg.tripId === event.tripId),
+      );
+      if (busy || onBoard) pool.push(search.boardTrip);
+    }
     watch.inspect(pool);
   }, [
     search.hasSearched,
     search.itineraries,
     search.inboundItineraries,
     search.boardTrip,
+    search.stopTimes,
+    search.loading,
+    search.refreshing,
     watch.clear,
     watch.inspect,
   ]);
@@ -270,7 +278,7 @@ export function JourneySearch() {
                 selectedTripId={search.boardTrip?.legs.find((leg) => leg.tripId)?.tripId}
                 onSelect={search.handleSelectStopTime}
               />
-              {search.boardTrip && watch.supported ? (
+              {search.boardTrip ? (
                 <WatchStamp
                   watching={watch.watchingKey === watchKey(search.boardTrip)}
                   denied={watch.denied}
@@ -352,7 +360,7 @@ export function JourneySearch() {
                 onOpenStation={search.handleOpenStation}
                 watchingKey={watch.watchingKey}
                 watchDenied={watch.denied}
-                onWatch={watch.supported ? (itinerary) => void watch.toggle(itinerary) : undefined}
+                onWatch={(itinerary) => void watch.toggle(itinerary)}
               />
             </>
           )}

@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "qr:goldens": "python3 scripts/qrencode.py --goldens",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:stress": "vitest run stress",

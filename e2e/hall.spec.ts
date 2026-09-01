@@ -14,14 +14,17 @@ test.describe("hall stamps", () => {
     await expect(page.getByTestId("accessible")).toHaveCount(0);
     await expect(page.getByTestId("bike")).toHaveCount(0);
     await expect(page.getByTestId("night-rail")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Arrive by" })).toHaveCount(0);
+    await expect(page.getByTestId("board-departures")).toBeVisible();
+    await expect(page.getByTestId("board-arrivals")).toBeVisible();
     await expect(page.getByTestId("nearby-board")).toBeVisible();
     await expect(page.getByRole("button", { name: "Read the board" })).toBeVisible();
   });
 
-  test("prints arrivals when arrive by is stamped", async ({ page }) => {
+  test("prints arrivals when arrivals are stamped", async ({ page }) => {
     await page.goto("/");
     await page.getByTestId("station-board-mode").click();
-    await page.getByRole("button", { name: "Arrive by" }).click();
+    await page.getByTestId("board-arrivals").click();
     await selectPlace(page, "Origin", "Berlin", "Berlin Hbf");
 
     const board = page.getByTestId("station-board");
@@ -38,6 +41,16 @@ test.describe("hall stamps", () => {
     await expect(page).toHaveURL(/board=1/);
     await expect(page).toHaveURL(/from=/);
     expect(page.url()).not.toMatch(/[?&]to=/);
+  });
+
+  test("stamps watch on the selected ticket", async ({ page, context }) => {
+    await context.grantPermissions(["notifications"]);
+    await page.goto("/");
+    await searchBerlinPrague(page);
+    await expect(page.getByTestId("journey-results")).toBeVisible();
+    await page.getByTestId("watch-trip").click();
+    await expect(page.getByTestId("watch-trip")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("watch-trip")).toHaveText("Watching");
   });
 
   test("opens a station board from a stop on the strip", async ({ page }) => {

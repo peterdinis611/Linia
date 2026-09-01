@@ -501,6 +501,8 @@ test.describe("journey search", () => {
     await expect(page.getByTestId("print-ticket")).toBeHidden();
     await expect(page.getByTestId("print-ticket")).toContainText("Berlin Hbf");
     await expect(page.getByTestId("print-ticket")).toContainText("EC 172");
+    await expect(page.getByTestId("print-qr")).toBeHidden();
+    await expect(page.getByTestId("print-qr")).toContainText("Scan for the live ticket");
     await expect(page.getByTestId("share-calendar")).toBeVisible();
 
     const downloadPromise = page.waitForEvent("download");

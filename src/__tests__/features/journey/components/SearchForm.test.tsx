@@ -151,11 +151,21 @@ describe("SearchForm", () => {
     expect(screen.queryByTestId("accessible")).not.toBeInTheDocument();
     expect(screen.queryByTestId("bike")).not.toBeInTheDocument();
     expect(screen.queryByTestId("night-rail")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Arrive by" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Read the board" })).toBeInTheDocument();
     expect(screen.getByTestId("station-board-mode")).toHaveAttribute(
       "aria-pressed",
       "true",
     );
+    expect(screen.getByTestId("board-departures")).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByTestId("board-arrivals")).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("stamps arrivals on the station board instead of arrive-by", async () => {
+    const user = userEvent.setup();
+    const { props } = renderForm({ routeMode: "board" });
+    await user.click(screen.getByTestId("board-arrivals"));
+    expect(props.onArriveByChange).toHaveBeenCalledWith(true);
   });
 
   it("prints a return date when the stamp is on", () => {

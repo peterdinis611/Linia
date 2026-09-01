@@ -254,4 +254,49 @@ describe("ItineraryList", () => {
     const tickets = screen.getAllByRole("option");
     expect(tickets[1]).not.toHaveTextContent("in 8 min");
   });
+
+  it("stamps watch beside the selected ticket, not inside it", async () => {
+    const user = userEvent.setup();
+    const onWatch = vi.fn();
+    const first = railItinerary();
+    const second = railItinerary({
+      startTime: "2026-08-14T16:00:00Z",
+      endTime: "2026-08-14T20:30:00Z",
+      legs: [{ ...first.legs[0]!, tripId: "trip-ec-178", displayName: "EC 178" }],
+    });
+    renderHall(
+      <ItineraryList
+        itineraries={[first, second]}
+        selectedIndex={0}
+        watchingKey={null}
+        onWatch={onWatch}
+        onSelect={vi.fn()}
+      />,
+    );
+    const stamp = screen.getByTestId("watch-trip");
+    expect(stamp).toHaveTextContent("Watch this line");
+    expect(stamp.closest('[role="option"]')).toBeNull();
+    expect(screen.getAllByTestId("watch-trip")).toHaveLength(1);
+    await user.click(stamp);
+    expect(onWatch).toHaveBeenCalledWith(first);
+  });
+
+  it("shows the watching stamp and a denied notice", () => {
+    const first = railItinerary();
+    renderHall(
+      <ItineraryList
+        itineraries={[first]}
+        selectedIndex={0}
+        watchingKey="trip-ec-172"
+        watchDenied
+        onWatch={vi.fn()}
+        onSelect={vi.fn()}
+      />,
+    );
+    expect(screen.getByTestId("watch-trip")).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByTestId("watch-trip")).toHaveTextContent("Watching");
+    expect(screen.getByTestId("watch-denied")).toHaveTextContent(
+      "The hall cannot ring this browser.",
+    );
+  });
 });

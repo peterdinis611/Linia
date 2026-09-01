@@ -19,17 +19,21 @@ export function TicketQr({
       if (matrix[y]![x]) path += `M${x} ${y}h1v1h-1z`;
     }
   }
+  const quiet = 4;
+  const box = size + quiet * 2;
   return (
     <figure className="print-qr" data-testid="print-qr">
       <svg
         className="print-qr-mark"
-        viewBox={`0 0 ${size} ${size}`}
+        viewBox={`0 0 ${box} ${box}`}
         role="img"
         aria-label={label}
         shapeRendering="crispEdges"
       >
-        <rect width={size} height={size} fill="#f7f1e4" />
-        <path d={path} fill="#161310" />
+        <rect width={box} height={box} fill="#f7f1e4" />
+        <g transform={`translate(${quiet} ${quiet})`}>
+          <path d={path} fill="#161310" />
+        </g>
       </svg>
       <figcaption className="print-qr-caption">{label}</figcaption>
     </figure>

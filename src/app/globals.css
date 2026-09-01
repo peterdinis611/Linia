@@ -3277,8 +3277,61 @@ details[open] .stops-chevron {
   color: var(--ink-muted) !important;
 }
 
+.ticket-watch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.55rem 0.75rem;
+  margin-top: -1px;
+  padding: 0.45rem 0.85rem 0.55rem;
+  border: 1px solid var(--signal);
+  border-top: 1px dashed color-mix(in srgb, var(--signal) 55%, var(--rule));
+  background: color-mix(in srgb, var(--signal) 7%, var(--paper-sunken));
+}
+
+.ticket-watch-denied {
+  margin: 0;
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+
 .print-ticket {
   display: none;
+}
+
+.print-ticket-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.print-qr {
+  margin: 0;
+  flex: 0 0 7.2rem;
+  text-align: center;
+}
+
+.print-qr-mark {
+  display: block;
+  width: 7.2rem;
+  height: 7.2rem;
+  border: 1px solid var(--ink);
+  background: #f7f1e4;
+  padding: 0.35rem;
+}
+
+.print-qr-caption {
+  margin-top: 0.35rem;
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
 }
 
 .print-leg {
