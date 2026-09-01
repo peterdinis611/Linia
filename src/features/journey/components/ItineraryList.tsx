@@ -12,22 +12,18 @@ import {
 import type { Itinerary, Leg } from "@/lib/transit/types";
 import { alertsFromItinerary } from "../lib/alerts";
 import { itineraryIsLive, legPhase } from "../lib/progress";
-import {
-  departureKey,
-  ticketFault,
-  ticketTightTransfer,
-  ticketTrackChange,
-  waitToDepartSeconds,
-  walkNotes,
-} from "../lib/ticket-notes";
+import { watchKey } from "../lib/trip-watch";
 import { AlertStrip } from "./AlertStrip";
 import { LeavesSoon } from "./LeavesSoon";
-import { TightFault } from "./TightFault";
+import { WatchStamp } from "./WatchStamp";
 
 type ItineraryListProps = {
   itineraries: Itinerary[];
   selectedIndex: number;
   lastOfDayKey?: string | null;
+  watchingKey?: string | null;
+  watchDenied?: boolean;
+  onWatch?: (itinerary: Itinerary) => void;
   onSelect: (index: number) => void;
 };
 
@@ -35,6 +31,9 @@ export function ItineraryList({
   itineraries,
   selectedIndex,
   lastOfDayKey = null,
+  watchingKey = null,
+  watchDenied = false,
+  onWatch,
   onSelect,
 }: ItineraryListProps) {
   const { locale, t, tp } = useI18n();
@@ -173,6 +172,13 @@ export function ItineraryList({
                 </div>
               ) : null}
             </button>
+            {selected && onWatch ? (
+              <WatchStamp
+                watching={watchingKey === watchKey(itinerary)}
+                denied={watchDenied}
+                onToggle={() => onWatch(itinerary)}
+              />
+            ) : null}
           </li>
         );
       })}

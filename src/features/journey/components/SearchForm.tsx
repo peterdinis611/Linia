@@ -383,7 +383,7 @@ export function SearchForm({
       ) : null}
 
       <div className="space-y-5" data-tour="when">
-      <div className="grid grid-cols-2 gap-2">
+      <div className={board ? "space-y-2" : "grid grid-cols-2 gap-2"}>
         <button
           type="button"
           data-on={leaveNow}
@@ -395,17 +395,49 @@ export function SearchForm({
         >
           {t("search.leaveNow")}
         </button>
-        <button
-          type="button"
-          data-on={arriveBy}
-          className="stamp"
-          onClick={() => {
-            onArriveByChange(!arriveBy);
-          }}
-          aria-pressed={arriveBy}
-        >
-          {t("search.arriveBy")}
-        </button>
+        {board ? (
+          <div
+            className="mode-switch"
+            data-cols="2"
+            role="group"
+            aria-label={t("board.direction")}
+          >
+            <button
+              type="button"
+              data-on={!arriveBy}
+              data-testid="board-departures"
+              aria-pressed={!arriveBy}
+              onClick={() => {
+                if (arriveBy) onArriveByChange(false);
+              }}
+            >
+              {t("search.departure")}
+            </button>
+            <button
+              type="button"
+              data-on={arriveBy}
+              data-testid="board-arrivals"
+              aria-pressed={arriveBy}
+              onClick={() => {
+                if (!arriveBy) onArriveByChange(true);
+              }}
+            >
+              {t("search.arrival")}
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            data-on={arriveBy}
+            className="stamp"
+            onClick={() => {
+              onArriveByChange(!arriveBy);
+            }}
+            aria-pressed={arriveBy}
+          >
+            {t("search.arriveBy")}
+          </button>
+        )}
       </div>
       <button
         type="button"

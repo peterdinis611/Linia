@@ -38,6 +38,9 @@ type JourneyResultsProps = {
   onRefresh?: () => void;
   onTimeShift?: (direction: "earlier" | "later") => void;
   onOpenStation?: (place: Place) => void;
+  watchingKey?: string | null;
+  watchDenied?: boolean;
+  onWatch?: (itinerary: Itinerary) => void;
 };
 
 const SORTS: ResultSort[] = ["depart", "fastest", "transfers"];
@@ -63,6 +66,9 @@ export function JourneyResults({
   onRefresh,
   onTimeShift,
   onOpenStation,
+  watchingKey = null,
+  watchDenied = false,
+  onWatch,
 }: JourneyResultsProps) {
   const { t, tp } = useI18n();
   const [sort, setSort] = useState<ResultSort>("depart");
@@ -181,6 +187,9 @@ export function JourneyResults({
             sorted.findIndex((item) => item.index === selectedIndex),
           )}
           lastOfDayKey={allDay ? lastDepartureKey(itineraries) : null}
+          watchingKey={watchingKey}
+          watchDenied={watchDenied}
+          onWatch={onWatch}
           onSelect={(index) =>
             onSelectedIndexChange(sorted[index]?.index ?? 0)
           }

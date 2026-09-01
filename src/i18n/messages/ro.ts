@@ -27,6 +27,17 @@ export const ro: Messages = {
     dark: "Întunecat",
     system: "Sistem",
   },
+  watch: {
+    stamp: "Urmărește linia",
+    watching: "Urmăresc",
+    denied: "Această hală nu poate suna browserul.",
+    cancelledTitle: "{line} anulat",
+    cancelledBody: "Această legătură nu mai circulă.",
+    delayTitle: "{line} întârziat",
+    delayBody: "+{minutes} min",
+    goneTitle: "{line} a părăsit panoul",
+    goneBody: "Această legătură nu mai este pe panou.",
+  },
   guide: {
     kicker: "Anunț pentru călători",
     title: "Cum folosești acest hol",
@@ -175,6 +186,7 @@ export const ro: Messages = {
     stationKicker: "Acest peron",
     stationDepartures: "Ce pleacă de aici",
     stationArrivals: "Ce sosește aici",
+    direction: "Plecări sau sosiri",
     openStation: "Panou gară",
   },
   alerts: {
@@ -276,6 +288,7 @@ export const ro: Messages = {
     copied: "Copiat",
     print: "Tipărește / PDF",
     printHint: "În fereastra de tipărire alege Salvează ca PDF.",
+    qrHint: "Scanează biletul live",
     close: "Închide",
     calendar: "Adaugă în calendar",
     nativeShare: "Distribuie…",

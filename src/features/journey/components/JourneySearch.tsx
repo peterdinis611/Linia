@@ -18,11 +18,15 @@ import { PrintTicket } from "./PrintTicket";
 import { RouteMap } from "./RouteMap";
 import { SearchForm } from "./SearchForm";
 import { StationBoard } from "./StationBoard";
+import { WatchStamp } from "./WatchStamp";
 import { useHallTour } from "../hooks/use-hall-tour";
 import { useJourneySearch } from "../hooks/use-journey-search";
+import { useTripWatch } from "../hooks/use-trip-watch";
+import { watchKey } from "../lib/trip-watch";
 
 export function JourneySearch() {
   const search = useJourneySearch();
+  const watch = useTripWatch();
   const { t } = useI18n();
   const panelRef = useRef<HTMLDivElement>(null);
   const [mapOpen, setMapOpen] = useState(false);
@@ -51,6 +55,26 @@ export function JourneySearch() {
   useEffect(() => {
     if (search.pickMode !== "idle") setMapOpen(true);
   }, [search.pickMode]);
+
+  useEffect(() => {
+    if (!search.hasSearched) {
+      watch.clear();
+      return;
+    }
+    const pool = [
+      ...search.itineraries,
+      ...search.inboundItineraries,
+      ...(search.boardTrip ? [search.boardTrip] : []),
+    ];
+    watch.inspect(pool);
+  }, [
+    search.hasSearched,
+    search.itineraries,
+    search.inboundItineraries,
+    search.boardTrip,
+    watch.clear,
+    watch.inspect,
+  ]);
 
   return (
     <>
@@ -144,13 +168,7 @@ export function JourneySearch() {
                 time: undefined,
               }));
             }}
-            onArriveByChange={(value) => {
-              search.setArriveBy(value);
-              if (value) {
-                search.setLeaveNow(false);
-                search.setAllDay(false);
-              }
-            }}
+            onArriveByChange={search.handleArriveByChange}
             onAllDayChange={(value) => {
               search.setAllDay(value);
               if (value) {
@@ -252,6 +270,13 @@ export function JourneySearch() {
                 selectedTripId={search.boardTrip?.legs.find((leg) => leg.tripId)?.tripId}
                 onSelect={search.handleSelectStopTime}
               />
+              {search.boardTrip && watch.supported ? (
+                <WatchStamp
+                  watching={watch.watchingKey === watchKey(search.boardTrip)}
+                  denied={watch.denied}
+                  onToggle={() => void watch.toggle(search.boardTrip!)}
+                />
+              ) : null}
               {search.boardTrip ? (
                 <ItineraryDetail
                   itinerary={search.boardTrip}
@@ -325,6 +350,9 @@ export function JourneySearch() {
                 onRefresh={search.handleRefresh}
                 onTimeShift={search.allDay ? undefined : search.handleTimeShift}
                 onOpenStation={search.handleOpenStation}
+                watchingKey={watch.watchingKey}
+                watchDenied={watch.denied}
+                onWatch={watch.supported ? (itinerary) => void watch.toggle(itinerary) : undefined}
               />
             </>
           )}
@@ -401,6 +429,7 @@ export function JourneySearch() {
         itinerary={search.selected}
         from={search.from ?? search.city}
         to={search.to}
+        url={search.shareUrl}
       />
     ) : null}
     {!search.boardView && search.outboundSelected ? (
@@ -408,6 +437,7 @@ export function JourneySearch() {
         itinerary={search.outboundSelected}
         from={search.from}
         to={search.to}
+        url={search.shareUrl}
       />
     ) : null}
     {!search.boardView &&
@@ -417,6 +447,7 @@ export function JourneySearch() {
         itinerary={search.returnSelected}
         from={search.to}
         to={search.from}
+        url={search.shareUrl}
       />
     ) : null}
     </>

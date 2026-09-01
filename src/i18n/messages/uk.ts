@@ -27,6 +27,17 @@ export const uk: Messages = {
     dark: "Темна",
     system: "Система",
   },
+  watch: {
+    stamp: "Стежити за лінією",
+    watching: "Стежу",
+    denied: "Ця зала не може подзвонити в цей браузер.",
+    cancelledTitle: "{line} скасовано",
+    cancelledBody: "Це сполучення більше не курсує.",
+    delayTitle: "{line} затримується",
+    delayBody: "+{minutes} хв",
+    goneTitle: "{line} зникло з табло",
+    goneBody: "Цього сполучення вже немає на табло.",
+  },
   guide: {
     kicker: "Оголошення для пасажирів",
     title: "Як користуватися цією залою",
@@ -175,6 +186,7 @@ export const uk: Messages = {
     stationKicker: "Ця платформа",
     stationDepartures: "Що вирушає звідси",
     stationArrivals: "Що прибуває сюди",
+    direction: "Відправлення або прибуття",
     openStation: "Табло станції",
   },
   alerts: {
@@ -276,6 +288,7 @@ export const uk: Messages = {
     copied: "Скопійовано",
     print: "Друк / PDF",
     printHint: "У вікні друку оберіть Зберегти як PDF.",
+    qrHint: "Скануйте живий квиток",
     close: "Закрити",
     calendar: "Додати в календар",
     nativeShare: "Поділитися…",

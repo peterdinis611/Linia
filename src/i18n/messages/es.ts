@@ -27,6 +27,17 @@ export const es: Messages = {
     dark: "Oscuro",
     system: "Sistema",
   },
+  watch: {
+    stamp: "Vigilar esta línea",
+    watching: "En vigilia",
+    denied: "Este vestíbulo no puede llamar a este navegador.",
+    cancelledTitle: "{line} cancelado",
+    cancelledBody: "Esta conexión ya no circula.",
+    delayTitle: "{line} con retraso",
+    delayBody: "+{minutes} min",
+    goneTitle: "{line} salió del panel",
+    goneBody: "Esta conexión ya no está en el panel.",
+  },
   guide: {
     kicker: "Aviso a viajeros",
     title: "Cómo usar este vestíbulo",
@@ -176,6 +187,7 @@ export const es: Messages = {
     stationKicker: "Este andén",
     stationDepartures: "Qué sale de aquí",
     stationArrivals: "Qué llega aquí",
+    direction: "Salidas o llegadas",
     openStation: "Panel de estación",
   },
   alerts: {
@@ -277,6 +289,7 @@ export const es: Messages = {
     copied: "Copiado",
     print: "Imprimir / PDF",
     printHint: "En el diálogo de impresión, elige Guardar como PDF.",
+    qrHint: "Escanea el billete en vivo",
     close: "Cerrar",
     calendar: "Añadir al calendario",
     nativeShare: "Compartir…",

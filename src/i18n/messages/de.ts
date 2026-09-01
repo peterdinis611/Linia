@@ -27,6 +27,17 @@ export const de: Messages = {
     dark: "Dunkel",
     system: "System",
   },
+  watch: {
+    stamp: "Diese Linie beobachten",
+    watching: "Beobachtet",
+    denied: "Diese Halle kann den Browser nicht läuten.",
+    cancelledTitle: "{line} ausgefallen",
+    cancelledBody: "Diese Verbindung fährt nicht mehr.",
+    delayTitle: "{line} verspätet",
+    delayBody: "+{minutes} min",
+    goneTitle: "{line} ist von der Tafel",
+    goneBody: "Diese Verbindung steht nicht mehr auf der Tafel.",
+  },
   guide: {
     kicker: "Hinweis für Fahrgäste",
     title: "So nutzt du diese Halle",
@@ -175,6 +186,7 @@ export const de: Messages = {
     stationKicker: "Dieser Bahnsteig",
     stationDepartures: "Was hier abfährt",
     stationArrivals: "Was hier ankommt",
+    direction: "Abfahrten oder Ankünfte",
     openStation: "Bahnhofstafel",
   },
   alerts: {
@@ -276,6 +288,7 @@ export const de: Messages = {
     copied: "Kopiert",
     print: "Drucken / PDF",
     printHint: "Im Druckdialog Speichern als PDF wählen.",
+    qrHint: "Live-Ticket scannen",
     close: "Schließen",
     calendar: "Zum Kalender",
     nativeShare: "Teilen…",

@@ -13,15 +13,17 @@ import {
 import type { Itinerary, SelectedPlace } from "@/lib/transit/types";
 import { tightStampForLeg, tightTransfers, trackChange } from "../lib/ticket-notes";
 import { TightFault } from "./TightFault";
+import { TicketQr } from "./TicketQr";
 import { TrackFault } from "./TrackFault";
 
 type PrintTicketProps = {
   itinerary: Itinerary;
   from: SelectedPlace | null;
   to: SelectedPlace | null;
+  url?: string;
 };
 
-export function PrintTicket({ itinerary, from, to }: PrintTicketProps) {
+export function PrintTicket({ itinerary, from, to, url }: PrintTicketProps) {
   const { locale, t, tp } = useI18n();
   const origin = from?.name ?? itinerary.legs[0]?.from.name ?? "—";
   const destination =
@@ -31,28 +33,33 @@ export function PrintTicket({ itinerary, from, to }: PrintTicketProps) {
 
   return (
     <article className="print-ticket" data-testid="print-ticket">
-      <p className="kicker">{t("share.ticketKicker")}</p>
-      <h1 className="font-display mt-1 text-3xl italic">Linia</h1>
-      <p className="mt-4 font-display text-2xl leading-tight italic">
-        {origin} → {destination}
-      </p>
-      <p className="mt-2 font-mono text-sm tracking-wide">
-        {issued.toLocaleDateString(locale, {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}
-      </p>
-      <p className="mt-1 font-mono text-lg font-medium tracking-tight">
-        {formatClockRange(itinerary.startTime, itinerary.endTime, locale)}
-      </p>
-      <p className="mt-1 text-sm text-ink-muted">
-        {formatDuration(itinerary.duration, t)} ·{" "}
-        {itinerary.transfers === 0
-          ? t("detail.direct")
-          : tp("transfers", itinerary.transfers)}
-      </p>
+      <div className="print-ticket-head">
+        <div>
+          <p className="kicker">{t("share.ticketKicker")}</p>
+          <h1 className="font-display mt-1 text-3xl italic">Linia</h1>
+          <p className="mt-4 font-display text-2xl leading-tight italic">
+            {origin} → {destination}
+          </p>
+          <p className="mt-2 font-mono text-sm tracking-wide">
+            {issued.toLocaleDateString(locale, {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </p>
+          <p className="mt-1 font-mono text-lg font-medium tracking-tight">
+            {formatClockRange(itinerary.startTime, itinerary.endTime, locale)}
+          </p>
+          <p className="mt-1 text-sm text-ink-muted">
+            {formatDuration(itinerary.duration, t)} ·{" "}
+            {itinerary.transfers === 0
+              ? t("detail.direct")
+              : tp("transfers", itinerary.transfers)}
+          </p>
+        </div>
+        {url ? <TicketQr value={url} label={t("share.qrHint")} /> : null}
+      </div>
       <div className="rail-ornament mt-5" aria-hidden="true" />
       <ol className="mt-5">
         {itinerary.legs.map((leg, index) => {

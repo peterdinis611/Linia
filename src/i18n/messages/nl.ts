@@ -27,6 +27,17 @@ export const nl: Messages = {
     dark: "Donker",
     system: "Systeem",
   },
+  watch: {
+    stamp: "Bewaak deze lijn",
+    watching: "Op wacht",
+    denied: "Deze hal kan deze browser niet laten rinkelen.",
+    cancelledTitle: "{line} vervallen",
+    cancelledBody: "Deze verbinding rijdt niet meer.",
+    delayTitle: "{line} vertraagd",
+    delayBody: "+{minutes} min",
+    goneTitle: "{line} van het bord",
+    goneBody: "Deze verbinding staat niet meer op het bord.",
+  },
   guide: {
     kicker: "Bericht aan reizigers",
     title: "Hoe je deze hal gebruikt",
@@ -175,6 +186,7 @@ export const nl: Messages = {
     stationKicker: "Dit perron",
     stationDepartures: "Wat hier vertrekt",
     stationArrivals: "Wat hier aankomt",
+    direction: "Vertrekken of aankomsten",
     openStation: "Stationsbord",
   },
   alerts: {
@@ -276,6 +288,7 @@ export const nl: Messages = {
     copied: "Gekopieerd",
     print: "Afdrukken / PDF",
     printHint: "Kies in het afdrukvenster Opslaan als PDF.",
+    qrHint: "Scan het live kaartje",
     close: "Sluiten",
     calendar: "Zet in agenda",
     nativeShare: "Delen…",

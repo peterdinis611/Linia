@@ -27,6 +27,17 @@ export const cs: Messages = {
     dark: "Tmavý",
     system: "Systém",
   },
+  watch: {
+    stamp: "Hlídat tuto linku",
+    watching: "Hlídám",
+    denied: "Tento prohlížeč hala neobvolá.",
+    cancelledTitle: "{line} zrušeno",
+    cancelledBody: "Toto spojení už nejede.",
+    delayTitle: "{line} má zpoždění",
+    delayBody: "+{minutes} min",
+    goneTitle: "{line} zmizelo z tabule",
+    goneBody: "Toto spojení už na tabuli není.",
+  },
   guide: {
     kicker: "Oznámení pro cestující",
     title: "Jak používat tuto halu",
@@ -175,6 +186,7 @@ export const cs: Messages = {
     stationKicker: "Toto nástupiště",
     stationDepartures: "Co odjíždí odtud",
     stationArrivals: "Co přijíždí sem",
+    direction: "Odjezdy nebo příjezdy",
     openStation: "Tabule stanice",
   },
   alerts: {
@@ -276,6 +288,7 @@ export const cs: Messages = {
     copied: "Zkopírováno",
     print: "Tisk / PDF",
     printHint: "V dialogu tisku zvolte Uložit jako PDF.",
+    qrHint: "Naskenujte živou jízdenku",
     close: "Zavřít",
     calendar: "Přidat do kalendáře",
     nativeShare: "Odeslat…",

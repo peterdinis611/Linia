@@ -27,6 +27,17 @@ export const sk: Messages = {
     dark: "Tmavý",
     system: "Systém",
   },
+  watch: {
+    stamp: "Sledovať túto linku",
+    watching: "Sledujem",
+    denied: "Tento prehliadač hala nevie obvolať.",
+    cancelledTitle: "{line} zrušené",
+    cancelledBody: "Toto spojenie už nejde.",
+    delayTitle: "{line} mešká",
+    delayBody: "+{minutes} min",
+    goneTitle: "{line} zmizlo z tabule",
+    goneBody: "Toto spojenie už na tabuli nie je.",
+  },
   guide: {
     kicker: "Oznam pre cestujúcich",
     title: "Ako používať túto halu",
@@ -175,6 +186,7 @@ export const sk: Messages = {
     stationKicker: "Toto nástupište",
     stationDepartures: "Čo odchádza odtiaľto",
     stationArrivals: "Čo prichádza sem",
+    direction: "Odchody alebo príchody",
     openStation: "Tabuľa stanice",
   },
   alerts: {
@@ -275,6 +287,7 @@ export const sk: Messages = {
     copied: "Skopírované",
     print: "Tlačiť / PDF",
     printHint: "V dialógu tlače zvoľte Uložiť ako PDF.",
+    qrHint: "Naskenujte živý lístok",
     close: "Zavrieť",
     calendar: "Pridať do kalendára",
     nativeShare: "Poslať…",

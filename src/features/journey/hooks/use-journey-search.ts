@@ -1256,6 +1256,26 @@ export function useJourneySearch() {
     return itineraryFromStopTime(event);
   }
 
+  function handleArriveByChange(value: boolean) {
+    setArriveBy(value);
+    if (value) {
+      setLeaveNow(false);
+      setAllDay(false);
+    }
+    if (routeMode === "board" && from && hasSearched) {
+      void runBoard({
+        from,
+        datetime,
+        leaveNow: value ? false : leaveNow,
+        arriveBy: value,
+        allDay: false,
+        modeFilter,
+        distanceFilter,
+        city,
+      });
+    }
+  }
+
   function handleOpenStation(place: Place) {
     const station = placeToSelected(place);
     setFrom(station);
@@ -1489,6 +1509,7 @@ export function useJourneySearch() {
     handleUnpinSearch,
     handleSelectStopTime,
     handleOpenStation,
+    handleArriveByChange,
     revealMap,
     handleMapClick,
     handleMarkerDrag,

@@ -27,6 +27,17 @@ export const pl: Messages = {
     dark: "Ciemny",
     system: "System",
   },
+  watch: {
+    stamp: "Obserwuj tę linię",
+    watching: "Obserwuję",
+    denied: "Ta hala nie może zadzwonić do tej przeglądarki.",
+    cancelledTitle: "{line} odwołane",
+    cancelledBody: "To połączenie już nie jedzie.",
+    delayTitle: "{line} opóźnione",
+    delayBody: "+{minutes} min",
+    goneTitle: "{line} zniknęło z tablicy",
+    goneBody: "Tego połączenia nie ma już na tablicy.",
+  },
   guide: {
     kicker: "Komunikat dla podróżnych",
     title: "Jak korzystać z tej hali",
@@ -175,6 +186,7 @@ export const pl: Messages = {
     stationKicker: "Ten peron",
     stationDepartures: "Co stąd odjeżdża",
     stationArrivals: "Co tu przyjeżdża",
+    direction: "Odjazdy lub przyjazdy",
     openStation: "Tablica stacji",
   },
   alerts: {
@@ -276,6 +288,7 @@ export const pl: Messages = {
     copied: "Skopiowano",
     print: "Drukuj / PDF",
     printHint: "W oknie druku wybierz Zapisz jako PDF.",
+    qrHint: "Zeskanuj żywy bilet",
     close: "Zamknij",
     calendar: "Dodaj do kalendarza",
     nativeShare: "Wyślij…",

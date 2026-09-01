@@ -27,6 +27,17 @@ export const fr: Messages = {
     dark: "Sombre",
     system: "Système",
   },
+  watch: {
+    stamp: "Surveiller cette ligne",
+    watching: "Surveillance",
+    denied: "Cette halle ne peut pas sonner ce navigateur.",
+    cancelledTitle: "{line} annulé",
+    cancelledBody: "Cette liaison ne circule plus.",
+    delayTitle: "{line} en retard",
+    delayBody: "+{minutes} min",
+    goneTitle: "{line} a quitté le tableau",
+    goneBody: "Cette liaison n’est plus au tableau.",
+  },
   guide: {
     kicker: "Avis aux voyageurs",
     title: "Comment utiliser cette halle",
@@ -175,6 +186,7 @@ export const fr: Messages = {
     stationKicker: "Ce quai",
     stationDepartures: "Ce qui part d'ici",
     stationArrivals: "Ce qui arrive ici",
+    direction: "Départs ou arrivées",
     openStation: "Tableau de gare",
   },
   alerts: {
@@ -276,6 +288,7 @@ export const fr: Messages = {
     copied: "Copié",
     print: "Imprimer / PDF",
     printHint: "Dans la boîte d’impression, choisissez Enregistrer en PDF.",
+    qrHint: "Scanner le billet en direct",
     close: "Fermer",
     calendar: "Ajouter au calendrier",
     nativeShare: "Partager…",

@@ -25,6 +25,17 @@ export const en = {
     dark: "Dark",
     system: "System",
   },
+  watch: {
+    stamp: "Watch this line",
+    watching: "Watching",
+    denied: "The hall cannot ring this browser.",
+    cancelledTitle: "{line} cancelled",
+    cancelledBody: "This connection is no longer running.",
+    delayTitle: "{line} delayed",
+    delayBody: "+{minutes} min",
+    goneTitle: "{line} left the board",
+    goneBody: "This connection is no longer on the board.",
+  },
   guide: {
     kicker: "Passenger notice",
     title: "How to use this hall",
@@ -173,6 +184,7 @@ export const en = {
     stationKicker: "This platform",
     stationDepartures: "What leaves from here",
     stationArrivals: "What arrives here",
+    direction: "Departures or arrivals",
     openStation: "Station board",
   },
   alerts: {
@@ -273,6 +285,7 @@ export const en = {
     copied: "Copied",
     print: "Print / PDF",
     printHint: "In the print dialog, choose Save as PDF.",
+    qrHint: "Scan for the live ticket",
     close: "Close",
     calendar: "Add to calendar",
     nativeShare: "Share…",

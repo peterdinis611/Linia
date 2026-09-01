@@ -27,6 +27,17 @@ export const it: Messages = {
     dark: "Scuro",
     system: "Sistema",
   },
+  watch: {
+    stamp: "Segui questa linea",
+    watching: "In ascolto",
+    denied: "Questa hall non può suonare il browser.",
+    cancelledTitle: "{line} cancellato",
+    cancelledBody: "Questa corsa non è più in servizio.",
+    delayTitle: "{line} in ritardo",
+    delayBody: "+{minutes} min",
+    goneTitle: "{line} è uscito dal tabellone",
+    goneBody: "Questa corsa non è più sul tabellone.",
+  },
   guide: {
     kicker: "Avviso per i passeggeri",
     title: "Come usare questa sala",
@@ -177,6 +188,7 @@ export const it: Messages = {
     stationKicker: "Questo binario",
     stationDepartures: "Cosa parte da qui",
     stationArrivals: "Cosa arriva qui",
+    direction: "Partenze o arrivi",
     openStation: "Tabellone stazione",
   },
   alerts: {
@@ -278,6 +290,7 @@ export const it: Messages = {
     copied: "Copiato",
     print: "Stampa / PDF",
     printHint: "Nella finestra di stampa scegli Salva come PDF.",
+    qrHint: "Inquadra il biglietto dal vivo",
     close: "Chiudi",
     calendar: "Aggiungi al calendario",
     nativeShare: "Condividi…",

@@ -27,6 +27,17 @@ export const hu: Messages = {
     dark: "Sötét",
     system: "Rendszer",
   },
+  watch: {
+    stamp: "Figyeld ezt a járatot",
+    watching: "Figyelem",
+    denied: "Ez a csarnok nem tudja csörgetni a böngészőt.",
+    cancelledTitle: "{line} törölve",
+    cancelledBody: "Ez a járat már nem megy.",
+    delayTitle: "{line} késik",
+    delayBody: "+{minutes} perc",
+    goneTitle: "{line} lekerült a tábláról",
+    goneBody: "Ez a járat már nincs a táblán.",
+  },
   guide: {
     kicker: "Utasértesítő",
     title: "Hogyan használd ezt a csarnokot",
@@ -175,6 +186,7 @@ export const hu: Messages = {
     stationKicker: "Ez a peron",
     stationDepartures: "Ami innen indul",
     stationArrivals: "Ami ide érkezik",
+    direction: "Indulások vagy érkezések",
     openStation: "Állomástábla",
   },
   alerts: {
@@ -276,6 +288,7 @@ export const hu: Messages = {
     copied: "Másolva",
     print: "Nyomtatás / PDF",
     printHint: "A nyomtatási ablakban válaszd a Mentés PDF-ként lehetőséget.",
+    qrHint: "Olvasd be az élő jegyet",
     close: "Bezárás",
     calendar: "Naptárba",
     nativeShare: "Megosztás…",

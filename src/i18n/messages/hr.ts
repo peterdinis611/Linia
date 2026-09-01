@@ -27,6 +27,17 @@ export const hr: Messages = {
     dark: "Tamno",
     system: "Sustav",
   },
+  watch: {
+    stamp: "Prati ovu liniju",
+    watching: "Pratim",
+    denied: "Ova dvorana ne može nazvati ovaj preglednik.",
+    cancelledTitle: "{line} otkazan",
+    cancelledBody: "Ova veza više ne vozi.",
+    delayTitle: "{line} kasni",
+    delayBody: "+{minutes} min",
+    goneTitle: "{line} je s ploče",
+    goneBody: "Ove veze više nema na ploči.",
+  },
   guide: {
     kicker: "Obavijest putnicima",
     title: "Kako koristiti ovu dvoranu",
@@ -175,6 +186,7 @@ export const hr: Messages = {
     stationKicker: "Ovaj peron",
     stationDepartures: "Što odlazi odavde",
     stationArrivals: "Što dolazi ovdje",
+    direction: "Odlasci ili dolasci",
     openStation: "Ploča stanice",
   },
   alerts: {
@@ -276,6 +288,7 @@ export const hr: Messages = {
     copied: "Kopirano",
     print: "Ispis / PDF",
     printHint: "U dijalogu ispisa odaberi Spremi kao PDF.",
+    qrHint: "Skeniraj živu kartu",
     close: "Zatvori",
     calendar: "Dodaj u kalendar",
     nativeShare: "Podijeli…",
