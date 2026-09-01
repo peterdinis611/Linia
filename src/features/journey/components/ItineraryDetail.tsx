@@ -24,8 +24,15 @@ import {
 import { fetchTrip } from "@/lib/transit/queries";
 import { alertsFromItinerary, uniqueAlerts } from "../lib/alerts";
 import { currentStopIndex, itineraryIsLive, legPhase } from "../lib/progress";
-import { trackChange } from "../lib/ticket-notes";
+import {
+  tightStampForLeg,
+  tightTransfers,
+  trackChange,
+  ticketFault,
+} from "../lib/ticket-notes";
 import { AlertStrip } from "./AlertStrip";
+import { LeavesSoon } from "./LeavesSoon";
+import { TightFault } from "./TightFault";
 import { TrackFault } from "./TrackFault";
 
 type ItineraryDetailProps = {
@@ -36,6 +43,8 @@ type ItineraryDetailProps = {
 export function ItineraryDetail({ itinerary, onOpenStation }: ItineraryDetailProps) {
   const { t, tp } = useI18n();
   const now = useNow(itineraryIsLive(itinerary));
+  const tights = tightTransfers(itinerary);
+  const cancelled = ticketFault(itinerary).cancelled;
 
   return (
     <section className="journey-sheet">
@@ -46,12 +55,19 @@ export function ItineraryDetail({ itinerary, onOpenStation }: ItineraryDetailPro
             {t("detail.title")}
           </h2>
         </div>
-        <p className="font-mono text-[11px] tracking-wide text-ink-muted">
-          {formatDuration(itinerary.duration, t)} ·{" "}
-          {itinerary.transfers === 0
-            ? t("detail.direct")
-            : tp("transfersShort", itinerary.transfers)}
-        </p>
+        <div className="flex flex-col items-end gap-1">
+          <LeavesSoon
+            startTime={itinerary.startTime}
+            cancelled={cancelled}
+            testId="detail-soon"
+          />
+          <p className="font-mono text-[11px] tracking-wide text-ink-muted">
+            {formatDuration(itinerary.duration, t)} ·{" "}
+            {itinerary.transfers === 0
+              ? t("detail.direct")
+              : tp("transfersShort", itinerary.transfers)}
+          </p>
+        </div>
       </div>
       <AlertStrip alerts={alertsFromItinerary(itinerary)} />
       <ol>
@@ -63,6 +79,7 @@ export function ItineraryDetail({ itinerary, onOpenStation }: ItineraryDetailPro
             isLast={index === itinerary.legs.length - 1}
             prevToStopId={itinerary.legs[index - 1]?.to.stopId}
             now={now}
+            tight={tightStampForLeg(leg, index, itinerary.legs, tights)}
             onOpenStation={onOpenStation}
           />
         ))}
@@ -87,6 +104,7 @@ function LegBlock({
   isLast,
   prevToStopId,
   now,
+  tight,
   onOpenStation,
 }: {
   leg: Leg;
@@ -94,6 +112,7 @@ function LegBlock({
   isLast: boolean;
   prevToStopId?: string;
   now: number;
+  tight: ReturnType<typeof tightStampForLeg>;
   onOpenStation?: (place: Place) => void;
 }) {
   const { locale, t, tp } = useI18n();
@@ -140,6 +159,11 @@ function LegBlock({
             {t(`modes.${leg.mode}`)} · {formatDuration(leg.duration, t)}
             {formatDistance(leg.distance) ? ` · ${formatDistance(leg.distance)}` : ""}
           </p>
+          {tight ? (
+            <div className="ticket-marks">
+              <TightFault transfer={tight} testId="detail-tight" />
+            </div>
+          ) : null}
           <div className="mt-3 flex items-baseline gap-3">
             <span className="font-mono text-[11px] text-ink-muted">
               {formatTime(leg.endTime, locale)}
@@ -219,6 +243,11 @@ function LegBlock({
           {trackChange(leg.from) ? (
             <div className="ticket-marks">
               <TrackFault place={leg.from} testId="detail-track-from" />
+            </div>
+          ) : null}
+          {tight ? (
+            <div className="ticket-marks">
+              <TightFault transfer={tight} testId="detail-tight" />
             </div>
           ) : null}
           <AlertStrip alerts={uniqueAlerts([...(leg.alerts ?? []), ...(leg.from.alerts ?? [])])} />

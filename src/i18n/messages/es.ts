@@ -228,6 +228,7 @@ export const es: Messages = {
     liveLeg: "Ahora en {line}",
     delayedLeg: "{line} con retraso de {delay}",
     callAt: "Parada {name}",
+    tightTransfer: "Transbordo justo {name} · {minutes} min",
   },
   results: {
     departures: "Salidas",
@@ -263,6 +264,8 @@ export const es: Messages = {
     walkTo: "{time} a {name}",
     walkTransfer: "{time} al transbordo",
     toTop: "Arriba",
+    leavesIn: "en {minutes} min",
+    leavesNow: "sale",
   },
   share: {
     open: "Compartir",
@@ -304,6 +307,7 @@ export const es: Messages = {
     toHeadsign: "hacia {name}",
     platform: "and. {track}",
     trackChange: "and. {track} · era {was}",
+    tightTransfer: "transbordo {minutes} min · justo",
     loadingStops: "Cargando paradas…",
     cancelled: "Cancelado",
     delayLate: "+{minutes} min",

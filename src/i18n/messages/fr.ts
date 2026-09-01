@@ -227,6 +227,7 @@ export const fr: Messages = {
     liveLeg: "Maintenant sur {line}",
     delayedLeg: "{line} retardé de {delay}",
     callAt: "Arrêt {name}",
+    tightTransfer: "Correspondance serrée {name} · {minutes} min",
   },
   results: {
     departures: "Départs",
@@ -262,6 +263,8 @@ export const fr: Messages = {
     walkTo: "{time} vers {name}",
     walkTransfer: "{time} pour correspondance",
     toTop: "En haut",
+    leavesIn: "dans {minutes} min",
+    leavesNow: "départ",
   },
   share: {
     open: "Partager",
@@ -303,6 +306,7 @@ export const fr: Messages = {
     toHeadsign: "vers {name}",
     platform: "voie {track}",
     trackChange: "voie {track} · était {was}",
+    tightTransfer: "corresp. {minutes} min · serrée",
     loadingStops: "Chargement des arrêts…",
     cancelled: "Supprimé",
     delayLate: "+{minutes} min",

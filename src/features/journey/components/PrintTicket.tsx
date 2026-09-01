@@ -11,7 +11,8 @@ import {
   legName,
 } from "@/lib/format";
 import type { Itinerary, SelectedPlace } from "@/lib/transit/types";
-import { trackChange } from "../lib/ticket-notes";
+import { tightStampForLeg, tightTransfers, trackChange } from "../lib/ticket-notes";
+import { TightFault } from "./TightFault";
 import { TrackFault } from "./TrackFault";
 
 type PrintTicketProps = {
@@ -26,6 +27,7 @@ export function PrintTicket({ itinerary, from, to }: PrintTicketProps) {
   const destination =
     to?.name ?? itinerary.legs[itinerary.legs.length - 1]?.to.name ?? "—";
   const issued = new Date(itinerary.startTime);
+  const tights = tightTransfers(itinerary);
 
   return (
     <article className="print-ticket" data-testid="print-ticket">
@@ -56,6 +58,7 @@ export function PrintTicket({ itinerary, from, to }: PrintTicketProps) {
         {itinerary.legs.map((leg, index) => {
           const color = legColor(leg);
           const transit = isTransitMode(leg.mode);
+          const tight = tightStampForLeg(leg, index, itinerary.legs, tights);
           return (
             <li key={`${leg.startTime}-${index}`} className="print-leg">
               <p className="font-mono text-[11px] tabular-nums text-ink-muted">
@@ -85,6 +88,11 @@ export function PrintTicket({ itinerary, from, to }: PrintTicketProps) {
               {trackChange(leg.from) ? (
                 <p className="mt-1">
                   <TrackFault place={leg.from} testId="print-track" />
+                </p>
+              ) : null}
+              {tight ? (
+                <p className="mt-1">
+                  <TightFault transfer={tight} testId="print-tight" />
                 </p>
               ) : null}
             </li>

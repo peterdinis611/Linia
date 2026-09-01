@@ -227,6 +227,7 @@ export const nl: Messages = {
     liveLeg: "Nu op {line}",
     delayedLeg: "{line} vertraagd {delay}",
     callAt: "Halte {name}",
+    tightTransfer: "Krappe overstap {name} · {minutes} min",
   },
   results: {
     departures: "Vertrekken",
@@ -262,6 +263,8 @@ export const nl: Messages = {
     walkTo: "{time} naar {name}",
     walkTransfer: "{time} naar overstap",
     toTop: "Omhoog",
+    leavesIn: "over {minutes} min",
+    leavesNow: "vertrek",
   },
   share: {
     open: "Delen",
@@ -303,6 +306,7 @@ export const nl: Messages = {
     toHeadsign: "naar {name}",
     platform: "sp. {track}",
     trackChange: "sp. {track} · was {was}",
+    tightTransfer: "overstap {minutes} min · krap",
     loadingStops: "Haltes laden…",
     cancelled: "Vervallen",
     delayLate: "+{minutes} min",

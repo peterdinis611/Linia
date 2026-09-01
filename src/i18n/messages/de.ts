@@ -227,6 +227,7 @@ export const de: Messages = {
     liveLeg: "Jetzt auf {line}",
     delayedLeg: "{line} verspätet {delay}",
     callAt: "Halt {name}",
+    tightTransfer: "Knapp umsteigen {name} · {minutes} min",
   },
   results: {
     departures: "Abfahrten",
@@ -262,6 +263,8 @@ export const de: Messages = {
     walkTo: "{time} bis {name}",
     walkTransfer: "{time} zum Umstieg",
     toTop: "Nach oben",
+    leavesIn: "in {minutes} min",
+    leavesNow: "Abfahrt",
   },
   share: {
     open: "Teilen",
@@ -303,6 +306,7 @@ export const de: Messages = {
     toHeadsign: "nach {name}",
     platform: "Gl. {track}",
     trackChange: "Gl. {track} · war {was}",
+    tightTransfer: "Umstieg {minutes} min · knapp",
     loadingStops: "Halte werden geladen…",
     cancelled: "Ausgefallen",
     delayLate: "+{minutes} min",

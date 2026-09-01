@@ -224,6 +224,7 @@ export const en = {
     liveLeg: "Now on {line}",
     delayedLeg: "{line} delayed {delay}",
     callAt: "Call at {name}",
+    tightTransfer: "Tight change at {name} · {minutes} min",
   },
   results: {
     departures: "Departures",
@@ -259,6 +260,8 @@ export const en = {
     walkTo: "{time} to {name}",
     walkTransfer: "{time} to change",
     toTop: "To the desk",
+    leavesIn: "in {minutes} min",
+    leavesNow: "leaving",
   },
   share: {
     open: "Share",
@@ -300,6 +303,7 @@ export const en = {
     toHeadsign: "to {name}",
     platform: "plat. {track}",
     trackChange: "plat. {track} · was {was}",
+    tightTransfer: "xfer {minutes} min · tight",
     loadingStops: "Loading stops…",
     cancelled: "Cancelled",
     delayLate: "+{minutes} min",

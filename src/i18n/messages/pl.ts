@@ -227,6 +227,7 @@ export const pl: Messages = {
     liveLeg: "Teraz na {line}",
     delayedLeg: "{line} opóźniony o {delay}",
     callAt: "Przystanek {name}",
+    tightTransfer: "Ciasna przesiadka {name} · {minutes} min",
   },
   results: {
     departures: "Odjazdy",
@@ -262,6 +263,8 @@ export const pl: Messages = {
     walkTo: "{time} na {name}",
     walkTransfer: "{time} na przesiadkę",
     toTop: "Do góry",
+    leavesIn: "za {minutes} min",
+    leavesNow: "odjazd",
   },
   share: {
     open: "Udostępnij",
@@ -303,6 +306,7 @@ export const pl: Messages = {
     toHeadsign: "kierunek {name}",
     platform: "per. {track}",
     trackChange: "per. {track} · było {was}",
+    tightTransfer: "przesiadka {minutes} min · ciasno",
     loadingStops: "Wczytuję przystanki…",
     cancelled: "Odwołany",
     delayLate: "+{minutes} min",

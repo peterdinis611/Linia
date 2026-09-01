@@ -229,6 +229,7 @@ export const it: Messages = {
     liveLeg: "Ora su {line}",
     delayedLeg: "{line} in ritardo di {delay}",
     callAt: "Fermata {name}",
+    tightTransfer: "Cambio stretto {name} · {minutes} min",
   },
   results: {
     departures: "Partenze",
@@ -264,6 +265,8 @@ export const it: Messages = {
     walkTo: "{time} a {name}",
     walkTransfer: "{time} per il cambio",
     toTop: "In cima",
+    leavesIn: "tra {minutes} min",
+    leavesNow: "partenza",
   },
   share: {
     open: "Condividi",
@@ -305,6 +308,7 @@ export const it: Messages = {
     toHeadsign: "per {name}",
     platform: "bin. {track}",
     trackChange: "bin. {track} · era {was}",
+    tightTransfer: "cambio {minutes} min · stretto",
     loadingStops: "Carico le fermate…",
     cancelled: "Cancellato",
     delayLate: "+{minutes} min",

@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   lastDepartureKey,
   ticketFault,
+  ticketTightTransfer,
   ticketTrackChange,
+  tightTransfers,
   trackChange,
+  waitToDepartSeconds,
   walkNotes,
 } from "@/features/journey/lib/ticket-notes";
 import { berlin, dresden, prague, railItinerary } from "@/test/fixtures";
@@ -141,5 +144,87 @@ describe("ticket notes", () => {
     });
     expect(ticketTrackChange(moved)).toEqual({ track: "4", was: "12" });
     expect(ticketTrackChange(railItinerary())).toBeNull();
+  });
+
+  it("stamps a tight change when the window is five minutes or less", () => {
+    const rail = railItinerary().legs[0]!;
+    const tight = railItinerary({
+      transfers: 1,
+      legs: [
+        {
+          ...rail,
+          startTime: "2026-08-14T08:00:00Z",
+          endTime: "2026-08-14T10:00:00Z",
+          from: { name: berlin.name, lat: berlin.lat, lon: berlin.lon },
+          to: { name: dresden.name, lat: dresden.lat, lon: dresden.lon },
+        },
+        {
+          ...rail,
+          startTime: "2026-08-14T10:03:00Z",
+          endTime: "2026-08-14T12:30:00Z",
+          from: { name: dresden.name, lat: dresden.lat, lon: dresden.lon },
+          to: { name: prague.name, lat: prague.lat, lon: prague.lon },
+        },
+      ],
+    });
+    expect(ticketTightTransfer(tight)).toMatchObject({
+      minutes: 3,
+      name: dresden.name,
+    });
+    expect(tightTransfers(tight)).toHaveLength(1);
+
+    const ample = railItinerary({
+      transfers: 1,
+      legs: [
+        {
+          ...rail,
+          startTime: "2026-08-14T08:00:00Z",
+          endTime: "2026-08-14T10:00:00Z",
+          to: { name: dresden.name, lat: dresden.lat, lon: dresden.lon },
+        },
+        {
+          ...rail,
+          startTime: "2026-08-14T10:20:00Z",
+          endTime: "2026-08-14T12:30:00Z",
+          from: { name: dresden.name, lat: dresden.lat, lon: dresden.lon },
+        },
+      ],
+    });
+    expect(ticketTightTransfer(ample)).toBeNull();
+  });
+
+  it("stamps a long walk when there is almost no slack", () => {
+    const rail = railItinerary().legs[0]!;
+    const squeezed = railItinerary({
+      transfers: 1,
+      legs: [
+        {
+          ...rail,
+          endTime: "2026-08-14T10:00:00Z",
+          to: { name: dresden.name, lat: dresden.lat, lon: dresden.lon },
+        },
+        walkLeg({
+          duration: 720,
+          startTime: "2026-08-14T10:00:00Z",
+          endTime: "2026-08-14T10:12:00Z",
+          from: { name: dresden.name, lat: dresden.lat, lon: dresden.lon },
+          to: { name: dresden.name, lat: dresden.lat, lon: dresden.lon },
+        }),
+        {
+          ...rail,
+          startTime: "2026-08-14T10:13:00Z",
+          endTime: "2026-08-14T12:30:00Z",
+          from: { name: dresden.name, lat: dresden.lat, lon: dresden.lon },
+        },
+      ],
+    });
+    expect(ticketTightTransfer(squeezed)?.minutes).toBe(13);
+  });
+
+  it("counts down only while the ticket is still waiting on the board", () => {
+    const now = Date.parse("2026-08-14T07:52:00Z");
+    expect(waitToDepartSeconds("2026-08-14T08:00:00Z", now)).toBe(480);
+    expect(waitToDepartSeconds("2026-08-14T07:51:00Z", now)).toBeNull();
+    expect(waitToDepartSeconds("2026-08-14T10:00:00Z", now)).toBeNull();
   });
 });

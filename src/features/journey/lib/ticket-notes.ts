@@ -1,5 +1,10 @@
 import { delayMinutes, isTransitMode } from "@/lib/format";
-import type { Itinerary, Place } from "@/lib/transit/types";
+import { samePlace } from "@/lib/transit/place";
+import type { Itinerary, Leg, Place } from "@/lib/transit/types";
+
+export const TIGHT_TRANSFER_SECONDS = 5 * 60;
+export const TIGHT_SLACK_SECONDS = 90;
+export const LEAVES_SOON_SECONDS = 90 * 60;
 
 export type WalkNote = {
   kind: "access" | "transfer";
@@ -56,6 +61,111 @@ export function ticketTrackChange(itinerary: Itinerary) {
     }
   }
   return null;
+}
+
+export type TightTransfer = {
+  minutes: number;
+  seconds: number;
+  walkSeconds: number;
+  name: string;
+  from: Place;
+  to: Place;
+};
+
+export function tightTransfers(itinerary: Itinerary): TightTransfer[] {
+  const notes: TightTransfer[] = [];
+  const { legs } = itinerary;
+  let index = 0;
+  while (index < legs.length) {
+    const leg = legs[index]!;
+    if (!isTransitMode(leg.mode)) {
+      index += 1;
+      continue;
+    }
+    let nextIndex = index + 1;
+    let walkSeconds = 0;
+    while (
+      nextIndex < legs.length &&
+      (legs[nextIndex]!.mode === "WALK" || legs[nextIndex]!.mode === "BIKE")
+    ) {
+      walkSeconds += legs[nextIndex]!.duration;
+      nextIndex += 1;
+    }
+    const next = legs[nextIndex];
+    if (next && isTransitMode(next.mode)) {
+      const available =
+        (Date.parse(next.startTime) - Date.parse(leg.endTime)) / 1000;
+      if (Number.isFinite(available) && available > 0) {
+        const slack = available - walkSeconds;
+        const tight =
+          available <= TIGHT_TRANSFER_SECONDS ||
+          (walkSeconds >= 45 && slack >= 0 && slack < TIGHT_SLACK_SECONDS);
+        if (tight) {
+          notes.push({
+            seconds: available,
+            minutes: Math.max(1, Math.round(available / 60)),
+            walkSeconds,
+            name: next.from.name || leg.to.name,
+            from: leg.to,
+            to: next.from,
+          });
+        }
+      }
+    }
+    index = nextIndex > index ? nextIndex : index + 1;
+  }
+  return notes;
+}
+
+export function ticketTightTransfer(itinerary: Itinerary): TightTransfer | null {
+  const notes = tightTransfers(itinerary);
+  if (notes.length === 0) return null;
+  return notes.reduce((best, item) =>
+    item.seconds < best.seconds ? item : best,
+  );
+}
+
+export function tightStampForLeg(
+  leg: Leg,
+  index: number,
+  legs: Leg[],
+  notes: TightTransfer[],
+): TightTransfer | null {
+  if (notes.length === 0) return null;
+  const walk = leg.mode === "WALK" || leg.mode === "BIKE";
+  if (walk) {
+    return (
+      notes.find(
+        (note) => samePlace(note.from, leg.from) && samePlace(note.to, leg.to),
+      ) ??
+      notes.find(
+        (note) => samePlace(note.from, leg.from) || samePlace(note.to, leg.to),
+      ) ??
+      null
+    );
+  }
+  const prev = legs[index - 1];
+  if (prev && (prev.mode === "WALK" || prev.mode === "BIKE")) return null;
+  return notes.find((note) => samePlace(note.to, leg.from)) ?? null;
+}
+
+export function tightTransferAtPlace(
+  place: { lat: number; lon: number; stopId?: string },
+  notes: TightTransfer[],
+): TightTransfer | null {
+  return (
+    notes.find(
+      (note) => samePlace(note.from, place) || samePlace(note.to, place),
+    ) ?? null
+  );
+}
+
+export function waitToDepartSeconds(startIso: string, now = Date.now()): number | null {
+  const start = Date.parse(startIso);
+  if (!Number.isFinite(start)) return null;
+  const seconds = Math.round((start - now) / 1000);
+  if (seconds <= 0 || seconds > LEAVES_SOON_SECONDS) return null;
+  return seconds;
 }
 
 export function ticketFault(itinerary: Itinerary): {

@@ -204,4 +204,62 @@ describe("ItineraryDetail", () => {
       "plat. 4 · was 12",
     );
   });
+
+  it("stamps a tight change on the walk and the strip", () => {
+    const rail = railItinerary().legs[0]!;
+    const itinerary = railItinerary({
+      transfers: 1,
+      legs: [
+        {
+          ...rail,
+          endTime: "2026-08-14T10:00:00Z",
+          to: {
+            name: dresden.name,
+            lat: dresden.lat,
+            lon: dresden.lon,
+            stopId: dresden.id,
+          },
+        },
+        {
+          ...rail,
+          mode: "WALK",
+          duration: 180,
+          startTime: "2026-08-14T10:00:00Z",
+          endTime: "2026-08-14T10:03:00Z",
+          agencyName: undefined,
+          routeShortName: undefined,
+          displayName: undefined,
+          tripId: undefined,
+          intermediateStops: [],
+          from: {
+            name: dresden.name,
+            lat: dresden.lat,
+            lon: dresden.lon,
+            stopId: dresden.id,
+          },
+          to: {
+            name: dresden.name,
+            lat: dresden.lat,
+            lon: dresden.lon,
+            stopId: dresden.id,
+          },
+        },
+        {
+          ...rail,
+          startTime: "2026-08-14T10:04:00Z",
+          endTime: "2026-08-14T12:30:00Z",
+          from: {
+            name: dresden.name,
+            lat: dresden.lat,
+            lon: dresden.lon,
+            stopId: dresden.id,
+          },
+        },
+      ],
+    });
+    renderHall(<ItineraryDetail itinerary={itinerary} />);
+    expect(screen.getByTestId("detail-tight")).toHaveTextContent(
+      "xfer 4 min · tight",
+    );
+  });
 });

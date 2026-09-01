@@ -103,4 +103,25 @@ describe("StationBoard", () => {
     expect(screen.getByTestId("board-track")).toHaveTextContent("plat. 4 · was 12");
     expect(row).not.toHaveTextContent("plat. 12");
   });
+
+  it("counts down on the selected departure still waiting", () => {
+    const soon: StopTimeEvent = {
+      ...event,
+      tripId: "trip-soon",
+      place: {
+        ...event.place,
+        departure: new Date(Date.now() + 6 * 60_000).toISOString(),
+      },
+    };
+    renderHall(
+      <StationBoard
+        stopTimes={[soon, event]}
+        arriveBy={false}
+        selectedTripId="trip-soon"
+        onSelect={vi.fn()}
+      />,
+    );
+    expect(screen.getByTestId("board-soon")).toHaveTextContent("in 6 min");
+    expect(screen.getByTestId("station-row-1")).not.toHaveTextContent("in 6 min");
+  });
 });

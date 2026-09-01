@@ -586,6 +586,42 @@ html:not(.dark) .board-clock .kicker {
   text-transform: uppercase;
 }
 
+.ticket-soon {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--ink);
+  background: color-mix(in srgb, var(--ink) 8%, var(--paper-raised));
+  color: var(--ink);
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  animation: ticket-soon-ink 2.4s ease-in-out infinite;
+}
+
+.dark .ticket-soon {
+  border-color: var(--amber);
+  background: color-mix(in srgb, var(--amber) 14%, var(--paper-raised));
+  color: var(--amber);
+}
+
+@keyframes ticket-soon-ink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.72;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticket-soon {
+    animation: none;
+  }
+}
+
 .ticket-last {
   display: inline-block;
   padding: 0.1rem 0.4rem;
@@ -1849,6 +1885,24 @@ html.dark .map-tiles-ink.leaflet-container {
 .dark .map-pin-call {
   background: #f7efe0;
   border-color: #16130f;
+}
+
+.map-pin-xfer {
+  border-radius: 1px;
+  border-width: 1px;
+  background: var(--signal);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--signal) 28%, transparent),
+    0 2px 8px color-mix(in srgb, var(--board) 35%, transparent);
+  cursor: pointer;
+}
+
+.dark .map-pin-xfer {
+  background: var(--amber);
+  border-color: #16130f;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--amber) 36%, transparent),
+    0 0 14px color-mix(in srgb, var(--amber) 40%, transparent);
 }
 
 .map-pin-now {

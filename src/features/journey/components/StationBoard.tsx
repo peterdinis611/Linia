@@ -11,8 +11,9 @@ import {
 } from "@/lib/format";
 import type { StopTimeEvent } from "@/lib/transit/types";
 import { alertsFromStopTime } from "../lib/alerts";
-import { trackChange } from "../lib/ticket-notes";
+import { trackChange, waitToDepartSeconds } from "../lib/ticket-notes";
 import { AlertStrip } from "./AlertStrip";
+import { LeavesSoon } from "./LeavesSoon";
 import { TrackFault } from "./TrackFault";
 
 type StationBoardProps = {
@@ -65,6 +66,11 @@ export function StationBoard({
         const cancelled = Boolean(event.cancelled || event.tripCancelled);
         const delayed = delayMinutesValue != null && delayMinutesValue > 0;
         const platformChanged = Boolean(trackChange(event.place));
+        const leaving =
+          selected &&
+          !cancelled &&
+          Boolean(when) &&
+          waitToDepartSeconds(when!) != null;
 
         return (
           <li
@@ -101,7 +107,7 @@ export function StationBoard({
                   ? ` · ${t("detail.platform", { track: event.place.track })}`
                   : ""}
               </p>
-              {cancelled || delayed || platformChanged ? (
+              {cancelled || delayed || platformChanged || leaving ? (
                 <div className="ticket-marks">
                   {cancelled ? (
                     <span className="ticket-fault" data-testid="board-cancelled">
@@ -117,6 +123,13 @@ export function StationBoard({
                   ) : null}
                   {platformChanged ? (
                     <TrackFault place={event.place} testId="board-track" />
+                  ) : null}
+                  {leaving && when ? (
+                    <LeavesSoon
+                      startTime={when}
+                      cancelled={cancelled}
+                      testId="board-soon"
+                    />
                   ) : null}
                 </div>
               ) : null}

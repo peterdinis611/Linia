@@ -134,6 +134,10 @@ describe("ItineraryList", () => {
     const walk = screen.getByTestId("ticket-walk");
     expect(walk).toHaveTextContent("8 min to Berlin Hbf");
     expect(walk).toHaveTextContent("12 min to change");
+    expect(screen.getByTestId("ticket-tight")).toHaveTextContent(
+      "xfer 12 min · tight",
+    );
+    expect(screen.getByRole("option")).toHaveAttribute("data-fault", "true");
   });
 
   it("inks cancelled and delayed stamps on the ticket", () => {
@@ -195,5 +199,59 @@ describe("ItineraryList", () => {
     );
     expect(screen.getByTestId("ticket-track")).toHaveTextContent("plat. 4 · was 12");
     expect(screen.getByRole("option")).toHaveAttribute("data-fault", "true");
+  });
+
+  it("inks a tight transfer on the ticket", () => {
+    const rail = railItinerary().legs[0]!;
+    const tight = railItinerary({
+      transfers: 1,
+      legs: [
+        {
+          ...rail,
+          endTime: "2026-08-14T10:00:00Z",
+          to: { name: "Dresden Hbf", lat: 51.04, lon: 13.73 },
+        },
+        {
+          ...rail,
+          startTime: "2026-08-14T10:04:00Z",
+          endTime: "2026-08-14T12:30:00Z",
+          from: { name: "Dresden Hbf", lat: 51.04, lon: 13.73 },
+        },
+      ],
+    });
+    renderHall(
+      <ItineraryList itineraries={[tight]} selectedIndex={0} onSelect={vi.fn()} />,
+    );
+    expect(screen.getByTestId("ticket-tight")).toHaveTextContent(
+      "xfer 4 min · tight",
+    );
+    expect(screen.getByRole("option")).toHaveAttribute("data-fault", "true");
+  });
+
+  it("counts down on the selected ticket still waiting to leave", () => {
+    const start = new Date(Date.now() + 8 * 60_000).toISOString();
+    const waiting = railItinerary({
+      startTime: start,
+      legs: [
+        {
+          ...railItinerary().legs[0]!,
+          startTime: start,
+        },
+      ],
+    });
+    const later = railItinerary({
+      startTime: "2026-08-14T16:00:00Z",
+      endTime: "2026-08-14T20:30:00Z",
+    });
+    renderHall(
+      <ItineraryList
+        itineraries={[waiting, later]}
+        selectedIndex={0}
+        onSelect={vi.fn()}
+      />,
+    );
+    expect(screen.getByTestId("ticket-soon")).toHaveTextContent("in 8 min");
+    const tickets = screen.getAllByRole("option");
+    expect(tickets[1]).not.toHaveTextContent("in 8 min");
   });
 });

@@ -227,6 +227,7 @@ export const uk: Messages = {
     liveLeg: "Зараз на {line}",
     delayedLeg: "{line} затримується на {delay}",
     callAt: "Зупинка {name}",
+    tightTransfer: "Тісна пересадка {name} · {minutes} хв",
   },
   results: {
     departures: "Відправлення",
@@ -262,6 +263,8 @@ export const uk: Messages = {
     walkTo: "{time} до {name}",
     walkTransfer: "{time} до пересадки",
     toTop: "Вгору",
+    leavesIn: "за {minutes} хв",
+    leavesNow: "відправлення",
   },
   share: {
     open: "Поділитися",
@@ -303,6 +306,7 @@ export const uk: Messages = {
     toHeadsign: "до {name}",
     platform: "кол. {track}",
     trackChange: "кол. {track} · було {was}",
+    tightTransfer: "пересадка {minutes} хв · тісно",
     loadingStops: "Завантажую зупинки…",
     cancelled: "Скасовано",
     delayLate: "+{minutes} хв",

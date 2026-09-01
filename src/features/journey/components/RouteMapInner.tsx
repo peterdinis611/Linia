@@ -44,6 +44,7 @@ import { pathPointsForLeg, mapCallStops } from "@/lib/transit/path";
 import type { Itinerary, Place, SelectedPlace } from "@/lib/transit/types";
 import type { MapPickMode } from "../hooks/use-journey-search";
 import { itineraryIsLive, legPhase, livePositionOnLeg } from "../lib/progress";
+import { tightTransferAtPlace, tightTransfers } from "../lib/ticket-notes";
 
 const EUROPE_CENTER: LatLngExpression = [50.1, 10];
 
@@ -96,13 +97,13 @@ function samePin(a: SelectedPlace, b: SelectedPlace) {
 }
 
 const pinIcons: Partial<
-  Record<"from" | "to" | "via" | "pending" | "call" | "now", L.DivIcon>
+  Record<"from" | "to" | "via" | "pending" | "call" | "xfer" | "now", L.DivIcon>
 > = {};
 
-function pinIcon(kind: "from" | "to" | "via" | "pending" | "call" | "now") {
+function pinIcon(kind: "from" | "to" | "via" | "pending" | "call" | "xfer" | "now") {
   const cached = pinIcons[kind];
   if (cached) return cached;
-  const size = kind === "call" ? 12 : kind === "now" ? 16 : 18;
+  const size = kind === "call" ? 12 : kind === "xfer" ? 14 : kind === "now" ? 16 : 18;
   const icon = L.divIcon({
     className: `map-pin map-pin-${kind}`,
     iconSize: [size, size],
@@ -227,6 +228,10 @@ export default function RouteMapInner({
     );
     return mapCallStops(itinerary, skip);
   }, [itinerary, from, to, pendingPick, viaPoints]);
+  const transferNotes = useMemo(
+    () => (itinerary ? tightTransfers(itinerary) : []),
+    [itinerary],
+  );
   const livePoint = useMemo(() => {
     if (!itinerary) return null;
     const riding = itinerary.legs.find(
@@ -334,14 +339,18 @@ export default function RouteMapInner({
       />
       {callStops.map((stop, index) => {
         const canBoard = Boolean(stop.stopId && onOpenStation && pickMode === "idle");
+        const tight = tightTransferAtPlace(stop, transferNotes);
+        const label = tight
+          ? t("map.tightTransfer", { name: stop.name, minutes: tight.minutes })
+          : t("map.callAt", { name: stop.name });
         return (
           <Marker
             key={stop.stopId ?? `${stop.name}-${stop.lat}-${index}`}
             position={[stop.lat, stop.lon]}
-            icon={pinIcon("call")}
-            zIndexOffset={-80}
-            title={t("map.callAt", { name: stop.name })}
-            alt={t("map.callAt", { name: stop.name })}
+            icon={pinIcon(tight ? "xfer" : "call")}
+            zIndexOffset={tight ? 200 : -80}
+            title={label}
+            alt={label}
             eventHandlers={{
               click: () => {
                 if (!canBoard || !onOpenStation) return;
@@ -349,7 +358,7 @@ export default function RouteMapInner({
               },
             }}
           >
-            {canBoard ? null : <Popup>{stop.name}</Popup>}
+            {canBoard ? null : <Popup>{label}</Popup>}
           </Marker>
         );
       })}

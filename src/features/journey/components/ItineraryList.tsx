@@ -15,10 +15,14 @@ import { itineraryIsLive, legPhase } from "../lib/progress";
 import {
   departureKey,
   ticketFault,
+  ticketTightTransfer,
   ticketTrackChange,
+  waitToDepartSeconds,
   walkNotes,
 } from "../lib/ticket-notes";
 import { AlertStrip } from "./AlertStrip";
+import { LeavesSoon } from "./LeavesSoon";
+import { TightFault } from "./TightFault";
 
 type ItineraryListProps = {
   itineraries: Itinerary[];
@@ -45,11 +49,16 @@ export function ItineraryList({
         const transitLegs = itinerary.legs.filter((leg) => isTransitMode(leg.mode));
         const fault = ticketFault(itinerary);
         const track = ticketTrackChange(itinerary);
+        const tight = ticketTightTransfer(itinerary);
         const walks = walkNotes(itinerary);
         const carriers = transitAgencies(itinerary);
         const alerts = alertsFromItinerary(itinerary);
         const live = itineraryIsLive(itinerary);
         const lastToday = Boolean(lastOfDayKey && departureKey(itinerary) === lastOfDayKey);
+        const leaving =
+          selected &&
+          !fault.cancelled &&
+          waitToDepartSeconds(itinerary.startTime) != null;
 
         return (
           <li key={`${itinerary.startTime}-${itinerary.endTime}-${index}`} role="none">
@@ -61,7 +70,8 @@ export function ItineraryList({
               data-fault={
                 fault.cancelled ||
                 fault.delayMinutes != null ||
-                Boolean(track)
+                Boolean(track) ||
+                Boolean(tight)
               }
               aria-selected={selected}
               className="ticket w-full px-4 py-3.5 text-left"
@@ -116,7 +126,12 @@ export function ItineraryList({
                   ),
                 )}
               </div>
-              {fault.cancelled || fault.delayMinutes != null || lastToday || track ? (
+              {fault.cancelled ||
+              fault.delayMinutes != null ||
+              lastToday ||
+              track ||
+              tight ||
+              leaving ? (
                 <div className="ticket-marks">
                   {fault.cancelled ? (
                     <span className="ticket-fault" data-testid="ticket-cancelled">
@@ -136,10 +151,19 @@ export function ItineraryList({
                       })}
                     </span>
                   ) : null}
+                  {tight ? (
+                    <TightFault transfer={tight} testId="ticket-tight" />
+                  ) : null}
                   {lastToday ? (
                     <span className="ticket-last" data-testid="ticket-last">
                       {t("results.lastOnBoard")}
                     </span>
+                  ) : null}
+                  {leaving ? (
+                    <LeavesSoon
+                      startTime={itinerary.startTime}
+                      cancelled={fault.cancelled}
+                    />
                   ) : null}
                 </div>
               ) : null}

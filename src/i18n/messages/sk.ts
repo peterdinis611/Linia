@@ -226,6 +226,7 @@ export const sk: Messages = {
     liveLeg: "Teraz na {line}",
     delayedLeg: "{line} mešká {delay}",
     callAt: "Zastávka {name}",
+    tightTransfer: "Tesný prestup {name} · {minutes} min",
   },
   results: {
     departures: "Odchody",
@@ -261,6 +262,8 @@ export const sk: Messages = {
     walkTo: "{time} na {name}",
     walkTransfer: "{time} na prestup",
     toTop: "Na pult",
+    leavesIn: "o {minutes} min",
+    leavesNow: "odchod",
   },
   share: {
     open: "Zdieľať",
@@ -302,6 +305,7 @@ export const sk: Messages = {
     toHeadsign: "smer {name}",
     platform: "nást. {track}",
     trackChange: "nást. {track} · bolo {was}",
+    tightTransfer: "prestup {minutes} min · tesné",
     loadingStops: "Načítavam zastávky…",
     cancelled: "Zrušené",
     delayLate: "+{minutes} min",

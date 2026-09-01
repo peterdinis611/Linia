@@ -227,6 +227,7 @@ export const hu: Messages = {
     liveLeg: "Most: {line}",
     delayedLeg: "{line} késik {delay}",
     callAt: "Megálló {name}",
+    tightTransfer: "Szoros átszállás {name} · {minutes} perc",
   },
   results: {
     departures: "Indulások",
@@ -262,6 +263,8 @@ export const hu: Messages = {
     walkTo: "{time} {name} felé",
     walkTransfer: "{time} átszálláshoz",
     toTop: "Fel",
+    leavesIn: "{minutes} perc múlva",
+    leavesNow: "indul",
   },
   share: {
     open: "Megosztás",
@@ -303,6 +306,7 @@ export const hu: Messages = {
     toHeadsign: "{name} felé",
     platform: "vág. {track}",
     trackChange: "vág. {track} · volt {was}",
+    tightTransfer: "átszállás {minutes} perc · szoros",
     loadingStops: "Megállók betöltése…",
     cancelled: "Törölve",
     delayLate: "+{minutes} perc",

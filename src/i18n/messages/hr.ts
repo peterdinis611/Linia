@@ -227,6 +227,7 @@ export const hr: Messages = {
     liveLeg: "Sada na {line}",
     delayedLeg: "{line} kasni {delay}",
     callAt: "Stajalište {name}",
+    tightTransfer: "Tijesno presjedanje {name} · {minutes} min",
   },
   results: {
     departures: "Odlasci",
@@ -262,6 +263,8 @@ export const hr: Messages = {
     walkTo: "{time} do {name}",
     walkTransfer: "{time} do presjedanja",
     toTop: "Gore",
+    leavesIn: "za {minutes} min",
+    leavesNow: "odlazak",
   },
   share: {
     open: "Podijeli",
@@ -303,6 +306,7 @@ export const hr: Messages = {
     toHeadsign: "prema {name}",
     platform: "kol. {track}",
     trackChange: "kol. {track} · bilo {was}",
+    tightTransfer: "presjedanje {minutes} min · tijesno",
     loadingStops: "Učitavam stajališta…",
     cancelled: "Otkazano",
     delayLate: "+{minutes} min",

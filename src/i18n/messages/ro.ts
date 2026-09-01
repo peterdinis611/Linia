@@ -227,6 +227,7 @@ export const ro: Messages = {
     liveLeg: "Acum pe {line}",
     delayedLeg: "{line} întârziat {delay}",
     callAt: "Oprire {name}",
+    tightTransfer: "Transbordare strânsă {name} · {minutes} min",
   },
   results: {
     departures: "Plecări",
@@ -262,6 +263,8 @@ export const ro: Messages = {
     walkTo: "{time} până la {name}",
     walkTransfer: "{time} până la transbordare",
     toTop: "Sus",
+    leavesIn: "în {minutes} min",
+    leavesNow: "pleacă",
   },
   share: {
     open: "Distribuie",
@@ -303,6 +306,7 @@ export const ro: Messages = {
     toHeadsign: "spre {name}",
     platform: "lin. {track}",
     trackChange: "lin. {track} · era {was}",
+    tightTransfer: "transbordare {minutes} min · strâns",
     loadingStops: "Se încarcă opririle…",
     cancelled: "Anulat",
     delayLate: "+{minutes} min",
