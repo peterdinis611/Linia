@@ -607,6 +607,7 @@ export function useJourneySearch() {
           arriveBy: snapshot.arriveBy,
           modeFilter: snapshot.modeFilter,
           distanceFilter: snapshot.distanceFilter,
+          night,
           pageCursor: snapshot.pageCursor,
           language: locale,
         },

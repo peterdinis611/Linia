@@ -378,7 +378,7 @@ export const stopTimesInputSchema = z.object({
   night: z.boolean().optional().default(false),
   pageCursor: z.string().trim().max(2000).optional(),
   language: z.string().trim().min(2).max(8).optional(),
-  n: z.number().int().min(1).max(50).optional().default(20),
+  n: z.number().int().min(1).max(50).optional().default(40),
 });
 
 export const stopTimeEventSchema = z.looseObject({

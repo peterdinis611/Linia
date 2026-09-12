@@ -76,6 +76,14 @@ export function transitModesFor(
   return (modes.length > 0 ? modes : byDistance).join(",");
 }
 
+const RETRY_STATUS = new Set([429, 502, 503, 504]);
+
+function wait(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 export async function motisFetch(
   path: string,
   params: URLSearchParams,
@@ -86,31 +94,46 @@ export async function motisFetch(
     url.searchParams.append(key, value);
   });
 
-  let response: Response;
-  try {
-    response = await fetch(url, {
-      headers: {
-        Accept: "application/json",
-        "User-Agent": USER_AGENT,
-        ...(options?.language
-          ? { "Accept-Language": `${options.language},en;q=0.4` }
-          : {}),
-      },
-      cache: options?.revalidate ? "force-cache" : "no-store",
-      next: options?.revalidate
-        ? { revalidate: options.revalidate }
-        : undefined,
-    });
-  } catch (error) {
-    throw new TransitError(
-      error instanceof Error ? error.message : "Network request failed",
-    );
-  }
+  const init: RequestInit & { next?: { revalidate: number } } = {
+    headers: {
+      Accept: "application/json",
+      "User-Agent": USER_AGENT,
+      ...(options?.language
+        ? { "Accept-Language": `${options.language},en;q=0.4` }
+        : {}),
+    },
+    cache: options?.revalidate ? "force-cache" : "no-store",
+    next: options?.revalidate
+      ? { revalidate: options.revalidate }
+      : undefined,
+  };
 
-  if (!response.ok) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    let response: Response;
+    try {
+      response = await fetch(url, init);
+    } catch (error) {
+      lastError = error;
+      if (attempt === 0) {
+        await wait(300);
+        continue;
+      }
+      throw new TransitError(
+        error instanceof Error ? error.message : "Network request failed",
+      );
+    }
+
+    if (response.ok) return response.json();
+    if (attempt === 0 && RETRY_STATUS.has(response.status)) {
+      await wait(300);
+      continue;
+    }
     const detail = await response.text().catch(() => "");
     throw new TransitError(detail || `Request failed (${response.status})`);
   }
 
-  return response.json();
+  throw new TransitError(
+    lastError instanceof Error ? lastError.message : "Network request failed",
+  );
 }

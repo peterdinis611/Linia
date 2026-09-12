@@ -221,7 +221,7 @@ describe("stopTimesInputSchema", () => {
     });
     expect(parsed.success).toBe(true);
     if (parsed.success) {
-      expect(parsed.data.n).toBe(20);
+      expect(parsed.data.n).toBe(40);
       expect(parsed.data.arriveBy).toBe(true);
     }
   });

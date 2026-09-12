@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi, afterEach } from "vitest";
 import { berlin } from "@/test/fixtures";
-import { placeQueryParam, transitModesFor } from "@/lib/transit/client";
+import { motisFetch, placeQueryParam, transitModesFor } from "@/lib/transit/client";
 import { coordPlace } from "@/lib/transit/place";
+import { TransitError } from "@/lib/errors";
 
 describe("MOTIS query helpers", () => {
   it("sends a stop id when the pin is a station", () => {
@@ -33,5 +34,56 @@ describe("MOTIS query helpers", () => {
     expect(transitModesFor("train", { distance: "long" })).toContain("LONG_DISTANCE");
     expect(transitModesFor("train", { distance: "long" })).not.toContain("COACH");
     expect(transitModesFor("bus", { distance: "long" })).toBe("COACH");
+  });
+});
+
+describe("motisFetch", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("retries a jammed board once", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("socket hang up"))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ok: true }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(
+      motisFetch("/v5/plan", new URLSearchParams({ fromPlace: "x" })),
+    ).resolves.toEqual({ ok: true });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("retries a 503 once, not a 400", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        text: async () => "busy",
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ itineraries: [] }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(
+      motisFetch("/v5/stoptimes", new URLSearchParams({ stopId: "x" })),
+    ).resolves.toEqual({ itineraries: [] });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    fetchMock.mockReset();
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      text: async () => "bad",
+    });
+    await expect(
+      motisFetch("/v5/plan", new URLSearchParams({ fromPlace: "x" })),
+    ).rejects.toBeInstanceOf(TransitError);
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 });

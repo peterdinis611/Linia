@@ -11,18 +11,22 @@ import {
 } from "@/lib/schemas";
 import { motisFetch, placeQueryParam, transitModesFor } from "@/lib/transit/client";
 import {
+  collectPlanPages,
+  DAY_ITINERARIES,
+  DAY_SECONDS,
+  MAX_DAY_PAGES,
+  MAX_NEAR_PAGES,
+  NEAR_HORIZON_SECONDS,
+  NEAR_ITINERARIES,
+  NEAR_SECONDS,
+  uniqueJourneys,
+} from "@/lib/transit/plan-pages";
+import {
   canPeekStop,
   isSameServiceDay,
   peekStopTime,
 } from "@/lib/transit/peek-stop";
 import { resolveStopId } from "@/lib/transit/resolve-stop";
-import type { Itinerary } from "@/lib/transit/types";
-
-const DAY_SECONDS = 86_400;
-const NEAR_SECONDS = 21_600;
-const DAY_ITINERARIES = 24;
-const NEAR_ITINERARIES = 20;
-const MAX_DAY_PAGES = 2;
 
 export const planJourneyAction = actionClient
   .inputSchema(planJourneyInputSchema)
@@ -79,10 +83,9 @@ export const planJourneyAction = actionClient
     }
 
     if (parsedInput.via.length > 0) {
-      const viaIds: string[] = [];
-      for (const stop of parsedInput.via) {
-        viaIds.push(await resolveStopId(stop, parsedInput.language));
-      }
+      const viaIds = await Promise.all(
+        parsedInput.via.map((stop) => resolveStopId(stop, parsedInput.language)),
+      );
       params.set("via", viaIds.join(","));
       params.set("viaMinimumStay", viaIds.map(() => "0").join(","));
     }
@@ -95,20 +98,21 @@ export const planJourneyAction = actionClient
           ? 45
           : undefined;
     const first = await fetchPlanPage(params, parsedInput.language, revalidate);
-    const pages = [first.itineraries];
-    let cursor = first.nextPageCursor;
     const stamp = time ?? parsedInput.time;
-
-    if (allDay && stamp) {
-      for (let page = 1; page < MAX_DAY_PAGES && cursor; page += 1) {
-        const last = pages.at(-1)?.at(-1);
-        if (last && !isoOnLocalDate(last.startTime, stamp)) break;
+    const pages = await collectPlanPages(
+      first,
+      (cursor) => {
         params.set("pageCursor", cursor);
-        const next = await fetchPlanPage(params, parsedInput.language, revalidate);
-        pages.push(next.itineraries);
-        cursor = next.nextPageCursor;
-      }
-    }
+        return fetchPlanPage(params, parsedInput.language, revalidate);
+      },
+      {
+        allDay,
+        arriveBy: allDay ? false : parsedInput.arriveBy,
+        stamp,
+        maxPages: allDay ? MAX_DAY_PAGES : MAX_NEAR_PAGES,
+        horizonSeconds: allDay ? DAY_SECONDS : NEAR_HORIZON_SECONDS,
+      },
+    );
 
     const itineraries = uniqueJourneys(pages.flat());
     let kept = allDay && stamp
@@ -192,23 +196,6 @@ async function fetchPlanPage(
     direct: parseItineraries(payload.direct),
     nextPageCursor,
   };
-}
-
-function uniqueJourneys(items: Itinerary[]) {
-  const seen = new Set<string>();
-  const out: Itinerary[] = [];
-  for (const item of items) {
-    const key = [
-      item.startTime,
-      item.endTime,
-      item.transfers,
-      item.legs.map((leg) => leg.tripId ?? leg.routeShortName ?? "").join(","),
-    ].join("|");
-    if (seen.has(key)) continue;
-    seen.add(key);
-    out.push(item);
-  }
-  return out;
 }
 
 function parseItineraries(value: unknown) {

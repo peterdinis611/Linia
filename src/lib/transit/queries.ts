@@ -211,8 +211,12 @@ export async function resolveBoardEnds(
       (place) => place.id || `${place.lat.toFixed(4)},${place.lon.toFixed(4)}`,
     ),
   );
-  for (const name of names.slice(0, 8)) {
-    const matches = await searchPlaces(name, language, bias, { placeBias: 3 });
+  const extras = await Promise.all(
+    names.slice(0, 8).map((name) =>
+      searchPlaces(name, language, bias, { placeBias: 3 }),
+    ),
+  );
+  for (const matches of extras) {
     const stop = matches.find(
       (match) =>
         match.type === "STOP" && hasMappableCoords(match.lat, match.lon),
