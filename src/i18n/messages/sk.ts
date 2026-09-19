@@ -330,7 +330,7 @@ export const sk: Messages = {
     departs: "Odchod",
     boardFrom: "Čo ide odtiaľto",
     boardChange: "Tabuľa prestupu",
-    boardTo: "Čo ide odtiaľto",
+    boardTo: "Čo ide odtiaľto"
   },
   carriers: {
     compare: "Porovnať dopravcov",
@@ -411,6 +411,17 @@ export const sk: Messages = {
     loadingKicker: "Prehľadávam tabuľu",
     loadingTitle: "Tlačí sa cestovný poriadok",
     loadingBody: "Európske vlakové a autobusové časy naživo sú na ceste. Počkajte na nástupišti.",
+  },
+  sound: {
+    on: "Zvuk zapnutý",
+    off: "Zvuk vypnutý",
+    toggle: "Prepnúť zvuky tabule",
+  },
+  shortcuts: {
+    hint: "Klávesové skratky",
+    focusSearch: "/ — fokus vyhľadávania",
+    swap: "R — výmena odkiaľ a kam",
+    dismiss: "Esc — zavrieť",
   },
   footer: {
     printedFrom: "Tlačené z",

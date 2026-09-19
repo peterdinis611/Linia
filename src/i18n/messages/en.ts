@@ -410,6 +410,17 @@ export const en = {
     loadingTitle: "Printing the timetable",
     loadingBody: "Live European rail and coach times are coming up. Hold the platform.",
   },
+  sound: {
+    on: "Sound on",
+    off: "Sound off",
+    toggle: "Toggle board sounds",
+  },
+  shortcuts: {
+    hint: "Keyboard shortcuts",
+    focusSearch: "/ — focus search",
+    swap: "R — swap origin & destination",
+    dismiss: "Esc — close",
+  },
   footer: {
     printedFrom: "Printed from",
     sources: "Transitous sources",
