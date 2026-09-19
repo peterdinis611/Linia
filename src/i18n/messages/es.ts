@@ -192,6 +192,7 @@ export const es: Messages = {
   },
   alerts: {
     kicker: "Aviso de servicio",
+    hall: "Aviso a través de la sala",
     more: "Leer el aviso",
     effects: {
       NO_SERVICE: "Sin servicio",
@@ -220,6 +221,7 @@ export const es: Messages = {
     pinned: "Fijado: {name}",
     europe: "Europa",
     clickToSet: "Haz clic en el mapa para fijar {target}. Arrastra los alfileres.",
+    picking: "Sella {target} en el mapa.",
     targetOrigin: "el origen",
     targetDestination: "el destino",
     targetVia: "una parada vía",
@@ -231,6 +233,7 @@ export const es: Messages = {
     zoomOut: "Alejar",
     viaStop: "Vía {n}: {name}",
     here: "Estoy aquí",
+    fitTicket: "Ajustar el billete",
     fullscreen: "Mapa entero",
     exitFullscreen: "Salir del mapa entero",
     unfold: "Desplegar el mapa",
@@ -278,6 +281,9 @@ export const es: Messages = {
     toTop: "Arriba",
     leavesIn: "en {minutes} min",
     leavesNow: "sale",
+    holdPrint: "Sostener esta copia",
+    heldPrint: "Sostenida",
+    twoPrints: "Dos copias",
   },
   share: {
     open: "Compartir",
@@ -333,6 +339,8 @@ export const es: Messages = {
     boardFrom: "Qué sale de aquí",
     boardChange: "Panel de transbordo",
     boardTo: "Qué sale de aquí",
+    carrierBoard: "Panel {name}",
+    carrierHint: "Abre su horario. Esta sala no vende billetes.",
   },
   carriers: {
     compare: "Comparar operadores",
@@ -414,6 +422,17 @@ export const es: Messages = {
     loadingKicker: "Consultando el panel",
     loadingTitle: "Imprimiendo el horario",
     loadingBody: "Llegan los horarios europeos de tren y autocar. Espera en el andén.",
+  },
+  sound: {
+    on: "Sonido encendido",
+    off: "Sonido apagado",
+    toggle: "Alternar sonidos del tablero",
+  },
+  shortcuts: {
+    hint: "Atajos de teclado",
+    focusSearch: "/ — foco en la búsqueda",
+    swap: "R — intercambiar origen y destino",
+    dismiss: "Esc — cerrar",
   },
   footer: {
     printedFrom: "Impreso desde",

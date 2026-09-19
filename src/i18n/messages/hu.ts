@@ -191,6 +191,7 @@ export const hu: Messages = {
   },
   alerts: {
     kicker: "Forgalmi hirdetmény",
+    hall: "Hirdetmény a csarnokon át",
     more: "Hirdetmény olvasása",
     effects: {
       NO_SERVICE: "Nincs közlekedés",
@@ -219,6 +220,7 @@ export const hu: Messages = {
     pinned: "Kitűzve: {name}",
     europe: "Európa",
     clickToSet: "Kattints a térképre, hogy {target} legyen. A tűket húzhatod.",
+    picking: "Pecsételd {target} a térképre.",
     targetOrigin: "az indulást",
     targetDestination: "a célt",
     targetVia: "egy érintett megállót",
@@ -230,6 +232,7 @@ export const hu: Messages = {
     zoomOut: "Távolítás",
     viaStop: "Át {n}: {name}",
     here: "Itt vagyok",
+    fitTicket: "Igazítsd a jegyet",
     fullscreen: "Teljes térkép",
     exitFullscreen: "Teljes térkép bezárása",
     unfold: "Térkép kinyitása",
@@ -277,6 +280,9 @@ export const hu: Messages = {
     toTop: "Fel",
     leavesIn: "{minutes} perc múlva",
     leavesNow: "indul",
+    holdPrint: "Tartsd ezt a nyomatot",
+    heldPrint: "Tartva",
+    twoPrints: "Két nyomat",
   },
   share: {
     open: "Megosztás",
@@ -332,6 +338,8 @@ export const hu: Messages = {
     boardFrom: "Mi indul innen",
     boardChange: "Átszállási tábla",
     boardTo: "Mi indul innen",
+    carrierBoard: "{name} tábla",
+    carrierHint: "Megnyitja a menetrendjüket. Ez a csarnok nem árul jegyeket.",
   },
   carriers: {
     compare: "Szolgáltatók összevetése",
@@ -412,6 +420,17 @@ export const hu: Messages = {
     loadingKicker: "A tábla kérdezése",
     loadingTitle: "A menetrend nyomtatása",
     loadingBody: "Az élő európai vonat- és buszidők úton vannak. Várj a peronon.",
+  },
+  sound: {
+    on: "Hang be",
+    off: "Hang ki",
+    toggle: "Táblahangok kapcsolása",
+  },
+  shortcuts: {
+    hint: "Billentyűparancsok",
+    focusSearch: "/ — fókusz a keresésre",
+    swap: "R — honnan és hova csere",
+    dismiss: "Esc — bezárás",
   },
   footer: {
     printedFrom: "Nyomtatva",

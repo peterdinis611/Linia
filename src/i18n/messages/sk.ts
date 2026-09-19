@@ -191,6 +191,7 @@ export const sk: Messages = {
   },
   alerts: {
     kicker: "Oznam o premávke",
+    hall: "Oznam cez halu",
     more: "Čítať oznam",
     effects: {
       NO_SERVICE: "Bez premávky",
@@ -218,6 +219,7 @@ export const sk: Messages = {
     pinned: "Pripnuté: {name}",
     europe: "Európa",
     clickToSet: "Kliknite na mapu a nastavte {target}. Špendlíky môžete posunúť.",
+    picking: "Pečiatkujte {target} na mape.",
     targetOrigin: "východisko",
     targetDestination: "cieľ",
     targetVia: "zastávku na trase",
@@ -229,6 +231,7 @@ export const sk: Messages = {
     zoomOut: "Oddialiť",
     viaStop: "Cez {n}: {name}",
     here: "Tu som",
+    fitTicket: "Prispôsobiť lístok",
     fullscreen: "Celá mapa",
     exitFullscreen: "Zavrieť celú mapu",
     unfold: "Rozložiť mapu",
@@ -276,6 +279,9 @@ export const sk: Messages = {
     toTop: "Na pult",
     leavesIn: "o {minutes} min",
     leavesNow: "odchod",
+    holdPrint: "Podržať tento výtlačok",
+    heldPrint: "Podržané",
+    twoPrints: "Dva výtlačky",
   },
   share: {
     open: "Zdieľať",
@@ -330,7 +336,9 @@ export const sk: Messages = {
     departs: "Odchod",
     boardFrom: "Čo ide odtiaľto",
     boardChange: "Tabuľa prestupu",
-    boardTo: "Čo ide odtiaľto"
+    boardTo: "Čo ide odtiaľto",
+    carrierBoard: "Tabuľa {name}",
+    carrierHint: "Otvorí ich cestovný poriadok. Hala lístky nepredáva.",
   },
   carriers: {
     compare: "Porovnať dopravcov",

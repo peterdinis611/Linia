@@ -217,6 +217,83 @@ html.dark body::before {
   text-decoration-color: var(--signal);
 }
 
+.hall-keys {
+  display: inline-block;
+  text-align: left;
+}
+
+.hall-keys summary {
+  cursor: pointer;
+  list-style: none;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.22em;
+}
+
+.hall-keys summary::-webkit-details-marker {
+  display: none;
+}
+
+.hall-keys summary:hover {
+  color: var(--signal);
+  text-decoration-color: var(--signal);
+}
+
+.hall-keys p {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  letter-spacing: 0.04em;
+}
+
+.hall-tape {
+  border: 1px dashed color-mix(in srgb, var(--signal) 55%, var(--rule));
+  background:
+    repeating-linear-gradient(
+      -12deg,
+      color-mix(in srgb, var(--signal) 12%, transparent) 0 0.55rem,
+      transparent 0.55rem 1.1rem
+    );
+  padding: 0.7rem 0.85rem 0.85rem;
+}
+
+.hall-tape .kicker {
+  margin-bottom: 0.35rem;
+  color: var(--signal);
+}
+
+.hall-tape .alert-notice {
+  margin-top: 0;
+  border: 0;
+  background: color-mix(in srgb, var(--paper-raised) 82%, transparent);
+}
+
+.desk-compare {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.desk-compare-kicker {
+  grid-column: 1 / -1;
+}
+
+.desk-compare-sheets {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 720px) {
+  .desk-compare-sheets {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.ticket-watch + .ticket-watch {
+  margin-top: 0;
+  border-top: 0;
+}
+
 @media (max-width: 639px) {
   .hall-foot-legal {
     display: none;
@@ -394,6 +471,12 @@ html:not(.dark) .board-clock .kicker {
   opacity: 1;
   transform: none;
   pointer-events: auto;
+}
+
+@media (max-width: 63.99rem) {
+  .hall-body[data-map="open"] .hall-lift {
+    display: none;
+  }
 }
 
 .hall-lift:hover {
@@ -1214,6 +1297,30 @@ html:not(.dark) .board-clock .kicker {
   background: color-mix(in srgb, var(--signal) 10%, transparent);
 }
 
+.sound-stamp {
+  border: 0;
+  border-left: 1px solid var(--rule);
+  background: transparent;
+  padding: 0.45rem 0.7rem;
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sound-stamp[data-on="true"] {
+  color: var(--signal);
+  background: color-mix(in srgb, var(--signal) 10%, transparent);
+}
+
+.sound-stamp:hover {
+  color: var(--ink);
+}
+
 .hall-when {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(6.6rem, 0.85fr);
@@ -1690,18 +1797,50 @@ html:not(.dark) .board-clock .kicker {
   justify-content: space-between;
   gap: 0.75rem;
   width: 100%;
-  min-height: 3.2rem;
-  padding: 0.55rem 0.8rem;
+  min-height: 3.35rem;
+  padding: 0.6rem 0.85rem 0.6rem 1.05rem;
   border: 0;
+  overflow: hidden;
   background:
     linear-gradient(
-      180deg,
-      var(--paper-raised) 0%,
-      color-mix(in srgb, var(--paper) 82%, var(--board)) 100%
+      118deg,
+      color-mix(in srgb, var(--paper-raised) 92%, var(--amber)) 0%,
+      var(--paper-raised) 38%,
+      color-mix(in srgb, var(--paper) 78%, var(--board)) 100%
     );
   color: inherit;
   text-align: left;
   cursor: pointer;
+}
+
+.map-pocket-fold {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1.35rem;
+  height: 1.35rem;
+  background:
+    linear-gradient(
+      225deg,
+      color-mix(in srgb, var(--signal) 55%, var(--paper-raised)) 0 48%,
+      transparent 50%
+    );
+  pointer-events: none;
+}
+
+.map-pocket::after {
+  content: "";
+  position: absolute;
+  left: 0.42rem;
+  top: 0.55rem;
+  bottom: 0.55rem;
+  width: 2px;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      var(--signal) 0 5px,
+      transparent 5px 9px
+    );
 }
 
 .map-pocket::before {
@@ -1722,6 +1861,11 @@ html:not(.dark) .board-clock .kicker {
 
 .dark .map-pocket::before {
   border-bottom-color: color-mix(in srgb, var(--amber) 26%, transparent);
+}
+
+.map-pocket[data-open="true"] .stamp {
+  background: color-mix(in srgb, var(--signal) 12%, transparent);
+  color: var(--signal);
 }
 
 .map-pocket-copy {
@@ -1770,6 +1914,55 @@ html:not(.dark) .board-clock .kicker {
   background: var(--paper-sunken);
 }
 
+.map-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0.35rem;
+  z-index: 2;
+  pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--paper-raised) 55%, transparent);
+}
+
+.map-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.22;
+  mix-blend-mode: multiply;
+  background-image:
+    radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--amber) 18%, transparent), transparent 32%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      color-mix(in srgb, var(--ink) 4%, transparent) 3px
+    );
+}
+
+html.dark .map-stage::after {
+  mix-blend-mode: overlay;
+  opacity: 0.16;
+}
+
+.map-stage[data-pick="from"]::before {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ink) 35%, transparent);
+}
+
+.map-stage[data-pick="to"]::before {
+  border-color: var(--signal);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--signal) 40%, transparent);
+}
+
+.map-stage[data-pick="via"]::before {
+  border-color: var(--amber);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--amber) 45%, transparent);
+}
+
 html.dark .map-stage,
 html.dark .leaflet-container {
   background: #121820;
@@ -1789,13 +1982,20 @@ html.dark .leaflet-container {
   height: 100dvh;
 }
 
-.map-stage-full .map-pin-dock,
-.map-stage-full .map-chrome {
+.map-stage-full .map-pin-dock {
   top: max(0.5rem, env(safe-area-inset-top));
 }
 
 .map-stage-full .map-chrome {
   right: max(0.5rem, env(safe-area-inset-right));
+  bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+@media (min-width: 64rem) {
+  .map-stage-full .map-chrome {
+    top: max(0.5rem, env(safe-area-inset-top));
+    bottom: auto;
+  }
 }
 
 .map-stage-full .map-overlay {
@@ -1818,18 +2018,33 @@ html.dark .map-tiles-ink.leaflet-container {
   background: #1a1a1a;
 }
 
-.map-pin {
+.leaflet-div-icon.map-pin {
+  display: grid;
+  place-items: center;
   border-radius: 999px;
   border: 2px solid var(--paper-raised);
-  box-shadow: 0 4px 10px color-mix(in srgb, var(--board) 40%, transparent);
+  background: var(--ink);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, white 35%, transparent) inset,
+    0 6px 14px color-mix(in srgb, var(--board) 38%, transparent);
 }
 
-.dark .map-pin {
+.dark .leaflet-div-icon.map-pin {
   border-color: #16130f;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--amber) 48%, transparent),
     0 0 10px color-mix(in srgb, var(--amber) 22%, transparent),
     0 4px 14px rgba(0, 0, 0, 0.55);
+}
+
+.map-seal-mark {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--paper-raised);
+  pointer-events: none;
 }
 
 .map-pin-from {
@@ -1840,8 +2055,16 @@ html.dark .map-tiles-ink.leaflet-container {
   background: #f7efe0;
 }
 
+.dark .map-pin-from .map-seal-mark {
+  color: #16130f;
+}
+
 .map-pin-to {
   background: var(--signal);
+}
+
+.map-pin-to .map-seal-mark {
+  color: #fff8f4;
 }
 
 .dark .map-pin-to {
@@ -1853,6 +2076,11 @@ html.dark .map-tiles-ink.leaflet-container {
 
 .map-pin-via {
   background: var(--amber);
+}
+
+.map-pin-via .map-seal-mark {
+  color: #161310;
+  font-size: 0.68rem;
 }
 
 .dark .map-pin-via {
@@ -1882,11 +2110,6 @@ html.dark .map-tiles-ink.leaflet-container {
   cursor: pointer;
 }
 
-.dark .map-pin-call {
-  background: #f7efe0;
-  border-color: #16130f;
-}
-
 .map-pin-xfer {
   border-radius: 1px;
   border-width: 1px;
@@ -1895,6 +2118,17 @@ html.dark .map-tiles-ink.leaflet-container {
     0 0 0 3px color-mix(in srgb, var(--signal) 28%, transparent),
     0 2px 8px color-mix(in srgb, var(--board) 35%, transparent);
   cursor: pointer;
+}
+
+.map-pin-xfer .map-seal-mark {
+  color: #fff8f4;
+  font-size: 0.62rem;
+  font-style: normal;
+}
+
+.dark .map-pin-call {
+  background: #f7efe0;
+  border-color: #16130f;
 }
 
 .dark .map-pin-xfer {
@@ -1940,11 +2174,12 @@ html.dark .map-tiles-ink.leaflet-container {
 }
 
 .map-chrome {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(3, 2.35rem);
   position: absolute;
-  top: 0.5rem;
+  top: auto;
   right: 0.5rem;
+  bottom: 0.5rem;
   z-index: 1100;
   overflow: hidden;
   border: 1px solid var(--rule);
@@ -1953,28 +2188,34 @@ html.dark .map-tiles-ink.leaflet-container {
   backdrop-filter: blur(10px);
 }
 
-@media (min-width: 640px) {
+@media (min-width: 64rem) {
   .map-chrome {
+    display: flex;
+    flex-direction: column;
     top: 0.75rem;
     right: 0.75rem;
+    bottom: auto;
+    grid-template-columns: unset;
   }
 }
 
 .map-chrome button {
   display: grid;
   place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 2.35rem;
+  height: 2.35rem;
   border: 0;
+  border-right: 1px solid var(--rule);
   border-bottom: 1px solid var(--rule);
   background: transparent;
   color: var(--ink-soft);
 }
 
-@media (min-width: 640px) {
+@media (min-width: 64rem) {
   .map-chrome button {
     width: 2.25rem;
     height: 2.25rem;
+    border-right: 0;
   }
 }
 
@@ -1985,6 +2226,12 @@ html.dark .map-tiles-ink.leaflet-container {
 
 .map-chrome button:last-child {
   border-bottom: 0;
+}
+
+@media (max-width: 63.99rem) {
+  .map-chrome button:nth-child(3n) {
+    border-right: 0;
+  }
 }
 
 .map-chrome button:hover {
@@ -2050,11 +2297,72 @@ details[open] .stops-chevron {
 }
 
 .map-plaque {
-  padding: 0.55rem 0.7rem;
+  min-width: 0;
+  padding: 0.55rem 0.75rem 0.65rem;
   border: 1px solid var(--rule);
-  background: color-mix(in srgb, var(--paper-raised) 95%, transparent);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--board) 12%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--paper-raised) 97%, transparent),
+      color-mix(in srgb, var(--paper) 88%, transparent)
+    );
+  box-shadow:
+    0 1px 0 color-mix(in srgb, white 45%, transparent) inset,
+    0 10px 24px color-mix(in srgb, var(--board) 14%, transparent);
   backdrop-filter: blur(10px);
+}
+
+.map-plaque .kicker {
+  margin: 0 0 0.2rem;
+}
+
+.map-plaque[data-picking="true"] {
+  border-color: var(--signal);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--signal) 28%, transparent),
+    0 10px 24px color-mix(in srgb, var(--board) 14%, transparent);
+}
+
+.map-plaque-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.28rem;
+  margin: 0.4rem 0 0;
+}
+
+.map-plaque-arrow {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+.map-seal-mini {
+  display: grid;
+  place-items: center;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 999px;
+  border: 1px solid var(--paper-raised);
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--paper-raised);
+}
+
+.map-seal-mini.map-pin-from {
+  background: var(--ink);
+}
+
+.map-seal-mini.map-pin-to {
+  background: var(--signal);
+  color: #fff8f4;
+}
+
+.map-seal-mini.map-pin-via {
+  background: var(--amber);
+  color: #161310;
 }
 
 .dark .map-plaque {
@@ -2068,7 +2376,7 @@ details[open] .stops-chevron {
   top: 0.5rem;
   left: 0.5rem;
   z-index: 500;
-  max-width: calc(100% - 3.75rem - 0.75rem);
+  max-width: calc(100% - 1rem);
 }
 
 .map-pin-bar {
@@ -2106,7 +2414,7 @@ details[open] .stops-chevron {
   bottom: 0.5rem;
   left: 0.5rem;
   z-index: 500;
-  max-width: min(24rem, calc(100% - 1rem));
+  max-width: min(16.5rem, calc(100% - 8.4rem));
   pointer-events: none;
 }
 
@@ -2119,8 +2427,11 @@ details[open] .stops-chevron {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .map-plaque-hint {
@@ -2146,6 +2457,20 @@ details[open] .stops-chevron {
 
 .leaflet-interactive.journey-path-live {
   filter: drop-shadow(0 0 5px color-mix(in srgb, var(--signal) 70%, transparent));
+  stroke-dasharray: 12 9;
+  animation: map-live-dash 1.8s linear infinite;
+}
+
+@keyframes map-live-dash {
+  to {
+    stroke-dashoffset: -42;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leaflet-interactive.journey-path-live {
+    animation: none;
+  }
 }
 
 .leaflet-interactive.journey-path-delayed {
@@ -2169,7 +2494,6 @@ details[open] .stops-chevron {
   .map-pin-dock {
     top: 0.75rem;
     left: 0.75rem;
-    max-width: calc(100% - 5rem);
   }
 
   .map-pin-bar .stamp {
@@ -2188,11 +2512,21 @@ details[open] .stops-chevron {
   .map-overlay {
     bottom: 0.75rem;
     left: 0.75rem;
-    max-width: min(24rem, calc(100% - 1.5rem));
+    max-width: min(16.5rem, calc(100% - 8.6rem));
   }
 
   .map-plaque-hint {
     display: block;
+  }
+}
+
+@media (min-width: 64rem) {
+  .map-overlay {
+    max-width: min(22rem, calc(100% - 4.5rem));
+  }
+
+  .map-pin-dock {
+    max-width: calc(100% - 5rem);
   }
 }
 
@@ -3262,10 +3596,28 @@ details[open] .stops-chevron {
 }
 
 .leaflet-popup-content {
-  margin: 10px 12px !important;
+  margin: 8px 12px 10px !important;
   font-family: var(--font-sans) !important;
   font-size: 13px !important;
   line-height: 1.4 !important;
+}
+
+.map-slip-kicker {
+  margin: 0 0 0.15rem;
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+
+.map-slip-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .leaflet-popup-tip {

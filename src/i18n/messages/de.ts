@@ -191,6 +191,7 @@ export const de: Messages = {
   },
   alerts: {
     kicker: "Betriebshinweis",
+    hall: "Hinweis durch die Halle",
     more: "Hinweis lesen",
     effects: {
       NO_SERVICE: "Kein Verkehr",
@@ -219,6 +220,7 @@ export const de: Messages = {
     pinned: "Angeheftet: {name}",
     europe: "Europa",
     clickToSet: "Klicke auf die Karte, um {target} zu setzen. Nadeln zum Anpassen ziehen.",
+    picking: "Stemple {target} auf die Karte.",
     targetOrigin: "den Start",
     targetDestination: "das Ziel",
     targetVia: "einen Via-Halt",
@@ -230,6 +232,7 @@ export const de: Messages = {
     zoomOut: "Verkleinern",
     viaStop: "Via {n}: {name}",
     here: "Ich bin hier",
+    fitTicket: "Ticket einpassen",
     fullscreen: "Ganze Karte",
     exitFullscreen: "Ganze Karte schließen",
     unfold: "Karte aufklappen",
@@ -277,6 +280,9 @@ export const de: Messages = {
     toTop: "Nach oben",
     leavesIn: "in {minutes} min",
     leavesNow: "Abfahrt",
+    holdPrint: "Diesen Druck halten",
+    heldPrint: "Gehalten",
+    twoPrints: "Zwei Drucke",
   },
   share: {
     open: "Teilen",
@@ -332,6 +338,8 @@ export const de: Messages = {
     boardFrom: "Was fährt ab",
     boardChange: "Umstiegsanzeiger",
     boardTo: "Was fährt ab",
+    carrierBoard: "{name}-Tafel",
+    carrierHint: "Öffnet ihren Fahrplan. Diese Halle verkauft keine Fahrkarten.",
   },
   carriers: {
     compare: "Betreiber vergleichen",
@@ -412,6 +420,17 @@ export const de: Messages = {
     loadingKicker: "Tafel wird befragt",
     loadingTitle: "Fahrplan wird gedruckt",
     loadingBody: "Live europäische Bahn- und Buszeiten kommen. Warte am Bahnsteig.",
+  },
+  sound: {
+    on: "Ton an",
+    off: "Ton aus",
+    toggle: "Tafelgeräusche umschalten",
+  },
+  shortcuts: {
+    hint: "Tastaturkürzel",
+    focusSearch: "/ — Suche fokussieren",
+    swap: "R — Start und Ziel tauschen",
+    dismiss: "Esc — schließen",
   },
   footer: {
     printedFrom: "Gedruckt aus",

@@ -191,6 +191,7 @@ export const ro: Messages = {
   },
   alerts: {
     kicker: "Anunț de trafic",
+    hall: "Anunț prin hol",
     more: "Citește anunțul",
     effects: {
       NO_SERVICE: "Fără circulație",
@@ -219,6 +220,7 @@ export const ro: Messages = {
     pinned: "Prins: {name}",
     europe: "Europa",
     clickToSet: "Apasă harta ca să setezi {target}. Poți muta ace.",
+    picking: "Ștampilează {target} pe hartă.",
     targetOrigin: "originea",
     targetDestination: "destinația",
     targetVia: "o oprire via",
@@ -230,6 +232,7 @@ export const ro: Messages = {
     zoomOut: "Micșorează",
     viaStop: "Via {n}: {name}",
     here: "Sunt aici",
+    fitTicket: "Încadrează biletul",
     fullscreen: "Harta întreagă",
     exitFullscreen: "Ieși din harta întreagă",
     unfold: "Desfășoară harta",
@@ -277,6 +280,9 @@ export const ro: Messages = {
     toTop: "Sus",
     leavesIn: "în {minutes} min",
     leavesNow: "pleacă",
+    holdPrint: "Ține această copie",
+    heldPrint: "Ținută",
+    twoPrints: "Două copii",
   },
   share: {
     open: "Distribuie",
@@ -332,6 +338,8 @@ export const ro: Messages = {
     boardFrom: "Ce pleacă de aici",
     boardChange: "Panoul de transbordare",
     boardTo: "Ce pleacă de aici",
+    carrierBoard: "Panou {name}",
+    carrierHint: "Deschide mersul lor. Holul nu vinde bilete.",
   },
   carriers: {
     compare: "Compară operatori",
@@ -413,6 +421,17 @@ export const ro: Messages = {
     loadingKicker: "Consult panoul",
     loadingTitle: "Se tipărește orarul",
     loadingBody: "Vin orele europene de tren și autocar. Așteaptă pe peron.",
+  },
+  sound: {
+    on: "Sunet pornit",
+    off: "Sunet oprit",
+    toggle: "Comută sunetele panoului",
+  },
+  shortcuts: {
+    hint: "Scurtături de tastatură",
+    focusSearch: "/ — focus pe căutare",
+    swap: "R — inversare origine și destinație",
+    dismiss: "Esc — închide",
   },
   footer: {
     printedFrom: "Tipărit din",

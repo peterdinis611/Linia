@@ -11,6 +11,7 @@ import { createPortal } from "react-dom";
 import {
   IconCollapse,
   IconExpand,
+  IconFit,
   IconLayers,
   IconLocate,
   IconMinus,
@@ -96,20 +97,32 @@ function samePin(a: SelectedPlace, b: SelectedPlace) {
   return Math.abs(a.lat - b.lat) < 1e-4 && Math.abs(a.lon - b.lon) < 1e-4;
 }
 
-const pinIcons: Partial<
-  Record<"from" | "to" | "via" | "pending" | "call" | "xfer" | "now", L.DivIcon>
-> = {};
+const pinIcons: Record<string, L.DivIcon> = {};
 
-function pinIcon(kind: "from" | "to" | "via" | "pending" | "call" | "xfer" | "now") {
-  const cached = pinIcons[kind];
+function pinIcon(
+  kind: "from" | "to" | "via" | "pending" | "call" | "xfer" | "now",
+  mark = "",
+) {
+  const key = `${kind}:${mark}`;
+  const cached = pinIcons[key];
   if (cached) return cached;
-  const size = kind === "call" ? 12 : kind === "xfer" ? 14 : kind === "now" ? 16 : 18;
+  const size =
+    kind === "call"
+      ? 11
+      : kind === "xfer"
+        ? 16
+        : kind === "now"
+          ? 16
+          : kind === "via"
+            ? 24
+            : 28;
   const icon = L.divIcon({
     className: `map-pin map-pin-${kind}`,
+    html: mark ? `<span class="map-seal-mark">${mark}</span>` : "",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
-  pinIcons[kind] = icon;
+  pinIcons[key] = icon;
   return icon;
 }
 
@@ -327,6 +340,7 @@ export default function RouteMapInner({
       <MapToolbar
         basemap={basemap}
         full={full}
+        fitPoints={fitPoints}
         onBasemapChange={setBasemap}
         onToggleFull={onToggleFull}
       />
@@ -347,7 +361,7 @@ export default function RouteMapInner({
           <Marker
             key={stop.stopId ?? `${stop.name}-${stop.lat}-${index}`}
             position={[stop.lat, stop.lon]}
-            icon={pinIcon(tight ? "xfer" : "call")}
+            icon={pinIcon(tight ? "xfer" : "call", tight ? "×" : "")}
             zIndexOffset={tight ? 200 : -80}
             title={label}
             alt={label}
@@ -376,7 +390,7 @@ export default function RouteMapInner({
         <Marker
           position={origin}
           draggable={!lockPins}
-          icon={pinIcon("from")}
+          icon={pinIcon("from", "A")}
           eventHandlers={{
             dragend: (event) => {
               const latlng = event.target.getLatLng();
@@ -384,7 +398,10 @@ export default function RouteMapInner({
             },
           }}
         >
-          <Popup>{from.name}</Popup>
+          <Popup>
+            <p className="map-slip-kicker">{t("map.origin")}</p>
+            <p className="map-slip-name">{from.name}</p>
+          </Popup>
         </Marker>
       )}
       {via.map((stop, index) =>
@@ -393,7 +410,7 @@ export default function RouteMapInner({
             key={`${stop.id}-${index}`}
             position={[stop.lat, stop.lon]}
             draggable={!lockPins}
-            icon={pinIcon("via")}
+            icon={pinIcon("via", String(index + 1))}
             eventHandlers={{
               dragend: (event) => {
                 const latlng = event.target.getLatLng();
@@ -402,7 +419,10 @@ export default function RouteMapInner({
             }}
           >
             <Popup>
-              {t("map.viaStop", { n: index + 1, name: stop.name })}
+              <p className="map-slip-kicker">{t("map.via")}</p>
+              <p className="map-slip-name">
+                {t("map.viaStop", { n: index + 1, name: stop.name })}
+              </p>
             </Popup>
           </Marker>
         ) : null,
@@ -411,7 +431,7 @@ export default function RouteMapInner({
         <Marker
           position={destination}
           draggable={!lockPins}
-          icon={pinIcon("to")}
+          icon={pinIcon("to", "B")}
           eventHandlers={{
             dragend: (event) => {
               const latlng = event.target.getLatLng();
@@ -419,24 +439,33 @@ export default function RouteMapInner({
             },
           }}
         >
-          <Popup>{to.name}</Popup>
+          <Popup>
+            <p className="map-slip-kicker">{t("map.destination")}</p>
+            <p className="map-slip-name">{to.name}</p>
+          </Popup>
         </Marker>
       )}
       {extraEnds.map((place) => (
         <Marker
           key={place.id}
           position={[place.lat, place.lon]}
-          icon={pinIcon("to")}
+          icon={pinIcon("to", "B")}
         >
-          <Popup>{place.name}</Popup>
+          <Popup>
+            <p className="map-slip-kicker">{t("map.destination")}</p>
+            <p className="map-slip-name">{place.name}</p>
+          </Popup>
         </Marker>
       ))}
       {pendingPick && (
         <Marker
           position={[pendingPick.lat, pendingPick.lon]}
-          icon={pinIcon("pending")}
+          icon={pinIcon("pending", "·")}
         >
-          <Popup>{pendingPick.name}</Popup>
+          <Popup>
+            <p className="map-slip-kicker">{t("map.pinned", { name: pendingPick.name })}</p>
+            <p className="map-slip-name">{pendingPick.name}</p>
+          </Popup>
         </Marker>
       )}
     </Map>
@@ -490,11 +519,13 @@ function MapClickCatcher({
 function MapToolbar({
   basemap,
   full,
+  fitPoints,
   onBasemapChange,
   onToggleFull,
 }: {
   basemap: Basemap;
   full: boolean;
+  fitPoints: LatLngExpression[];
   onBasemapChange: (value: Basemap) => void;
   onToggleFull?: () => void;
 }) {
@@ -523,8 +554,20 @@ function MapToolbar({
     );
   }
 
+  function fitTicket() {
+    if (fitPoints.length >= 2) {
+      map.fitBounds(fitPoints as LatLngBoundsExpression, {
+        paddingTopLeft: [56, 64],
+        paddingBottomRight: [28, 96],
+        maxZoom: 16,
+      });
+      return;
+    }
+    if (fitPoints.length === 1) map.setView(fitPoints[0], 15);
+  }
+
   const chrome = (
-    <div className="map-chrome">
+    <div className="map-chrome" role="toolbar" aria-label={t("map.view")}>
       <ChromeButton
         label={t("map.mapLabel")}
         pressed={basemap === "map"}
@@ -546,6 +589,15 @@ function MapToolbar({
       >
         <IconLocate />
       </ChromeButton>
+      {fitPoints.length > 0 ? (
+        <ChromeButton
+          label={t("map.fitTicket")}
+          testId="map-fit"
+          onClick={fitTicket}
+        >
+          <IconFit />
+        </ChromeButton>
+      ) : null}
       {onToggleFull ? (
         <ChromeButton
           label={full ? t("map.exitFullscreen") : t("map.fullscreen")}
@@ -696,9 +748,9 @@ function JourneyPaths({
       layers.push(
         L.polyline(preview, {
           color: previewColor,
-          weight: 3,
-          opacity: 0.72,
-          dashArray: "10 10",
+          weight: 3.5,
+          opacity: 0.78,
+          dashArray: "7 9",
           className: "journey-preview",
         }).addTo(map),
       );
@@ -782,7 +834,8 @@ function FitPoints({
 
     if (points.length >= 2) {
       map.fitBounds(points as LatLngBoundsExpression, {
-        padding: [36, 56],
+        paddingTopLeft: [56, 64],
+        paddingBottomRight: [28, 96],
         maxZoom: 16,
         animate: false,
       });

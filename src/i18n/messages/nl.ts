@@ -191,6 +191,7 @@ export const nl: Messages = {
   },
   alerts: {
     kicker: "Dienstmededeling",
+    hall: "Mededeling door de hal",
     more: "Lees de mededeling",
     effects: {
       NO_SERVICE: "Geen dienst",
@@ -219,6 +220,7 @@ export const nl: Messages = {
     pinned: "Gepind: {name}",
     europe: "Europa",
     clickToSet: "Klik op de kaart om {target} te zetten. Sleep de spelden.",
+    picking: "Stempel {target} op de kaart.",
     targetOrigin: "vertrek",
     targetDestination: "bestemming",
     targetVia: "een via-stop",
@@ -230,6 +232,7 @@ export const nl: Messages = {
     zoomOut: "Uitzoomen",
     viaStop: "Via {n}: {name}",
     here: "Ik ben hier",
+    fitTicket: "Pas het kaartje in",
     fullscreen: "Hele kaart",
     exitFullscreen: "Hele kaart sluiten",
     unfold: "Kaart uitvouwen",
@@ -277,6 +280,9 @@ export const nl: Messages = {
     toTop: "Omhoog",
     leavesIn: "over {minutes} min",
     leavesNow: "vertrek",
+    holdPrint: "Houd deze druk",
+    heldPrint: "Vastgehouden",
+    twoPrints: "Twee drukken",
   },
   share: {
     open: "Delen",
@@ -332,6 +338,8 @@ export const nl: Messages = {
     boardFrom: "Wat vertrekt hier",
     boardChange: "Overstaptabel",
     boardTo: "Wat vertrekt hier",
+    carrierBoard: "{name}-bord",
+    carrierHint: "Opent hun dienstregeling. Deze hal verkoopt geen kaartjes.",
   },
   carriers: {
     compare: "Vergelijk vervoerders",
@@ -413,6 +421,17 @@ export const nl: Messages = {
     loadingKicker: "Het bord raadplegen",
     loadingTitle: "De dienstregeling drukken",
     loadingBody: "Actuele Europese trein- en bustijden komen eraan. Blijf op het perron.",
+  },
+  sound: {
+    on: "Geluid aan",
+    off: "Geluid uit",
+    toggle: "Bordgeluiden schakelen",
+  },
+  shortcuts: {
+    hint: "Toetsenbordkorttoetsen",
+    focusSearch: "/ — focus zoeken",
+    swap: "R — wissel van en naar",
+    dismiss: "Esc — sluiten",
   },
   footer: {
     printedFrom: "Gedrukt van",

@@ -191,6 +191,7 @@ export const pl: Messages = {
   },
   alerts: {
     kicker: "Komunikat o ruchu",
+    hall: "Komunikat przez halę",
     more: "Czytaj komunikat",
     effects: {
       NO_SERVICE: "Brak kursów",
@@ -219,6 +220,7 @@ export const pl: Messages = {
     pinned: "Przypięto: {name}",
     europe: "Europa",
     clickToSet: "Kliknij mapę, by ustawić {target}. Pinezki możesz przesunąć.",
+    picking: "Odbij {target} na mapie.",
     targetOrigin: "start",
     targetDestination: "cel",
     targetVia: "przystanek na trasie",
@@ -230,6 +232,7 @@ export const pl: Messages = {
     zoomOut: "Oddal",
     viaStop: "Przez {n}: {name}",
     here: "Tu jestem",
+    fitTicket: "Dopasuj bilet",
     fullscreen: "Cała mapa",
     exitFullscreen: "Zamknij całą mapę",
     unfold: "Rozłóż mapę",
@@ -277,6 +280,9 @@ export const pl: Messages = {
     toTop: "Do góry",
     leavesIn: "za {minutes} min",
     leavesNow: "odjazd",
+    holdPrint: "Przytrzymaj ten wydruk",
+    heldPrint: "Przytrzymany",
+    twoPrints: "Dwa wydruki",
   },
   share: {
     open: "Udostępnij",
@@ -332,6 +338,8 @@ export const pl: Messages = {
     boardFrom: "Co odjeżdża stąd",
     boardChange: "Tablica przesiadki",
     boardTo: "Co odjeżdża stąd",
+    carrierBoard: "Tablica {name}",
+    carrierHint: "Otwiera ich rozkład. Hala nie sprzedaje biletów.",
   },
   carriers: {
     compare: "Porównaj przewoźników",
@@ -412,6 +420,17 @@ export const pl: Messages = {
     loadingKicker: "Przeszukuję tablicę",
     loadingTitle: "Drukuje się rozkład",
     loadingBody: "Europejskie czasy pociągów i autobusów na żywo są w drodze. Poczekaj na peronie.",
+  },
+  sound: {
+    on: "Dźwięk włączony",
+    off: "Dźwięk wyłączony",
+    toggle: "Przełącz dźwięki tablicy",
+  },
+  shortcuts: {
+    hint: "Skróty klawiszowe",
+    focusSearch: "/ — fokus wyszukiwania",
+    swap: "R — zamiana skąd i dokąd",
+    dismiss: "Esc — zamknij",
   },
   footer: {
     printedFrom: "Drukowane z",

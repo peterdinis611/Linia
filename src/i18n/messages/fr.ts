@@ -191,6 +191,7 @@ export const fr: Messages = {
   },
   alerts: {
     kicker: "Avis de circulation",
+    hall: "Avis à travers la halle",
     more: "Lire l'avis",
     effects: {
       NO_SERVICE: "Aucun service",
@@ -219,6 +220,7 @@ export const fr: Messages = {
     pinned: "Épinglé : {name}",
     europe: "Europe",
     clickToSet: "Cliquez la carte pour définir {target}. Déplacez les épingles.",
+    picking: "Tamponnez {target} sur la carte.",
     targetOrigin: "l’origine",
     targetDestination: "la destination",
     targetVia: "un arrêt via",
@@ -230,6 +232,7 @@ export const fr: Messages = {
     zoomOut: "Zoom arrière",
     viaStop: "Via {n} : {name}",
     here: "Je suis ici",
+    fitTicket: "Cadrer le billet",
     fullscreen: "Carte entière",
     exitFullscreen: "Quitter la carte entière",
     unfold: "Déplier la carte",
@@ -277,6 +280,9 @@ export const fr: Messages = {
     toTop: "En haut",
     leavesIn: "dans {minutes} min",
     leavesNow: "départ",
+    holdPrint: "Garder cette épreuve",
+    heldPrint: "Gardée",
+    twoPrints: "Deux épreuves",
   },
   share: {
     open: "Partager",
@@ -332,6 +338,8 @@ export const fr: Messages = {
     boardFrom: "Prochains départs",
     boardChange: "Tableau de correspondance",
     boardTo: "Prochains départs",
+    carrierBoard: "Tableau {name}",
+    carrierHint: "Ouvre leur horaire. Cette halle ne vend pas de billets.",
   },
   carriers: {
     compare: "Comparer les transporteurs",
@@ -412,6 +420,17 @@ export const fr: Messages = {
     loadingKicker: "Consultation du tableau",
     loadingTitle: "Impression de l’horaire",
     loadingBody: "Les horaires européens train et car arrivent. Tenez le quai.",
+  },
+  sound: {
+    on: "Son activé",
+    off: "Son coupé",
+    toggle: "Basculer les sons du tableau",
+  },
+  shortcuts: {
+    hint: "Raccourcis clavier",
+    focusSearch: "/ — focus recherche",
+    swap: "R — inverser origine et destination",
+    dismiss: "Esc — fermer",
   },
   footer: {
     printedFrom: "Imprimé depuis",

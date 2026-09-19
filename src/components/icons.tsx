@@ -129,3 +129,12 @@ export function IconMinus(props: IconProps) {
     </Svg>
   );
 }
+
+export function IconFit(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+      <rect x="8" y="8" width="8" height="8" />
+    </Svg>
+  );
+}

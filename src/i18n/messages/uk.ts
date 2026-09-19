@@ -191,6 +191,7 @@ export const uk: Messages = {
   },
   alerts: {
     kicker: "Повідомлення про рух",
+    hall: "Оголошення через залу",
     more: "Читати повідомлення",
     effects: {
       NO_SERVICE: "Немає руху",
@@ -219,6 +220,7 @@ export const uk: Messages = {
     pinned: "Прикріплено: {name}",
     europe: "Європа",
     clickToSet: "Клацніть карту, щоб поставити {target}. Шпильки можна посунути.",
+    picking: "Поставте печатку {target} на мапі.",
     targetOrigin: "відправлення",
     targetDestination: "призначення",
     targetVia: "зупинку на шляху",
@@ -230,6 +232,7 @@ export const uk: Messages = {
     zoomOut: "Віддалити",
     viaStop: "Через {n}: {name}",
     here: "Я тут",
+    fitTicket: "Вписати квиток",
     fullscreen: "Уся карта",
     exitFullscreen: "Закрити всю карту",
     unfold: "Розгорнути мапу",
@@ -277,6 +280,9 @@ export const uk: Messages = {
     toTop: "Вгору",
     leavesIn: "за {minutes} хв",
     leavesNow: "відправлення",
+    holdPrint: "Притримати цей відбиток",
+    heldPrint: "Притримано",
+    twoPrints: "Два відбитки",
   },
   share: {
     open: "Поділитися",
@@ -332,6 +338,8 @@ export const uk: Messages = {
     boardFrom: "Що вирушає звідси",
     boardChange: "Табло пересадки",
     boardTo: "Що вирушає звідси",
+    carrierBoard: "Табло {name}",
+    carrierHint: "Відкриває їхній розклад. Зала не продає квитки.",
   },
   carriers: {
     compare: "Порівняти перевізників",
@@ -413,6 +421,17 @@ export const uk: Messages = {
     loadingKicker: "Дивлюсь табло",
     loadingTitle: "Друкується розклад",
     loadingBody: "Наближається європейський час поїздів і автобусів наживо. Зачекайте на платформі.",
+  },
+  sound: {
+    on: "Звук увімкнено",
+    off: "Звук вимкнено",
+    toggle: "Перемкнути звуки табло",
+  },
+  shortcuts: {
+    hint: "Клавіатурні скорочення",
+    focusSearch: "/ — фокус пошуку",
+    swap: "R — обмін звідки і куди",
+    dismiss: "Esc — закрити",
   },
   footer: {
     printedFrom: "Надруковано з",

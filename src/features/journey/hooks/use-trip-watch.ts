@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { playFlap } from "@/lib/board-sound";
 import { useI18n } from "@/i18n/provider";
 import type { Itinerary } from "@/lib/transit/types";
 import {
@@ -11,6 +12,11 @@ import {
   watchKey,
   type WatchFault,
 } from "../lib/trip-watch";
+import {
+  loadWatch,
+  saveWatch,
+  watchUntilMorning,
+} from "../lib/watch-store";
 
 function postNotice(title: string, body: string, tag: string) {
   if (!notificationsReady() || Notification.permission !== "granted") return;
@@ -27,6 +33,18 @@ export function useTripWatch() {
   const [denied, setDenied] = useState(false);
   const snap = useRef<WatchFault | null>(null);
 
+  useEffect(() => {
+    let cancelled = false;
+    void loadWatch().then((stored) => {
+      if (cancelled || !stored) return;
+      snap.current = stored.fault;
+      setWatchingKey(stored.key);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const inspect = useCallback(
     (list: Itinerary[]) => {
       const prev = snap.current;
@@ -37,20 +55,35 @@ export function useTripWatch() {
       if (!delta) return;
       const line = found ? watchFault(found).line : prev.line;
       if (delta === "delay" && found) {
+        playFlap(3);
         postNotice(
           t("watch.delayTitle", { line }),
           t("watch.delayBody", { minutes: watchFault(found).delayMinutes ?? 0 }),
           prev.key,
         );
+        void saveWatch({
+          key: prev.key,
+          fault: watchFault(found),
+          until: watchUntilMorning(),
+        });
         return;
       }
       if (delta === "cancelled") {
+        playFlap(2);
         postNotice(t("watch.cancelledTitle", { line }), t("watch.cancelledBody"), prev.key);
+        if (found) {
+          void saveWatch({
+            key: prev.key,
+            fault: watchFault(found),
+            until: watchUntilMorning(),
+          });
+        }
         return;
       }
       postNotice(t("watch.goneTitle", { line }), t("watch.goneBody"), prev.key);
       snap.current = null;
       setWatchingKey(null);
+      void saveWatch(null);
     },
     [t],
   );
@@ -67,6 +100,7 @@ export function useTripWatch() {
       snap.current = null;
       setWatchingKey(null);
       setDenied(false);
+      await saveWatch(null);
       return;
     }
     if (!notificationsReady()) {
@@ -82,8 +116,14 @@ export function useTripWatch() {
       return;
     }
     setDenied(false);
-    snap.current = watchFault(itinerary);
+    const fault = watchFault(itinerary);
+    snap.current = fault;
     setWatchingKey(key);
+    await saveWatch({
+      key,
+      fault,
+      until: watchUntilMorning(),
+    });
   }
 
   return { watchingKey, denied, supported: notificationsReady(), toggle, inspect, clear };

@@ -9,6 +9,17 @@ type AlertStripProps = {
   compact?: boolean;
 };
 
+export function HallTape({ alerts }: { alerts: TransitAlert[] }) {
+  const { t } = useI18n();
+  if (alerts.length === 0) return null;
+  return (
+    <div className="hall-tape" data-testid="hall-tape" role="status">
+      <p className="kicker">{t("alerts.hall")}</p>
+      <AlertStrip alerts={alerts} />
+    </div>
+  );
+}
+
 export function AlertStrip({ alerts, compact = false }: AlertStripProps) {
   const { t } = useI18n();
   if (alerts.length === 0) return null;

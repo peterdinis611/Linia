@@ -571,18 +571,18 @@ export function SearchForm({
             >
               {t("search.bike")}
             </button>
-            <button
-              type="button"
-              className="stamp w-full"
-              data-on={night}
-              data-testid="night-rail"
-              aria-pressed={night}
-              onClick={() => onNightChange(!night)}
-            >
-              {t("search.nightRail")}
-            </button>
           </>
         ) : null}
+        <button
+          type="button"
+          className="stamp w-full"
+          data-on={night}
+          data-testid="night-rail"
+          aria-pressed={night}
+          onClick={() => onNightChange(!night)}
+        >
+          {t("search.nightRail")}
+        </button>
       </div>
 
       <div className="space-y-2">

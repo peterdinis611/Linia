@@ -193,6 +193,7 @@ export const it: Messages = {
   },
   alerts: {
     kicker: "Avviso di servizio",
+    hall: "Avviso attraverso la sala",
     more: "Leggi l'avviso",
     effects: {
       NO_SERVICE: "Nessun servizio",
@@ -221,6 +222,7 @@ export const it: Messages = {
     pinned: "Fissato: {name}",
     europe: "Europa",
     clickToSet: "Clicca la mappa per impostare {target}. Trascina gli spilli.",
+    picking: "Timbra {target} sulla carta.",
     targetOrigin: "la partenza",
     targetDestination: "la destinazione",
     targetVia: "una fermata via",
@@ -232,6 +234,7 @@ export const it: Messages = {
     zoomOut: "Riduci",
     viaStop: "Via {n}: {name}",
     here: "Sono qui",
+    fitTicket: "Inquadra il biglietto",
     fullscreen: "Mappa intera",
     exitFullscreen: "Esci dalla mappa intera",
     unfold: "Apri la mappa",
@@ -279,6 +282,9 @@ export const it: Messages = {
     toTop: "In cima",
     leavesIn: "tra {minutes} min",
     leavesNow: "partenza",
+    holdPrint: "Tieni questa stampa",
+    heldPrint: "Tenuta",
+    twoPrints: "Due stampe",
   },
   share: {
     open: "Condividi",
@@ -334,6 +340,8 @@ export const it: Messages = {
     boardFrom: "Cosa parte da qui",
     boardChange: "Tabellone di coincidenza",
     boardTo: "Cosa parte da qui",
+    carrierBoard: "Tabellone {name}",
+    carrierHint: "Apre il loro orario. Questa sala non vende biglietti.",
   },
   carriers: {
     compare: "Confronta operatori",
@@ -416,6 +424,17 @@ export const it: Messages = {
     loadingKicker: "Consulto il tabellone",
     loadingTitle: "Stampo l'orario",
     loadingBody: "Arrivano gli orari europei di treni e pullman. Resta sul binario.",
+  },
+  sound: {
+    on: "Suono acceso",
+    off: "Suono spento",
+    toggle: "Attiva o disattiva i suoni del tabellone",
+  },
+  shortcuts: {
+    hint: "Scorciatoie da tastiera",
+    focusSearch: "/ — focus sulla ricerca",
+    swap: "R — scambia origine e destinazione",
+    dismiss: "Esc — chiudi",
   },
   footer: {
     printedFrom: "Stampato da",

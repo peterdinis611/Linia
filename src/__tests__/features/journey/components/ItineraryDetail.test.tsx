@@ -37,6 +37,15 @@ describe("ItineraryDetail", () => {
     expect(notices[0]).toHaveTextContent("Replacement bus");
   });
 
+  it("stamps the carrier board, not a sale", () => {
+    renderHall(<ItineraryDetail itinerary={railItinerary()} />);
+    const link = screen.getByTestId("carrier-board");
+    expect(link).toHaveTextContent("DB board");
+    expect(link).toHaveAttribute("href", expect.stringContaining("bahn.de"));
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("title", "Opens their timetable. This hall does not sell tickets.");
+  });
+
   it("opens a station board from a stop with an id", async () => {
     const user = userEvent.setup();
     const onOpenStation = vi.fn();

@@ -150,7 +150,7 @@ describe("SearchForm", () => {
     expect(screen.queryByTestId("return-trip")).not.toBeInTheDocument();
     expect(screen.queryByTestId("accessible")).not.toBeInTheDocument();
     expect(screen.queryByTestId("bike")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("night-rail")).not.toBeInTheDocument();
+    expect(screen.getByTestId("night-rail")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Arrive by" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Read the board" })).toBeInTheDocument();
     expect(screen.getByTestId("station-board-mode")).toHaveAttribute(

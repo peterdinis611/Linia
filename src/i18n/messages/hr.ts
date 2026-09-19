@@ -191,6 +191,7 @@ export const hr: Messages = {
   },
   alerts: {
     kicker: "Obavijest o prometu",
+    hall: "Obavijest kroz dvoranu",
     more: "Pročitaj obavijest",
     effects: {
       NO_SERVICE: "Nema prometa",
@@ -219,6 +220,7 @@ export const hr: Messages = {
     pinned: "Prikvačeno: {name}",
     europe: "Europa",
     clickToSet: "Klikni kartu i postavi {target}. Pribadače možeš pomaknuti.",
+    picking: "Žigosi {target} na karti.",
     targetOrigin: "polazište",
     targetDestination: "odredište",
     targetVia: "stajalište na putu",
@@ -230,6 +232,7 @@ export const hr: Messages = {
     zoomOut: "Udalji",
     viaStop: "Preko {n}: {name}",
     here: "Tu sam",
+    fitTicket: "Uklopi kartu",
     fullscreen: "Cijela karta",
     exitFullscreen: "Zatvori cijelu kartu",
     unfold: "Otvori kartu",
@@ -277,6 +280,9 @@ export const hr: Messages = {
     toTop: "Gore",
     leavesIn: "za {minutes} min",
     leavesNow: "odlazak",
+    holdPrint: "Zadrži ovaj otisak",
+    heldPrint: "Zadržano",
+    twoPrints: "Dva otiska",
   },
   share: {
     open: "Podijeli",
@@ -332,6 +338,8 @@ export const hr: Messages = {
     boardFrom: "Što kreće odavde",
     boardChange: "Ploča presjedanja",
     boardTo: "Što kreće odavde",
+    carrierBoard: "Tabla {name}",
+    carrierHint: "Otvara njihov red vožnje. Dvorana ne prodaje karte.",
   },
   carriers: {
     compare: "Usporedi prijevoznike",
@@ -413,6 +421,17 @@ export const hr: Messages = {
     loadingKicker: "Pregledavam ploču",
     loadingTitle: "Tiska se vozni red",
     loadingBody: "Dolaze europska vlakovna i autobusna vremena uživo. Pričekaj na peronu.",
+  },
+  sound: {
+    on: "Zvuk uključen",
+    off: "Zvuk isključen",
+    toggle: "Uključi ili isključi zvukove ploče",
+  },
+  shortcuts: {
+    hint: "Tipkovni prečaci",
+    focusSearch: "/ — fokus na pretragu",
+    swap: "R — zamjena odkuda i kamo",
+    dismiss: "Esc — zatvori",
   },
   footer: {
     printedFrom: "Tiskano iz",

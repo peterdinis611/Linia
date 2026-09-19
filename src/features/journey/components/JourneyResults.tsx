@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Itinerary, Place, TransferFilter } from "@/lib/transit/types";
 import { useI18n } from "@/i18n/provider";
 import {
@@ -9,7 +9,11 @@ import {
   type IndexedItinerary,
   type ResultSort,
 } from "../lib/filters";
+import { hallAlertsFromItineraries } from "../lib/alerts";
+import { itineraryKey } from "../lib/share";
 import { lastDepartureKey } from "../lib/ticket-notes";
+import { watchKey } from "../lib/trip-watch";
+import { HallTape } from "./AlertStrip";
 import { ServiceGap } from "./Board";
 import { BoardCount, BoardMast } from "./BoardMast";
 import { CarrierCompare } from "./CarrierCompare";
@@ -72,10 +76,26 @@ export function JourneyResults({
 }: JourneyResultsProps) {
   const { t, tp } = useI18n();
   const [sort, setSort] = useState<ResultSort>("depart");
+  const [heldKey, setHeldKey] = useState<string | null>(null);
   const sorted = useMemo(
     () => sortIndexedItineraries(filtered, sort),
     [filtered, sort],
   );
+  const hallAlerts = useMemo(
+    () => hallAlertsFromItineraries(itineraries),
+    [itineraries],
+  );
+  const held = heldKey
+    ? (itineraries.find((item) => itineraryKey(item) === heldKey) ?? null)
+    : null;
+  const comparing = Boolean(
+    held && selected && itineraryKey(selected) !== heldKey,
+  );
+
+  const boardId = itineraries.map((item) => watchKey(item)).join("|");
+  useEffect(() => {
+    setHeldKey(null);
+  }, [boardId]);
   const countLabel =
     filtered.length !== itineraries.length
       ? tp("connectionsOf", filtered.length, { total: itineraries.length })
@@ -99,6 +119,7 @@ export function JourneyResults({
       {loading || refreshing ? (
         <div className="searching-ribbon" aria-hidden="true" />
       ) : null}
+      <HallTape alerts={hallAlerts} />
       {serviceFrom ? <ServiceGap iso={serviceFrom} /> : null}
       <BoardMast
         kicker={t("results.departures")}
@@ -190,14 +211,27 @@ export function JourneyResults({
           watchingKey={watchingKey}
           watchDenied={watchDenied}
           onWatch={onWatch}
+          heldKey={heldKey}
+          onHold={(itinerary) => {
+            const key = itineraryKey(itinerary);
+            setHeldKey((current) => (current === key ? null : key));
+          }}
           onSelect={(index) =>
             onSelectedIndexChange(sorted[index]?.index ?? 0)
           }
         />
       )}
-      {selected && (
+      {comparing && held && selected ? (
+        <div className="desk-compare" data-testid="desk-compare">
+          <p className="kicker desk-compare-kicker">{t("results.twoPrints")}</p>
+          <div className="desk-compare-sheets">
+            <ItineraryDetail itinerary={held} onOpenStation={onOpenStation} />
+            <ItineraryDetail itinerary={selected} onOpenStation={onOpenStation} />
+          </div>
+        </div>
+      ) : selected ? (
         <ItineraryDetail itinerary={selected} onOpenStation={onOpenStation} />
-      )}
+      ) : null}
     </div>
   );
 }

@@ -1,10 +1,10 @@
 /**
- * ticket-links.ts
- *
- * Maps known transit agency names to their official booking / timetable URLs.
- * Returns a URL pre-filled with origin/destination where the carrier supports it,
- * or a generic carrier search portal URL as a fallback.
+ * Maps known carriers to their own timetable boards.
+ * Linia does not sell tickets — these links leave the hall.
  */
+
+import { isTransitMode } from "@/lib/format";
+import type { Itinerary } from "@/lib/transit/types";
 
 export type TicketLink = {
   label: string;
@@ -23,14 +23,14 @@ type AgencyRule = {
 const RULES: AgencyRule[] = [
   // Slovak railways
   {
-    match: ["zssk", "zeleznice", "železnice", "Železnice"],
+    match: ["zssk", "zeleznice", "železnice", "železničná", "železnicna"],
     label: "ZSSK",
     buildUrl: (from, to, date) =>
       `https://www.zssk.sk/sk/vyhladanie-spojenia/?from=${enc(from)}&to=${enc(to)}&date=${date}&time=00%3A00&type=departure`,
   },
   // Czech railways
   {
-    match: ["cd ", "české dráhy", "ceske drahy", "czech railways", "čd "],
+    match: ["cd ", "české dráhy", "ceske drahy", "czech railways", "čd"],
     label: "České dráhy",
     buildUrl: (from, to, date) =>
       `https://www.cd.cz/spojeni-a-jizdenky/vyhledat-spojeni/#from=${enc(from)}&to=${enc(to)}&date=${date}`,
@@ -40,7 +40,7 @@ const RULES: AgencyRule[] = [
     match: ["öbb", "obb", "austrian federal railways", "austrian railways"],
     label: "ÖBB",
     buildUrl: (from, to, date) =>
-      `https://shop.oeamtc.at/strecken?from=${enc(from)}&to=${enc(to)}&date=${date}`,
+      `https://www.oebb.at/de/fahrplan?from=${enc(from)}&to=${enc(to)}&date=${date}`,
   },
   // German railways
   {
@@ -169,5 +169,23 @@ export function ticketLinkForAgency(
  * Returns the YYYY-MM-DD date portion of an ISO datetime string.
  */
 export function isoDateOnly(isoString: string): string {
-  return isoString.slice(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}/.test(isoString)) return isoString.slice(0, 10);
+  const instant = new Date(isoString);
+  if (Number.isNaN(instant.getTime())) return isoString.slice(0, 10);
+  const year = instant.getFullYear();
+  const month = String(instant.getMonth() + 1).padStart(2, "0");
+  const day = String(instant.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export function ticketLinkForItinerary(itinerary: Itinerary): TicketLink | null {
+  const fromName = itinerary.legs[0]?.from.name ?? "";
+  const toName = itinerary.legs.at(-1)?.to.name ?? "";
+  const date = isoDateOnly(itinerary.startTime);
+  for (const leg of itinerary.legs) {
+    if (!isTransitMode(leg.mode) || !leg.agencyName) continue;
+    const link = ticketLinkForAgency(leg.agencyName, fromName, toName, date);
+    if (link) return link;
+  }
+  return null;
 }

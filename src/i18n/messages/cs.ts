@@ -191,6 +191,7 @@ export const cs: Messages = {
   },
   alerts: {
     kicker: "Oznámení o provozu",
+    hall: "Oznámení přes halu",
     more: "Číst oznámení",
     effects: {
       NO_SERVICE: "Bez provozu",
@@ -219,6 +220,7 @@ export const cs: Messages = {
     pinned: "Připnuto: {name}",
     europe: "Evropa",
     clickToSet: "Klikněte na mapu a nastavte {target}. Špendlíky můžete posunout.",
+    picking: "Orazítkujte {target} na mapě.",
     targetOrigin: "výchozí bod",
     targetDestination: "cíl",
     targetVia: "zastávku na trase",
@@ -230,6 +232,7 @@ export const cs: Messages = {
     zoomOut: "Oddálit",
     viaStop: "Přes {n}: {name}",
     here: "Tady jsem",
+    fitTicket: "Přizpůsobit jízdenku",
     fullscreen: "Celá mapa",
     exitFullscreen: "Zavřít celou mapu",
     unfold: "Rozložit mapu",
@@ -277,6 +280,9 @@ export const cs: Messages = {
     toTop: "Nahoru",
     leavesIn: "za {minutes} min",
     leavesNow: "odjezd",
+    holdPrint: "Podržet tento výtisk",
+    heldPrint: "Podržené",
+    twoPrints: "Dva výtisky",
   },
   share: {
     open: "Sdílet",
@@ -332,6 +338,8 @@ export const cs: Messages = {
     boardFrom: "Co odtud jede",
     boardChange: "Tabule přestupu",
     boardTo: "Co odtud jede",
+    carrierBoard: "Tabule {name}",
+    carrierHint: "Otevře jejich jízdní řád. Hala jízdenky neprodává.",
   },
   carriers: {
     compare: "Porovnat dopravce",
@@ -412,6 +420,17 @@ export const cs: Messages = {
     loadingKicker: "Prohledávám tabuli",
     loadingTitle: "Tiskne se jízdní řád",
     loadingBody: "Evropské vlakové a autobusové časy živě jsou na cestě. Počkejte na nástupišti.",
+  },
+  sound: {
+    on: "Zvuk zapnutý",
+    off: "Zvuk vypnutý",
+    toggle: "Přepnout zvuky tabule",
+  },
+  shortcuts: {
+    hint: "Klávesové zkratky",
+    focusSearch: "/ — fokus vyhledávání",
+    swap: "R — výměna odkud a kam",
+    dismiss: "Esc — zavřít",
   },
   footer: {
     printedFrom: "Tištěno z",
