@@ -233,6 +233,8 @@ export const uk: Messages = {
     viaStop: "Через {n}: {name}",
     here: "Я тут",
     fitTicket: "Вписати квиток",
+    tools: "Інструменти",
+    hideTools: "Сховати інструменти",
     fullscreen: "Уся карта",
     exitFullscreen: "Закрити всю карту",
     unfold: "Розгорнути мапу",

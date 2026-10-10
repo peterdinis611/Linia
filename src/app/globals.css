@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "maplibre-gl/dist/maplibre-gl.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -21,6 +22,16 @@
   --rule-strong: #b9ae97;
   --walk: #8a8378;
   --ticket: #fff8f4;
+  /* mapcn / shadcn-compatible tokens */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --popover: var(--paper-raised);
+  --popover-foreground: var(--ink);
+  --muted: var(--paper-sunken);
+  --muted-foreground: var(--ink-muted);
+  --border: var(--rule);
+  --accent: var(--paper-sunken);
+  --ring: var(--signal);
   color-scheme: light;
 }
 
@@ -79,6 +90,15 @@ html.dark {
   --color-rule: var(--rule);
   --color-rule-strong: var(--rule-strong);
   --color-ticket: var(--ticket);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-ring: var(--ring);
   --font-display: var(--font-fraunces), "Iowan Old Style", "Palatino Linotype", serif;
   --font-sans: var(--font-schibsted), "Schibsted Grotesk", ui-sans-serif, sans-serif;
   --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, monospace;
@@ -1964,7 +1984,7 @@ html.dark .map-stage::after {
 }
 
 html.dark .map-stage,
-html.dark .leaflet-container {
+html.dark .maplibregl-map {
   background: #121820;
 }
 
@@ -2003,24 +2023,35 @@ html.dark .leaflet-container {
   left: max(0.5rem, env(safe-area-inset-left));
 }
 
-.map-stage-picking .leaflet-container {
+.map-stage-picking .maplibregl-canvas-container {
   cursor: crosshair;
 }
 
-.map-tiles-paper.leaflet-container,
-.map-tiles-paper .leaflet-container {
+.map-tiles-paper.maplibregl-map,
+.map-tiles-paper .maplibregl-map {
   background: #e6e6e6;
 }
 
-.map-tiles-ink.leaflet-container,
-.map-tiles-ink .leaflet-container,
-html.dark .map-tiles-ink.leaflet-container {
+.map-tiles-ink.maplibregl-map,
+.map-tiles-ink .maplibregl-map,
+html.dark .map-tiles-ink.maplibregl-map {
   background: #1a1a1a;
 }
 
-.leaflet-div-icon.map-pin {
+.map-pin-host {
   display: grid;
   place-items: center;
+}
+
+.maplibregl-marker {
+  cursor: grab;
+}
+
+.map-pin {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
   border-radius: 999px;
   border: 2px solid var(--paper-raised);
   background: var(--ink);
@@ -2029,7 +2060,7 @@ html.dark .map-tiles-ink.leaflet-container {
     0 6px 14px color-mix(in srgb, var(--board) 38%, transparent);
 }
 
-.dark .leaflet-div-icon.map-pin {
+.dark .map-pin {
   border-color: #16130f;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--amber) 48%, transparent),
@@ -2075,6 +2106,8 @@ html.dark .map-tiles-ink.leaflet-container {
 }
 
 .map-pin-via {
+  width: 24px;
+  height: 24px;
   background: var(--amber);
 }
 
@@ -2103,6 +2136,8 @@ html.dark .map-tiles-ink.leaflet-container {
 }
 
 .map-pin-call {
+  width: 11px;
+  height: 11px;
   border-radius: 1px;
   border-width: 1px;
   background: var(--ink);
@@ -2111,6 +2146,8 @@ html.dark .map-tiles-ink.leaflet-container {
 }
 
 .map-pin-xfer {
+  width: 16px;
+  height: 16px;
   border-radius: 1px;
   border-width: 1px;
   background: var(--signal);
@@ -2140,6 +2177,8 @@ html.dark .map-tiles-ink.leaflet-container {
 }
 
 .map-pin-now {
+  width: 16px;
+  height: 16px;
   border-radius: 2px;
   background: var(--signal);
   transform: rotate(45deg);
@@ -2229,7 +2268,15 @@ html.dark .map-tiles-ink.leaflet-container {
 }
 
 @media (max-width: 63.99rem) {
-  .map-chrome button:nth-child(3n) {
+  .map-chrome[data-collapsed="true"] {
+    grid-template-columns: 2.35rem;
+  }
+
+  .map-chrome:not([data-collapsed="true"]) button:nth-child(3n) {
+    border-right: 0;
+  }
+
+  .map-chrome[data-collapsed="true"] button {
     border-right: 0;
   }
 }
@@ -2455,27 +2502,7 @@ details[open] .stops-chevron {
   color: var(--signal-text);
 }
 
-.leaflet-interactive.journey-path-live {
-  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--signal) 70%, transparent));
-  stroke-dasharray: 12 9;
-  animation: map-live-dash 1.8s linear infinite;
-}
-
-@keyframes map-live-dash {
-  to {
-    stroke-dashoffset: -42;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .leaflet-interactive.journey-path-live {
-    animation: none;
-  }
-}
-
-.leaflet-interactive.journey-path-delayed {
-  stroke-linecap: round;
-}
+/* Live route dash lived on Leaflet SVG; MapLibre paints on canvas. */
 
 .map-stage-picking .map-plaque-hint,
 .map-plaque-assign + .map-plaque-hint {
@@ -3540,17 +3567,16 @@ details[open] .stops-chevron {
   }
 }
 
-.leaflet-container {
+.maplibregl-map {
   background: var(--paper-sunken);
   font-family: var(--font-sans), system-ui, sans-serif;
   font-size: 12px;
   width: 100%;
   height: 100%;
   z-index: 0;
-  touch-action: pan-x pan-y;
 }
 
-.leaflet-control-attribution {
+.maplibregl-ctrl-attrib {
   background: color-mix(in srgb, var(--paper-raised) 82%, transparent) !important;
   color: var(--ink-muted) !important;
   border: 0 !important;
@@ -3562,7 +3588,7 @@ details[open] .stops-chevron {
 }
 
 @media (max-width: 639px) {
-  .leaflet-control-attribution {
+  .maplibregl-ctrl-attrib {
     max-width: 46%;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -3570,36 +3596,43 @@ details[open] .stops-chevron {
   }
 }
 
-.leaflet-control-attribution a {
+.maplibregl-ctrl-attrib a {
   color: var(--ink) !important;
 }
 
-.dark .leaflet-control-attribution {
+.dark .maplibregl-ctrl-attrib {
   background: color-mix(in srgb, var(--board) 78%, transparent) !important;
 }
 
-.dark .leaflet-control-attribution a {
+.dark .maplibregl-ctrl-attrib a {
   color: var(--amber) !important;
 }
 
-.leaflet-popup-content-wrapper {
+.maplibregl-popup-content {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+.maplibregl-popup-tip {
+  display: none !important;
+}
+
+.map-slip {
   border-radius: 0 !important;
   border: 1px dashed var(--rule-strong) !important;
   background: var(--paper-raised) !important;
   color: var(--ink) !important;
   box-shadow: 0 8px 24px color-mix(in srgb, var(--board) 22%, transparent) !important;
-  padding: 0 !important;
-}
-
-.dark .leaflet-popup-content-wrapper {
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45) !important;
-}
-
-.leaflet-popup-content {
-  margin: 8px 12px 10px !important;
+  padding: 8px 12px 10px !important;
   font-family: var(--font-sans) !important;
   font-size: 13px !important;
   line-height: 1.4 !important;
+}
+
+.dark .map-slip {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45) !important;
 }
 
 .map-slip-kicker {
@@ -3618,15 +3651,6 @@ details[open] .stops-chevron {
   font-style: italic;
   font-weight: 600;
   line-height: 1.2;
-}
-
-.leaflet-popup-tip {
-  background: var(--paper-raised) !important;
-  box-shadow: none !important;
-}
-
-.leaflet-popup-close-button {
-  color: var(--ink-muted) !important;
 }
 
 .ticket-watch {

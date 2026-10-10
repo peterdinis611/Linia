@@ -233,6 +233,8 @@ export const cs: Messages = {
     viaStop: "Přes {n}: {name}",
     here: "Tady jsem",
     fitTicket: "Přizpůsobit jízdenku",
+    tools: "Nástroje",
+    hideTools: "Skrýt nástroje",
     fullscreen: "Celá mapa",
     exitFullscreen: "Zavřít celou mapu",
     unfold: "Rozložit mapu",

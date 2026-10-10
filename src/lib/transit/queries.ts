@@ -7,6 +7,7 @@ import { createTtlCache } from "@/lib/ttl-cache";
 import { hasMappableCoords } from "@/lib/transit/geocode-rank";
 import { matchToPlace } from "@/lib/transit/place";
 import { boardDestinationName, boardDestinations } from "@/lib/transit/path";
+import { journeyKey, uniqueJourneys } from "@/lib/transit/plan-pages";
 import type {
   DistanceFilter,
   GeocodeMatch,
@@ -18,6 +19,22 @@ import type {
   StopTimesResponse,
   TransferFilter,
 } from "@/lib/transit/types";
+
+type PlanInput = {
+  from: SelectedPlace;
+  to: SelectedPlace;
+  via?: SelectedPlace[];
+  time?: string;
+  arriveBy?: boolean;
+  allDay?: boolean;
+  modeFilter: ModeFilter;
+  distanceFilter?: DistanceFilter;
+  transferFilter: TransferFilter;
+  accessible?: boolean;
+  bike?: boolean;
+  night?: boolean;
+  language?: string;
+};
 
 const geocodeCache = createTtlCache<GeocodeMatch[]>({
   ttlMs: 180_000,
@@ -110,30 +127,69 @@ export async function reverseGeocodePlace(input: {
   );
 }
 
+/**
+ * Progressive plan: paints page 1 via `onFirst`, then pages the rest until
+ * enough unique journeys / horizon. Full result is cached.
+ */
 export async function planJourney(
-  input: {
-    from: SelectedPlace;
-    to: SelectedPlace;
-    via?: SelectedPlace[];
-    time?: string;
-    arriveBy?: boolean;
-    allDay?: boolean;
-    modeFilter: ModeFilter;
-    distanceFilter?: DistanceFilter;
-    transferFilter: TransferFilter;
-    accessible?: boolean;
-    bike?: boolean;
-    night?: boolean;
-    language?: string;
+  input: PlanInput,
+  options?: {
+    fresh?: boolean;
+    onFirst?: (partial: PlanResponse) => void;
+    isCancelled?: () => boolean;
   },
-  options?: { fresh?: boolean },
 ): Promise<PlanResponse> {
-  return planCache.get(
-    planCacheKey(input),
-    async () =>
-      unwrapAction(await planJourneyAction({ ...input, fresh: options?.fresh })),
-    options,
+  const key = planCacheKey(input);
+  if (!options?.fresh) {
+    const hit = planCache.peek(key);
+    if (hit) {
+      options?.onFirst?.(hit);
+      return hit;
+    }
+  }
+
+  const first = unwrapAction(
+    await planJourneyAction({
+      ...input,
+      fresh: options?.fresh,
+      paging: "first",
+    }),
   );
+  options?.onFirst?.(first);
+  if (options?.isCancelled?.()) return first;
+
+  if (!first.nextPageCursor) {
+    planCache.set(key, first);
+    return first;
+  }
+
+  const more = unwrapAction(
+    await planJourneyAction({
+      ...input,
+      fresh: options?.fresh,
+      paging: "rest",
+      pageCursor: first.nextPageCursor,
+      seedKeys: [
+        ...(first.itineraries ?? []),
+        ...(first.direct ?? []),
+      ].map(journeyKey),
+    }),
+  );
+  if (options?.isCancelled?.()) return first;
+
+  const merged: PlanResponse = {
+    from: first.from ?? more.from,
+    to: first.to ?? more.to,
+    itineraries: uniqueJourneys([
+      ...(first.itineraries ?? []),
+      ...(more.itineraries ?? []),
+    ]),
+    direct: first.direct ?? [],
+    serviceFrom: first.serviceFrom,
+    lastAt: first.lastAt,
+  };
+  planCache.set(key, merged);
+  return merged;
 }
 
 export async function fetchTrip(tripId: string): Promise<Itinerary> {

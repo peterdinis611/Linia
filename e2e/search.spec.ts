@@ -192,6 +192,7 @@ test.describe("home", () => {
     await pocket.click();
     await expect(pocket).toHaveAttribute("aria-expanded", "true");
     await expect(page.getByRole("button", { name: "Pin origin" })).toBeVisible();
+    await page.getByTestId("map-tools").click();
     await expect(page.getByTestId("map-here")).toBeVisible();
     await expect(page.getByTestId("map-fullscreen")).toBeVisible();
 

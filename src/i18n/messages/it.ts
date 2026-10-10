@@ -235,6 +235,8 @@ export const it: Messages = {
     viaStop: "Via {n}: {name}",
     here: "Sono qui",
     fitTicket: "Inquadra il biglietto",
+    tools: "Strumenti",
+    hideTools: "Nascondi strumenti",
     fullscreen: "Mappa intera",
     exitFullscreen: "Esci dalla mappa intera",
     unfold: "Apri la mappa",

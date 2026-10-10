@@ -233,6 +233,8 @@ export const hu: Messages = {
     viaStop: "Át {n}: {name}",
     here: "Itt vagyok",
     fitTicket: "Igazítsd a jegyet",
+    tools: "Eszközök",
+    hideTools: "Eszközök elrejtése",
     fullscreen: "Teljes térkép",
     exitFullscreen: "Teljes térkép bezárása",
     unfold: "Térkép kinyitása",

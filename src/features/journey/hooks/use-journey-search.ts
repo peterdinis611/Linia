@@ -2,8 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { itineraryMatchesCarriers } from "@/lib/carriers";
-import { startOfLocalDay, toLocalDateTimeValue } from "@/lib/format";
+import {
+  isTransitMode,
+  startOfLocalDay,
+  toLocalDateTimeValue,
+} from "@/lib/format";
 import { useI18n } from "@/i18n/provider";
+import { journeyKey } from "@/lib/transit/plan-pages";
 import {
   fieldErrorsFromZod,
   journeySearchFormSchema,
@@ -296,6 +301,77 @@ export function useJourneySearch() {
     inboundItineraries[inboundSelectedIndex] ?? inboundItineraries[0] ?? null;
   const outboundSelected =
     itineraries[selectedIndex] ?? itineraries[0] ?? null;
+
+  const enrichedGeom = useRef(new Set<string>());
+
+  useEffect(() => {
+    const list = hallLeg === "inbound" ? inboundItineraries : itineraries;
+    const index =
+      hallLeg === "inbound" ? inboundSelectedIndex : selectedIndex;
+    const current = list[index];
+    if (!current) return;
+    const key = journeyKey(current);
+    if (enrichedGeom.current.has(key)) return;
+    const needs = current.legs.some(
+      (leg) =>
+        isTransitMode(leg.mode) &&
+        Boolean(leg.tripId) &&
+        !leg.legGeometry?.points,
+    );
+    if (!needs) {
+      enrichedGeom.current.add(key);
+      return;
+    }
+    let dead = false;
+    void (async () => {
+      const legs = await Promise.all(
+        current.legs.map(async (leg) => {
+          if (
+            !isTransitMode(leg.mode) ||
+            !leg.tripId ||
+            leg.legGeometry?.points
+          ) {
+            return leg;
+          }
+          try {
+            const full = await fetchTrip(leg.tripId);
+            const match =
+              full.legs.find((item) => item.tripId === leg.tripId) ??
+              full.legs.find((item) => isTransitMode(item.mode)) ??
+              full.legs[0];
+            if (!match) return leg;
+            return {
+              ...leg,
+              legGeometry: match.legGeometry,
+              intermediateStops: match.intermediateStops ?? [],
+            };
+          } catch {
+            return leg;
+          }
+        }),
+      );
+      if (dead) return;
+      enrichedGeom.current.add(key);
+      const patch = (prev: Itinerary[]) => {
+        const at = prev.findIndex((item) => journeyKey(item) === key);
+        if (at < 0) return prev;
+        const next = prev.slice();
+        next[at] = { ...next[at]!, legs };
+        return next;
+      };
+      if (hallLeg === "inbound") setInboundItineraries(patch);
+      else setItineraries(patch);
+    })();
+    return () => {
+      dead = true;
+    };
+  }, [
+    hallLeg,
+    selectedIndex,
+    inboundSelectedIndex,
+    itineraries,
+    inboundItineraries,
+  ]);
 
   useEffect(() => {
     if (filtered.length === 0) return;
@@ -774,6 +850,7 @@ export function useJourneySearch() {
     setBoardTrip(null);
     setBoardEvent(null);
     setBoardEnds([]);
+    enrichedGeom.current.clear();
     try {
       const outboundInput = {
         from: origin,
@@ -790,7 +867,28 @@ export function useJourneySearch() {
         night: nightRail,
         language: locale,
       };
-      const outbound = planJourney(outboundInput, { fresh: options?.fresh });
+      let paintedOutbound = false;
+      const outbound = planJourney(outboundInput, {
+        fresh: options?.fresh,
+        isCancelled: () => gen !== planGen.current,
+        onFirst: (partial) => {
+          if (gen !== planGen.current) return;
+          const early = [
+            ...(partial.itineraries ?? []),
+            ...(partial.direct ?? []),
+          ];
+          paintedOutbound = true;
+          setItineraries(early);
+          setServiceFrom(partial.serviceFrom ?? null);
+          setLastAt(partial.lastAt ?? null);
+          setSelectedIndex(findItineraryIndex(early, snapshot.tripKey));
+          if (!silent) {
+            setLoading(false);
+            if (partial.nextPageCursor) setRefreshing(true);
+            bumpFit();
+          }
+        },
+      });
       const inbound = returning
         ? planJourney(
             {
@@ -810,7 +908,10 @@ export function useJourneySearch() {
               night: nightRail,
               language: locale,
             },
-            { fresh: options?.fresh },
+            {
+              fresh: options?.fresh,
+              isCancelled: () => gen !== planGen.current,
+            },
           )
         : Promise.resolve(null);
       const [outResult, inResult] = await Promise.all([outbound, inbound]);
@@ -856,7 +957,7 @@ export function useJourneySearch() {
         );
       }
       setLiveAt(Date.now());
-      if (!silent) bumpFit();
+      if (!silent && !paintedOutbound) bumpFit();
     } catch (err) {
       if (gen !== planGen.current) return;
       if (!silent) {

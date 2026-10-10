@@ -138,3 +138,11 @@ export function IconFit(props: IconProps) {
     </Svg>
   );
 }
+
+export function IconTools(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </Svg>
+  );
+}

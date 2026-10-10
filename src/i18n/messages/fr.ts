@@ -233,6 +233,8 @@ export const fr: Messages = {
     viaStop: "Via {n} : {name}",
     here: "Je suis ici",
     fitTicket: "Cadrer le billet",
+    tools: "Outils",
+    hideTools: "Masquer les outils",
     fullscreen: "Carte entière",
     exitFullscreen: "Quitter la carte entière",
     unfold: "Déplier la carte",

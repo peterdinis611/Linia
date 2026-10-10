@@ -233,6 +233,8 @@ export const ro: Messages = {
     viaStop: "Via {n}: {name}",
     here: "Sunt aici",
     fitTicket: "Încadrează biletul",
+    tools: "Unelte",
+    hideTools: "Ascunde uneltele",
     fullscreen: "Harta întreagă",
     exitFullscreen: "Ieși din harta întreagă",
     unfold: "Desfășoară harta",

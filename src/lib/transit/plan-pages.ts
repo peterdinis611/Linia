@@ -8,6 +8,10 @@ export const DAY_ITINERARIES = 40;
 export const NEAR_ITINERARIES = 32;
 export const MAX_DAY_PAGES = 8;
 export const MAX_NEAR_PAGES = 4;
+/** Stop paging once we have this many unique journeys (near window). */
+export const NEAR_ENOUGH_JOURNEYS = 24;
+/** Stop paging once we have this many unique journeys (all-day board). */
+export const DAY_ENOUGH_JOURNEYS = 36;
 export const BOARD_PAGE_SIZE = 40;
 
 export function journeyKey(item: Itinerary) {
@@ -52,6 +56,25 @@ export function planPageDone(input: {
   return span > input.horizonSeconds * 1000;
 }
 
+export function slimItinerary(item: Itinerary): Itinerary {
+  return {
+    ...item,
+    legs: item.legs.map((leg) => ({
+      ...leg,
+      intermediateStops: [],
+      legGeometry: {
+        points: "",
+        precision: leg.legGeometry?.precision ?? 6,
+        length: 0,
+      },
+    })),
+  };
+}
+
+export function slimItineraries(items: Itinerary[]) {
+  return items.map(slimItinerary);
+}
+
 export async function collectPlanPages<T extends { itineraries: Itinerary[]; nextPageCursor?: string }>(
   first: T,
   fetchNext: (cursor: string) => Promise<T>,
@@ -61,11 +84,23 @@ export async function collectPlanPages<T extends { itineraries: Itinerary[]; nex
     stamp?: string;
     maxPages: number;
     horizonSeconds: number;
+    /** Stop once unique journey count across collected pages reaches this. */
+    enoughUnique?: number;
+    /** Journey keys already painted (first page) so enoughUnique spans the whole search. */
+    seedKeys?: string[];
   },
 ) {
   const pages = [first.itineraries];
   let cursor = first.nextPageCursor;
+  const seen = new Set<string>(options.seedKeys ?? []);
+  const note = (items: Itinerary[]) => {
+    for (const item of items) seen.add(journeyKey(item));
+  };
+  note(first.itineraries);
+  const enough = options.enoughUnique;
+
   for (let page = 1; page < options.maxPages && cursor; page += 1) {
+    if (enough != null && seen.size >= enough) break;
     const lastPage = pages.at(-1) ?? [];
     if (
       planPageDone({
@@ -94,6 +129,7 @@ export async function collectPlanPages<T extends { itineraries: Itinerary[]; nex
       break;
     }
     pages.push(next.itineraries);
+    note(next.itineraries);
     cursor = next.nextPageCursor;
   }
   return pages;

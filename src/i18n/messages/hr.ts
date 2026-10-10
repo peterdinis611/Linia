@@ -233,6 +233,8 @@ export const hr: Messages = {
     viaStop: "Preko {n}: {name}",
     here: "Tu sam",
     fitTicket: "Uklopi kartu",
+    tools: "Alati",
+    hideTools: "Sakrij alate",
     fullscreen: "Cijela karta",
     exitFullscreen: "Zatvori cijelu kartu",
     unfold: "Otvori kartu",

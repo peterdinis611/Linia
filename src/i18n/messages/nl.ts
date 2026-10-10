@@ -233,6 +233,8 @@ export const nl: Messages = {
     viaStop: "Via {n}: {name}",
     here: "Ik ben hier",
     fitTicket: "Pas het kaartje in",
+    tools: "Gereedschap",
+    hideTools: "Gereedschap verbergen",
     fullscreen: "Hele kaart",
     exitFullscreen: "Hele kaart sluiten",
     unfold: "Kaart uitvouwen",

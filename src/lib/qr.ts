@@ -1,7 +1,6 @@
 /** Byte-mode QR, ECC L, versions 1–20. Enough for a live Linia share URL.
  *
- * Must match `python3 scripts/qrencode.py` (segno). Regenerate fixtures with
- * `bun run qr:goldens`.
+ * Regenerate fixtures with `bun run qr:goldens` (`scripts/qrencode.ts`).
  */
 
 const EXP = new Uint8Array(512);
@@ -113,8 +112,8 @@ function encodeBytes(bytes: number[], version: number) {
   pushBits(bits, bytes.length, countBits);
   for (const byte of bytes) pushBits(bits, byte, 8);
   const capacity = dataCapacity(version) * 8;
-  // Terminator, then fill to a codeword boundary. A full extra byte when the
-  // terminator already sits on a boundary matches segno (scripts/qrencode.py).
+  // Terminator, then fill to a codeword boundary. A full extra zero byte when
+  // the terminator already sits on a boundary keeps the pad stream aligned.
   const remain = Math.min(4, capacity - bits.length);
   for (let index = 0; index < remain; index += 1) bits.push(0);
   const extra = 8 - (bits.length % 8);

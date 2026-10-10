@@ -34,6 +34,10 @@ const nextConfig: NextConfig = {
   typedRoutes: true,
   trailingSlash: false,
   cacheMaxMemorySize: 80 * MB,
+  // Keep Turbopack rooted on this repo (parent folder may have other lockfiles).
+  turbopack: {
+    root: process.cwd(),
+  },
 
   logging: {
     fetches: { fullUrl: isDev },

@@ -27,13 +27,16 @@ export async function selectLocale(
   await page.getByTestId(`lang-option-${locale}`).click();
 }
 
-export async function clickLeaflet(page: Page, x = 0.45, y = 0.45) {
-  const map = page.locator(".leaflet-container");
+export async function clickMap(page: Page, x = 0.45, y = 0.45) {
+  const map = page.locator(".maplibregl-map").first();
   await expect(map).toBeVisible();
   const box = await map.boundingBox();
   expect(box).toBeTruthy();
   await page.mouse.click(box!.x + box!.width * x, box!.y + box!.height * y);
 }
+
+/** @deprecated use clickMap */
+export const clickLeaflet = clickMap;
 
 export async function setHallClock(page: Page, hour: string, minute: string) {
   await page.getByTestId("journey-time").click();

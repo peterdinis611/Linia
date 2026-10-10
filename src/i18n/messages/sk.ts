@@ -232,6 +232,8 @@ export const sk: Messages = {
     viaStop: "Cez {n}: {name}",
     here: "Tu som",
     fitTicket: "Prispôsobiť lístok",
+    tools: "Nástroje",
+    hideTools: "Skryť nástroje",
     fullscreen: "Celá mapa",
     exitFullscreen: "Zavrieť celú mapu",
     unfold: "Rozložiť mapu",

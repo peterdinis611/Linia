@@ -64,6 +64,11 @@ export const planJourneyInputSchema = z
     bike: z.boolean().optional().default(false),
     night: z.boolean().optional().default(false),
     fresh: z.boolean().optional(),
+    /** first = page 1 only; rest = continue from pageCursor. */
+    paging: z.enum(["first", "rest"]).optional().default("first"),
+    pageCursor: z.string().trim().max(4000).optional(),
+    /** Journey keys already shown so rest paging can stop at enoughUnique. */
+    seedKeys: z.array(z.string().max(500)).max(80).optional(),
   })
   .refine((value) => isValidDateTime(value.time), {
     message: "validation.timeInvalid",
@@ -367,6 +372,7 @@ export const planResponseSchema = z.looseObject({
   direct: z.array(itinerarySchema).optional().default([]),
   serviceFrom: z.string().optional(),
   lastAt: z.string().optional(),
+  nextPageCursor: z.string().optional(),
 });
 
 export const stopTimesInputSchema = z.object({

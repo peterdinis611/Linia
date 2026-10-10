@@ -230,6 +230,8 @@ export const en = {
     viaStop: "Via {n}: {name}",
     here: "I am here",
     fitTicket: "Fit the ticket",
+    tools: "Tools",
+    hideTools: "Hide tools",
     fullscreen: "Full map",
     exitFullscreen: "Exit full map",
     unfold: "Unfold the wall",
