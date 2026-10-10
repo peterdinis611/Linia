@@ -189,6 +189,7 @@ export const en = {
   },
   alerts: {
     kicker: "Service notice",
+    hall: "Notice across the hall",
     more: "Read the notice",
     effects: {
       NO_SERVICE: "No service",
@@ -216,6 +217,7 @@ export const en = {
     pinned: "Pinned: {name}",
     europe: "Europe",
     clickToSet: "Click the map to set {target}. Drag pins to adjust.",
+    picking: "Stamp {target} on the chart.",
     targetOrigin: "origin",
     targetDestination: "destination",
     targetVia: "a via stop",
@@ -227,6 +229,9 @@ export const en = {
     zoomOut: "Zoom out",
     viaStop: "Via {n}: {name}",
     here: "I am here",
+    fitTicket: "Fit the ticket",
+    tools: "Tools",
+    hideTools: "Hide tools",
     fullscreen: "Full map",
     exitFullscreen: "Exit full map",
     unfold: "Unfold the wall",
@@ -274,6 +279,9 @@ export const en = {
     toTop: "To the desk",
     leavesIn: "in {minutes} min",
     leavesNow: "leaving",
+    holdPrint: "Hold this print",
+    heldPrint: "Held",
+    twoPrints: "Two prints",
   },
   share: {
     open: "Share",
@@ -329,6 +337,8 @@ export const en = {
     boardFrom: "What’s leaving",
     boardChange: "Transfer board",
     boardTo: "What’s leaving",
+    carrierBoard: "{name} board",
+    carrierHint: "Opens their timetable. This hall does not sell tickets.",
   },
   carriers: {
     compare: "Compare operators",
@@ -409,6 +419,17 @@ export const en = {
     loadingKicker: "Consulting the board",
     loadingTitle: "Printing the timetable",
     loadingBody: "Live European rail and coach times are coming up. Hold the platform.",
+  },
+  sound: {
+    on: "Sound on",
+    off: "Sound off",
+    toggle: "Toggle board sounds",
+  },
+  shortcuts: {
+    hint: "Keyboard shortcuts",
+    focusSearch: "/ — focus search",
+    swap: "R — swap origin & destination",
+    dismiss: "Esc — close",
   },
   footer: {
     printedFrom: "Printed from",

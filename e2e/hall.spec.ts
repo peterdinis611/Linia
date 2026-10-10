@@ -13,7 +13,7 @@ test.describe("hall stamps", () => {
     await expect(page.getByTestId("return-trip")).toHaveCount(0);
     await expect(page.getByTestId("accessible")).toHaveCount(0);
     await expect(page.getByTestId("bike")).toHaveCount(0);
-    await expect(page.getByTestId("night-rail")).toHaveCount(0);
+    await expect(page.getByTestId("night-rail")).toBeVisible();
     await expect(page.getByRole("button", { name: "Arrive by" })).toHaveCount(0);
     await expect(page.getByTestId("board-departures")).toBeVisible();
     await expect(page.getByTestId("board-arrivals")).toBeVisible();

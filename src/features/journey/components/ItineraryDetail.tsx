@@ -30,6 +30,7 @@ import {
   trackChange,
   ticketFault,
 } from "../lib/ticket-notes";
+import { ticketLinkForItinerary } from "../lib/ticket-links";
 import { AlertStrip } from "./AlertStrip";
 import { LeavesSoon } from "./LeavesSoon";
 import { TightFault } from "./TightFault";
@@ -45,6 +46,7 @@ export function ItineraryDetail({ itinerary, onOpenStation }: ItineraryDetailPro
   const now = useNow(itineraryIsLive(itinerary));
   const tights = tightTransfers(itinerary);
   const cancelled = ticketFault(itinerary).cancelled;
+  const carrier = ticketLinkForItinerary(itinerary);
 
   return (
     <section className="journey-sheet">
@@ -67,6 +69,18 @@ export function ItineraryDetail({ itinerary, onOpenStation }: ItineraryDetailPro
               ? t("detail.direct")
               : tp("transfersShort", itinerary.transfers)}
           </p>
+          {carrier ? (
+            <a
+              className="stamp"
+              href={carrier.url}
+              target="_blank"
+              rel="noreferrer"
+              data-testid="carrier-board"
+              title={t("detail.carrierHint")}
+            >
+              {t("detail.carrierBoard", { name: carrier.label })}
+            </a>
+          ) : null}
         </div>
       </div>
       <AlertStrip alerts={alertsFromItinerary(itinerary)} />

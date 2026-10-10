@@ -3,6 +3,7 @@ import { railItinerary } from "@/test/fixtures";
 import {
   collectPlanPages,
   planPageDone,
+  slimItinerary,
   uniqueJourneys,
 } from "@/lib/transit/plan-pages";
 
@@ -112,5 +113,54 @@ describe("collectPlanPages", () => {
     );
     expect(pages).toHaveLength(1);
     expect(fetchNext).not.toHaveBeenCalled();
+  });
+
+  it("stops once enough unique journeys are collected", async () => {
+    const fetchNext = vi.fn(async (cursor: string) => {
+      const n = Number(cursor.slice(1));
+      return {
+        itineraries: [
+          railItinerary({
+            startTime: `2026-08-14T${String(9 + n).padStart(2, "0")}:00:00Z`,
+            legs: [
+              {
+                ...railItinerary().legs[0]!,
+                tripId: `trip-${cursor}`,
+              },
+            ],
+          }),
+        ],
+        nextPageCursor: `p${n + 1}`,
+      };
+    });
+    const pages = await collectPlanPages(
+      {
+        itineraries: [
+          railItinerary({
+            legs: [{ ...railItinerary().legs[0]!, tripId: "trip-p0" }],
+          }),
+        ],
+        nextPageCursor: "p1",
+      },
+      fetchNext,
+      {
+        allDay: false,
+        arriveBy: false,
+        stamp: "2026-08-14T08:00:00Z",
+        maxPages: 8,
+        horizonSeconds: 12 * 3600,
+        enoughUnique: 3,
+      },
+    );
+    expect(pages.flat()).toHaveLength(3);
+    expect(fetchNext).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("slimItinerary", () => {
+  it("drops geometry and intermediate stops for the list payload", () => {
+    const slim = slimItinerary(railItinerary());
+    expect(slim.legs[0]?.legGeometry.points).toBe("");
+    expect(slim.legs[0]?.intermediateStops).toEqual([]);
   });
 });

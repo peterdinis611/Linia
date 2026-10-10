@@ -20,8 +20,10 @@ import {
   waitToDepartSeconds,
   walkNotes,
 } from "../lib/ticket-notes";
+import { itineraryKey } from "../lib/share";
 import { watchKey } from "../lib/trip-watch";
 import { AlertStrip } from "./AlertStrip";
+import { HoldStamp } from "./HoldStamp";
 import { LeavesSoon } from "./LeavesSoon";
 import { TightFault } from "./TightFault";
 import { WatchStamp } from "./WatchStamp";
@@ -33,6 +35,8 @@ type ItineraryListProps = {
   watchingKey?: string | null;
   watchDenied?: boolean;
   onWatch?: (itinerary: Itinerary) => void;
+  heldKey?: string | null;
+  onHold?: (itinerary: Itinerary) => void;
   onSelect: (index: number) => void;
 };
 
@@ -43,6 +47,8 @@ export function ItineraryList({
   watchingKey = null,
   watchDenied = false,
   onWatch,
+  heldKey = null,
+  onHold,
   onSelect,
 }: ItineraryListProps) {
   const { locale, t, tp } = useI18n();
@@ -186,6 +192,12 @@ export function ItineraryList({
                 watching={watchingKey === watchKey(itinerary)}
                 denied={watchDenied}
                 onToggle={() => onWatch(itinerary)}
+              />
+            ) : null}
+            {selected && onHold ? (
+              <HoldStamp
+                holding={heldKey === itineraryKey(itinerary)}
+                onToggle={() => onHold(itinerary)}
               />
             ) : null}
           </li>

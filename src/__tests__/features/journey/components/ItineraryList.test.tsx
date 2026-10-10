@@ -299,4 +299,24 @@ describe("ItineraryList", () => {
       "The hall cannot ring this browser.",
     );
   });
+
+  it("stamps hold beside the selected ticket", async () => {
+    const user = userEvent.setup();
+    const onHold = vi.fn();
+    const first = railItinerary();
+    renderHall(
+      <ItineraryList
+        itineraries={[first]}
+        selectedIndex={0}
+        heldKey={null}
+        onHold={onHold}
+        onSelect={vi.fn()}
+      />,
+    );
+    const stamp = screen.getByTestId("hold-print");
+    expect(stamp).toHaveTextContent("Hold this print");
+    expect(stamp.closest('[role="option"]')).toBeNull();
+    await user.click(stamp);
+    expect(onHold).toHaveBeenCalledWith(first);
+  });
 });

@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { renderHall } from "@/test/render";
-import { AlertStrip } from "@/features/journey/components/AlertStrip";
+import { AlertStrip, HallTape } from "@/features/journey/components/AlertStrip";
 import type { TransitAlert } from "@/lib/transit/types";
 
 const replacement: TransitAlert = {
@@ -55,5 +55,11 @@ describe("AlertStrip", () => {
       />,
     );
     expect(screen.getByTestId("alert-ribbon")).toHaveTextContent("No service");
+  });
+
+  it("prints a hall tape above the notice", () => {
+    renderHall(<HallTape alerts={[replacement]} />);
+    expect(screen.getByTestId("hall-tape")).toHaveTextContent("Notice across the hall");
+    expect(screen.getByTestId("alert-notice")).toHaveTextContent("Replacement bus");
   });
 });

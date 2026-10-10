@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { SplitFlapText } from "@/components/ui/SplitFlapText";
 import { useI18n } from "@/i18n/provider";
 
 type BoardMastProps = {
@@ -31,8 +32,8 @@ export function BoardCount({
         {String(count)
           .split("")
           .map((digit, index) => (
-            <span key={`${digit}-${index}`} className="board-count-flap">
-              {digit}
+            <span key={index} className="board-count-flap">
+              <SplitFlapText text={digit} charWidth="0.7em" sound={false} />
             </span>
           ))}
       </span>

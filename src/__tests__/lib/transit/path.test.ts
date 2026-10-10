@@ -8,6 +8,7 @@ import {
   mapDestination,
   pathPointsForLeg,
   pointAlongPath,
+  simplifyPath,
   stopPointsForLeg,
 } from "@/lib/transit/path";
 
@@ -119,5 +120,29 @@ describe("pathPointsForLeg", () => {
   it("dots intermediate calls, not the pinned ends", () => {
     const calls = mapCallStops(railItinerary(), [berlin, prague]);
     expect(calls).toMatchObject([{ name: dresden.name, lat: dresden.lat }]);
+  });
+
+  it("thins dense polylines but keeps the ends", () => {
+    const dense = Array.from(
+      { length: 500 },
+      (_, index) => [index, 0] as [number, number],
+    );
+    const thin = simplifyPath(dense, 50);
+    expect(thin.length).toBeLessThanOrEqual(50);
+    expect(thin[0]).toEqual([0, 0]);
+    expect(thin.at(-1)).toEqual([499, 0]);
+  });
+
+  it("caps call stops when asked", () => {
+    const many = railItinerary();
+    const leg = many.legs.find((item) => item.mode === "RAIL")!;
+    leg.intermediateStops = Array.from({ length: 40 }, (_, index) => ({
+      name: `Stop ${index}`,
+      lat: 50 + index * 0.01,
+      lon: 13 + index * 0.01,
+      stopId: `s-${index}`,
+    }));
+    const capped = mapCallStops(many, [berlin, prague], { max: 8 });
+    expect(capped.length).toBeLessThanOrEqual(8);
   });
 });

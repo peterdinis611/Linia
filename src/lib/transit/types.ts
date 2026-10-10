@@ -143,6 +143,7 @@ export type PlanResponse = {
   direct?: Itinerary[];
   serviceFrom?: string;
   lastAt?: string;
+  nextPageCursor?: string;
 };
 
 export type StopTimeEvent = {

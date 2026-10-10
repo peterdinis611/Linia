@@ -37,6 +37,25 @@ export function pathPointsForLeg(leg: Leg): [number, number][] {
   return stopPointsForLeg(leg);
 }
 
+/** Thin a dense polyline for the wall chart; keeps ends. */
+export function simplifyPath(
+  points: [number, number][],
+  maxPoints = 200,
+): [number, number][] {
+  if (points.length <= maxPoints || maxPoints < 2) return points;
+  const last = points.length - 1;
+  const step = last / (maxPoints - 1);
+  const out: [number, number][] = [];
+  let prev = -1;
+  for (let index = 0; index < maxPoints; index += 1) {
+    const at = index === maxPoints - 1 ? last : Math.round(index * step);
+    if (at === prev) continue;
+    out.push(points[at]!);
+    prev = at;
+  }
+  return out;
+}
+
 function nearPoint(
   points: [number, number][],
   lat: number,
@@ -108,6 +127,7 @@ export function pointAlongPath(
 export function mapCallStops(
   itinerary: Itinerary,
   skip: Array<{ lat: number; lon: number }> = [],
+  options?: { max?: number },
 ): Place[] {
   const calls: Place[] = [];
   const seen = new Set<string>();
@@ -125,7 +145,19 @@ export function mapCallStops(
       calls.push(stop);
     }
   }
-  return calls;
+  const max = options?.max;
+  if (max == null || calls.length <= max || max < 2) return calls;
+  const last = calls.length - 1;
+  const step = last / (max - 1);
+  const out: Place[] = [];
+  let prev = -1;
+  for (let index = 0; index < max; index += 1) {
+    const at = index === max - 1 ? last : Math.round(index * step);
+    if (at === prev) continue;
+    out.push(calls[at]!);
+    prev = at;
+  }
+  return out;
 }
 
 export function itineraryEndPlace(itinerary: Itinerary): SelectedPlace | null {

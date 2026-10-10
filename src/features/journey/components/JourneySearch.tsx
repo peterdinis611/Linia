@@ -1,14 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { startOfLocalDay, toLocalDateTimeValue } from "@/lib/format";
+import { playBoardCascade } from "@/lib/board-sound";
 import { ThemeSwitcher } from "@/components/theme/ThemeSwitcher";
 import { LanguageSwitcher } from "@/i18n/language-switcher";
 import { useI18n } from "@/i18n/provider";
 import { splitDateTime } from "../lib/datetime";
+import { hallAlertsFromBoard } from "../lib/alerts";
 import { EmptyBoard, SearchingBoard, StationClock } from "./Board";
 import { BoardMast } from "./BoardMast";
 import { HallLift } from "./HallLift";
+import { HallTape } from "./AlertStrip";
 import { ShareJourney } from "./ShareJourney";
 import { HowToButton } from "./HowToUse";
 import { ItineraryDetail } from "./ItineraryDetail";
@@ -17,11 +20,14 @@ import { PinLine } from "./PinLine";
 import { PrintTicket } from "./PrintTicket";
 import { RouteMap } from "./RouteMap";
 import { SearchForm } from "./SearchForm";
+import { ShortcutsHint } from "./ShortcutsHint";
+import { SoundStamp } from "./SoundStamp";
 import { StationBoard } from "./StationBoard";
 import { WatchStamp } from "./WatchStamp";
 import { useHallTour } from "../hooks/use-hall-tour";
 import { useJourneySearch } from "../hooks/use-journey-search";
 import { useTripWatch } from "../hooks/use-trip-watch";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { watchKey } from "../lib/trip-watch";
 
 export function JourneySearch() {
@@ -29,7 +35,30 @@ export function JourneySearch() {
   const watch = useTripWatch();
   const { t } = useI18n();
   const panelRef = useRef<HTMLDivElement>(null);
+  const originInputRef = useRef<HTMLInputElement>(null);
   const [mapOpen, setMapOpen] = useState(false);
+
+  // Keyboard shortcuts: /, R, Escape
+  const handleFocusSearch = useCallback(() => {
+    // Focus the first text input inside the search form (origin field)
+    const input = document.querySelector<HTMLInputElement>(
+      "[data-testid='search-form'] input[type='text']",
+    );
+    input?.focus();
+  }, []);
+
+  useKeyboardShortcuts({
+    onFocusSearch: handleFocusSearch,
+    onSwap: search.handleSwap,
+    onEscape: () => {
+      // Close floating map pocket if open
+      if (mapOpen) {
+        search.setPickMode("idle");
+        setMapOpen(false);
+      }
+    },
+  });
+
   const startTour = useHallTour({
     onShowMap: () => {
       setMapOpen(true);
@@ -45,6 +74,10 @@ export function JourneySearch() {
   const liveFresh = Boolean(
     search.liveAt && now - search.liveAt < 90_000,
   );
+  const boardSigRef = useRef("");
+  const hallBoardAlerts = hallAlertsFromBoard(search.stopTimes);
+
+  void originInputRef; // used via DOM query in handleFocusSearch
 
   useEffect(() => {
     if (!search.liveAt) return;
@@ -57,10 +90,7 @@ export function JourneySearch() {
   }, [search.pickMode]);
 
   useEffect(() => {
-    if (!search.hasSearched) {
-      watch.clear();
-      return;
-    }
+    if (!search.hasSearched) return;
     const pool = [...search.itineraries, ...search.inboundItineraries];
     if (search.boardTrip) {
       const busy = search.loading || search.refreshing;
@@ -80,8 +110,27 @@ export function JourneySearch() {
     search.stopTimes,
     search.loading,
     search.refreshing,
-    watch.clear,
     watch.inspect,
+  ]);
+
+  useEffect(() => {
+    if (search.loading || search.refreshing) return;
+    const sig = search.boardView
+      ? search.stopTimes.map((event) => event.tripId ?? "").join("|")
+      : search.itineraries.map((item) => watchKey(item)).join("|");
+    if (!sig) {
+      boardSigRef.current = "";
+      return;
+    }
+    if (sig === boardSigRef.current) return;
+    boardSigRef.current = sig;
+    playBoardCascade();
+  }, [
+    search.loading,
+    search.refreshing,
+    search.boardView,
+    search.stopTimes,
+    search.itineraries,
   ]);
 
   return (
@@ -108,6 +157,7 @@ export function JourneySearch() {
           <div className="desk-strip">
             <LanguageSwitcher search={search.shareQuery} />
             <ThemeSwitcher />
+            <SoundStamp />
           </div>
           <StationClock />
         </div>
@@ -272,6 +322,7 @@ export function JourneySearch() {
                 onRefresh={search.handleRefresh}
                 onTimeShift={search.handleTimeShift}
               />
+              <HallTape alerts={hallBoardAlerts} />
               <StationBoard
                 stopTimes={search.stopTimes}
                 arriveBy={search.arriveBy}
@@ -403,7 +454,7 @@ export function JourneySearch() {
       </main>
 
       <footer className="hall-foot">
-        <p className="hall-foot-nav">
+        <div className="hall-foot-nav">
           <HowToButton onOpen={startTour} />
           <span className="hall-foot-dot" aria-hidden="true">
             ·
@@ -417,7 +468,11 @@ export function JourneySearch() {
           >
             {t("footer.sources")}
           </a>
-        </p>
+          <span className="hall-foot-dot" aria-hidden="true">
+            ·
+          </span>
+          <ShortcutsHint />
+        </div>
         <p className="hall-foot-legal">
           {t("footer.mapCopyright")}{" "}
           <a

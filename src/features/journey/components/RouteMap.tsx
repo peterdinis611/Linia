@@ -154,10 +154,12 @@ export function RouteMap({
         type="button"
         className="map-pocket"
         data-testid="map-pocket"
+        data-open={!pocketed}
         aria-expanded={!pocketed}
         aria-controls={stageId}
         onClick={onTogglePocket}
       >
+        <span className="map-pocket-fold" aria-hidden="true" />
         <span className="map-pocket-copy">
           <span className="kicker">{t("map.pocketKicker")}</span>
           <span className="map-pocket-line">{caption}</span>
@@ -167,6 +169,7 @@ export function RouteMap({
       <div
         ref={stageRef}
         id={stageId}
+        data-pick={pickMode}
         className={`map-stage${pickMode !== "idle" ? " map-stage-picking" : ""}${full ? " map-stage-full" : ""}`}
       >
       {mapReady ? (
@@ -227,70 +230,124 @@ export function RouteMap({
         </div>
       </div>
       <div className="map-overlay pointer-events-none">
-        <div className="map-plaque pointer-events-auto">
-          <p className="map-plaque-title">
-            {pinBusy ? t("map.reading") : caption}
-          </p>
-          {pendingPick && pickMode === "idle" && (
-            <div className="map-plaque-assign">
-              <button type="button" className="stamp" onClick={() => onAssignPending("from")}>
-                {t("map.origin")}
-              </button>
-              <button type="button" className="stamp" onClick={() => onAssignPending("via")}>
-                {t("map.via")}
-              </button>
-              <button type="button" className="stamp" onClick={() => onAssignPending("to")}>
-                {t("map.destination")}
-              </button>
-            </div>
-          )}
-          {!pendingPick && hintRole !== "pending" && routeMode !== "board" ? (
-            <p className="map-plaque-hint">
-              {t("map.clickToSet", {
-                target:
-                  hintRole === "from"
-                    ? t("map.targetOrigin")
-                    : hintRole === "to"
-                      ? t("map.targetDestination")
-                      : t("map.targetVia"),
-              })}
+        <div
+          className="map-plaque pointer-events-auto"
+          data-picking={pickMode !== "idle" || undefined}
+          data-live={liveLeg ? "true" : undefined}
+        >
+          <p className="kicker">{t("map.pocketKicker")}</p>
+          {pickMode !== "idle" ? (
+            <p className="map-plaque-title">
+              {pinBusy
+                ? t("map.reading")
+                : t("map.picking", {
+                    target:
+                      pickMode === "from"
+                        ? t("map.targetOrigin")
+                        : pickMode === "to"
+                          ? t("map.targetDestination")
+                          : t("map.targetVia"),
+                  })}
             </p>
-          ) : null}
-          {approximate ? (
-            <p className="map-plaque-hint">{t("map.approximate")}</p>
-          ) : null}
-          {liveLeg && liveLine ? (
-            <p
-              className="map-plaque-live"
-              data-testid="map-live-leg"
-              data-delayed={liveDelay != null && liveDelay > 0}
-            >
-              {liveDelay != null && liveDelay > 0
-                ? t("map.delayedLeg", {
-                    line: liveLine,
-                    delay: t("detail.delayLate", { minutes: liveDelay }),
-                  })
-                : t("map.liveLeg", { line: liveLine })}
-            </p>
-          ) : null}
-          {(carriers.length > 0 || transitLegs.length > 0) && (
-            <div className="map-plaque-chips">
-              {carriers.map((name) => (
-                <span key={name} className="map-chip">
-                  {name}
-                </span>
-              ))}
-              {transitLegs.map((leg, index) => (
-                <span
-                  key={`${leg.startTime}-${index}`}
-                  className="map-chip map-chip-line"
+          ) : (
+            <>
+              <p className="map-plaque-title">
+                {pinBusy ? t("map.reading") : caption}
+              </p>
+              {from || to ? (
+                <p className="map-plaque-legend" aria-hidden="true">
+                  {from ? (
+                    <span className="map-seal-mini map-pin-from">A</span>
+                  ) : null}
+                  {from && to ? (
+                    <span className="map-plaque-arrow">→</span>
+                  ) : null}
+                  {viaNames.map((_, index) => (
+                    <span key={index} className="map-seal-mini map-pin-via">
+                      {index + 1}
+                    </span>
+                  ))}
+                  {to ? (
+                    <span className="map-seal-mini map-pin-to">B</span>
+                  ) : null}
+                </p>
+              ) : null}
+              {pendingPick ? (
+                <div className="map-plaque-assign">
+                  <button
+                    type="button"
+                    className="stamp"
+                    onClick={() => onAssignPending("from")}
+                  >
+                    {t("map.origin")}
+                  </button>
+                  <button
+                    type="button"
+                    className="stamp"
+                    onClick={() => onAssignPending("via")}
+                  >
+                    {t("map.via")}
+                  </button>
+                  <button
+                    type="button"
+                    className="stamp"
+                    onClick={() => onAssignPending("to")}
+                  >
+                    {t("map.destination")}
+                  </button>
+                </div>
+              ) : null}
+              {!pendingPick && hintRole !== "pending" && routeMode !== "board" ? (
+                <p className="map-plaque-hint">
+                  {t("map.clickToSet", {
+                    target:
+                      hintRole === "from"
+                        ? t("map.targetOrigin")
+                        : hintRole === "to"
+                          ? t("map.targetDestination")
+                          : t("map.targetVia"),
+                  })}
+                </p>
+              ) : null}
+              {approximate ? (
+                <p className="map-plaque-hint">{t("map.approximate")}</p>
+              ) : null}
+              {liveLeg && liveLine ? (
+                <p
+                  className="map-plaque-live"
+                  data-testid="map-live-leg"
+                  data-delayed={liveDelay != null && liveDelay > 0}
                 >
-                  {legName(leg) && legName(leg) !== "Walk"
-                    ? legName(leg)
-                    : t(`modes.${leg.mode}`)}
-                </span>
-              ))}
-            </div>
+                  {liveDelay != null && liveDelay > 0
+                    ? t("map.delayedLeg", {
+                        line: liveLine,
+                        delay: t("detail.delayLate", {
+                          minutes: liveDelay,
+                        }),
+                      })
+                    : t("map.liveLeg", { line: liveLine })}
+                </p>
+              ) : null}
+              {(carriers.length > 0 || transitLegs.length > 0) && (
+                <div className="map-plaque-chips">
+                  {carriers.map((name) => (
+                    <span key={name} className="map-chip">
+                      {name}
+                    </span>
+                  ))}
+                  {transitLegs.map((leg, index) => (
+                    <span
+                      key={`${leg.startTime}-${index}`}
+                      className="map-chip map-chip-line"
+                    >
+                      {legName(leg) && legName(leg) !== "Walk"
+                        ? legName(leg)
+                        : t(`modes.${leg.mode}`)}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
