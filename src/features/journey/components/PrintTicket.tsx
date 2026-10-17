@@ -21,9 +21,17 @@ type PrintTicketProps = {
   from: SelectedPlace | null;
   to: SelectedPlace | null;
   url?: string;
+  /** Sheet stamp when printing more than one route (held / return / …). */
+  mark?: string;
 };
 
-export function PrintTicket({ itinerary, from, to, url }: PrintTicketProps) {
+export function PrintTicket({
+  itinerary,
+  from,
+  to,
+  url,
+  mark,
+}: PrintTicketProps) {
   const { locale, t, tp } = useI18n();
   const origin = from?.name ?? itinerary.legs[0]?.from.name ?? "—";
   const destination =
@@ -32,10 +40,14 @@ export function PrintTicket({ itinerary, from, to, url }: PrintTicketProps) {
   const tights = tightTransfers(itinerary);
 
   return (
-    <article className="print-ticket" data-testid="print-ticket">
+    <article
+      className="print-ticket"
+      data-testid="print-ticket"
+      data-mark={mark || undefined}
+    >
       <div className="print-ticket-head">
         <div>
-          <p className="kicker">{t("share.ticketKicker")}</p>
+          <p className="kicker">{mark ?? t("share.ticketKicker")}</p>
           <h1 className="font-display mt-1 text-3xl italic">Linia</h1>
           <p className="mt-4 font-display text-2xl leading-tight italic">
             {origin} → {destination}

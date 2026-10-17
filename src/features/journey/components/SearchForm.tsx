@@ -351,6 +351,7 @@ export function SearchForm({
                   label={t("search.viaN", { n: index + 1 })}
                   placeholder={t("search.viaPlaceholder")}
                   value={stop}
+                  kind="stop"
                   bias={city ?? from ?? to}
                   placeBias={city ? 3 : undefined}
                   error={

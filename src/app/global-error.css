@@ -1,0 +1,24 @@
+/* Minimal hall face for the root fault screen — keep out of globals.css
+   so Turbopack HMR does not try to reload the main CSS chunk twice. */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: #10161f;
+  color: #f3e6d0;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+.search-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 16rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ff3b4a;
+  background: #ff3b4a;
+  color: #fff8f4;
+  font: inherit;
+  cursor: pointer;
+}

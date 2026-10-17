@@ -965,13 +965,19 @@ export function useJourneySearch() {
         setInboundItineraries([]);
         setServiceFrom(null);
         setLastAt(null);
-        setError(
+        const message =
           err instanceof Error &&
-            (err.message.startsWith("errors.") ||
-              err.message.startsWith("validation."))
+          (err.message.startsWith("errors.") ||
+            err.message.startsWith("validation."))
             ? err.message
-            : "errors.searchFailed",
-        );
+            : "errors.searchFailed";
+        setError(message);
+        if (message === "validation.viaMustBeStation") {
+          setFieldErrors((errors) => ({
+            ...errors,
+            via: "validation.viaMustBeStation",
+          }));
+        }
       }
     } finally {
       if (gen === planGen.current) {

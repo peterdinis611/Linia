@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { playFlap } from "@/lib/board-sound";
 import { useI18n } from "@/i18n/provider";
 import type { Itinerary } from "@/lib/transit/types";
@@ -101,10 +102,12 @@ export function useTripWatch() {
       setWatchingKey(null);
       setDenied(false);
       await saveWatch(null);
+      toast(t("watch.cleared"));
       return;
     }
     if (!notificationsReady()) {
       setDenied(true);
+      toast.error(t("watch.denied"));
       return;
     }
     let permission = Notification.permission;
@@ -113,6 +116,7 @@ export function useTripWatch() {
     }
     if (permission !== "granted") {
       setDenied(true);
+      toast.error(t("watch.denied"));
       return;
     }
     setDenied(false);
@@ -124,6 +128,7 @@ export function useTripWatch() {
       fault,
       until: watchUntilMorning(),
     });
+    toast.success(t("watch.armed"));
   }
 
   return { watchingKey, denied, supported: notificationsReady(), toggle, inspect, clear };

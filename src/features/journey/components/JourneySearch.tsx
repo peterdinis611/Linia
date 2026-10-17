@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { startOfLocalDay, toLocalDateTimeValue } from "@/lib/format";
 import { playBoardCascade } from "@/lib/board-sound";
 import { ThemeSwitcher } from "@/components/theme/ThemeSwitcher";
 import { LanguageSwitcher } from "@/i18n/language-switcher";
 import { useI18n } from "@/i18n/provider";
+import type { Itinerary } from "@/lib/transit/types";
 import { splitDateTime } from "../lib/datetime";
 import { hallAlertsFromBoard } from "../lib/alerts";
 import { EmptyBoard, SearchingBoard, StationClock } from "./Board";
@@ -28,7 +29,21 @@ import { useHallTour } from "../hooks/use-hall-tour";
 import { useJourneySearch } from "../hooks/use-journey-search";
 import { useTripWatch } from "../hooks/use-trip-watch";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { buildPrintSheets, type PrintSheetRole } from "../lib/print-sheets";
+import { itineraryKey } from "../lib/share";
 import { watchKey } from "../lib/trip-watch";
+
+function printSheetMark(
+  role: PrintSheetRole,
+  t: (key: string) => string,
+  many: boolean,
+) {
+  if (!many) return undefined;
+  if (role === "outbound") return t("search.outbound");
+  if (role === "return") return t("search.returnTrip");
+  if (role === "held") return t("results.heldPrint");
+  return t("share.sheetSelected");
+}
 
 export function JourneySearch() {
   const search = useJourneySearch();
@@ -37,12 +52,53 @@ export function JourneySearch() {
   const panelRef = useRef<HTMLDivElement>(null);
   const originInputRef = useRef<HTMLInputElement>(null);
   const [mapOpen, setMapOpen] = useState(false);
+  const [heldItinerary, setHeldItinerary] = useState<Itinerary | null>(null);
+  const mapAlternatives = useMemo(
+    () => search.filtered.map((item) => item.itinerary),
+    [search.filtered],
+  );
+  const printSheets = useMemo(
+    () =>
+      buildPrintSheets({
+        boardView: search.boardView,
+        wantReturn: search.wantReturn,
+        selected: search.selected,
+        outboundSelected: search.outboundSelected,
+        returnSelected: search.returnSelected,
+        held: search.boardView ? null : heldItinerary,
+        from: search.from,
+        to: search.to,
+        city: search.city,
+        shareUrl: search.shareUrl,
+      }),
+    [
+      search.boardView,
+      search.wantReturn,
+      search.selected,
+      search.outboundSelected,
+      search.returnSelected,
+      search.from,
+      search.to,
+      search.city,
+      search.shareUrl,
+      heldItinerary,
+    ],
+  );
+  const selectJourneyByKey = useCallback(
+    (key: string) => {
+      const at = search.itineraries.findIndex(
+        (item) => itineraryKey(item) === key,
+      );
+      if (at >= 0) search.setSelectedIndex(at);
+    },
+    [search.itineraries, search.setSelectedIndex],
+  );
 
   // Keyboard shortcuts: /, R, Escape
   const handleFocusSearch = useCallback(() => {
-    // Focus the first text input inside the search form (origin field)
+    // Focus the origin combobox (PlaceAutocomplete has no type="text").
     const input = document.querySelector<HTMLInputElement>(
-      "[data-testid='search-form'] input[type='text']",
+      "[data-testid='search-form'] input[role='combobox']",
     );
     input?.focus();
   }, []);
@@ -398,6 +454,7 @@ export function JourneySearch() {
                 selectedCarriers={search.selectedCarriers}
                 transferFilter={search.transferFilter}
                 shareUrl={search.shareUrl}
+                printCount={printSheets.length}
                 serviceFrom={search.serviceFrom}
                 allDay={search.allDay}
                 refreshing={search.refreshing}
@@ -412,6 +469,7 @@ export function JourneySearch() {
                 watchingKey={watch.watchingKey}
                 watchDenied={watch.denied}
                 onWatch={(itinerary) => void watch.toggle(itinerary)}
+                onHeldChange={setHeldItinerary}
               />
             </>
           )}
@@ -423,6 +481,8 @@ export function JourneySearch() {
         <section className="hall-map" data-tour="map">
           <RouteMap
             itinerary={search.selected}
+            alternatives={search.boardView ? [] : mapAlternatives}
+            compareItinerary={search.boardView ? null : heldItinerary}
             from={search.mapFrom}
             to={search.mapTo}
             via={search.boardView ? [] : search.via}
@@ -435,6 +495,9 @@ export function JourneySearch() {
             pinBusy={search.pinBusy}
             pocketed={!mapOpen}
             lockPins={search.boardView}
+            onSelectJourney={
+              search.boardView ? undefined : selectJourneyByKey
+            }
             onTogglePocket={() => {
               if (mapOpen) {
                 search.setPickMode("idle");
@@ -487,32 +550,16 @@ export function JourneySearch() {
         </p>
       </footer>
     </div>
-    {search.boardView && search.selected ? (
+    {printSheets.map((sheet) => (
       <PrintTicket
-        itinerary={search.selected}
-        from={search.from ?? search.city}
-        to={search.to}
-        url={search.shareUrl}
+        key={sheet.key}
+        itinerary={sheet.itinerary}
+        from={sheet.from}
+        to={sheet.to}
+        url={sheet.url}
+        mark={printSheetMark(sheet.role, t, printSheets.length > 1)}
       />
-    ) : null}
-    {!search.boardView && search.outboundSelected ? (
-      <PrintTicket
-        itinerary={search.outboundSelected}
-        from={search.from}
-        to={search.to}
-        url={search.shareUrl}
-      />
-    ) : null}
-    {!search.boardView &&
-    search.wantReturn &&
-    search.returnSelected ? (
-      <PrintTicket
-        itinerary={search.returnSelected}
-        from={search.to}
-        to={search.from}
-        url={search.shareUrl}
-      />
-    ) : null}
+    ))}
     </>
   );
 }

@@ -52,12 +52,18 @@ import {
 import type { Itinerary, Place, SelectedPlace } from "@/lib/transit/types";
 import type { MapPickMode } from "../hooks/use-journey-search";
 import { itineraryIsLive, legPhase, livePositionOnLeg } from "../lib/progress";
+import { itineraryKey } from "../lib/share";
 import { tightTransferAtPlace, tightTransfers } from "../lib/ticket-notes";
 
 const EUROPE_CENTER: [number, number] = [10, 50.1];
 const CALL_ZOOM = 9;
 const CALL_MAX = 28;
 const PATH_MAX_POINTS = 200;
+/** Other result tracks drawn faded under the selected print. */
+export const MAP_ALT_MAX = 4;
+
+const ALT_COLORS_LIGHT = ["#8a8378", "#6e675d", "#9a9184", "#7a7368"];
+const ALT_COLORS_DARK = ["#8fa0b3", "#6e7f94", "#5a6b80", "#4a5a6e"];
 
 type Basemap = "map" | "satellite";
 
@@ -91,6 +97,10 @@ const SATELLITE_STYLE: StyleSpecification = {
 
 type RouteMapInnerProps = {
   itinerary: Itinerary | null;
+  /** Other board prints drawn under the selected track. */
+  alternatives?: Itinerary[];
+  /** Held print for two-up compare. */
+  compareItinerary?: Itinerary | null;
   from: SelectedPlace | null;
   to: SelectedPlace | null;
   via: Array<SelectedPlace | null>;
@@ -109,10 +119,15 @@ type RouteMapInnerProps = {
   ) => void;
   onToggleFull?: () => void;
   onOpenStation?: (place: Place) => void;
+  onSelectJourney?: (key: string) => void;
 };
+
+type PathRole = "selected" | "alt" | "compare";
 
 type PathLeg = {
   id: string;
+  journeyKey: string;
+  role: PathRole;
   /** MapLibre order: [lng, lat] */
   coordinates: [number, number][];
   color: string;
@@ -132,7 +147,92 @@ function latLonToLngLat(points: [number, number][]): [number, number][] {
 }
 
 function pathWantsHalo(path: PathLeg) {
-  return path.live || (!path.faded && !path.dashed);
+  return path.role === "selected" && (path.live || (!path.faded && !path.dashed));
+}
+
+function pathsForItinerary(
+  itinerary: Itinerary,
+  options: {
+    role: PathRole;
+    altIndex?: number;
+    highlightCarriers: string[];
+    nightMap: boolean;
+    labelPrefix?: string;
+    t: (key: string, params?: Record<string, string | number>) => string;
+  },
+): PathLeg[] {
+  const journey = itineraryKey(itinerary);
+  const liveIndex =
+    options.role === "selected" ? liveTransitLegIndex(itinerary) : -1;
+  const altColor = options.nightMap
+    ? ALT_COLORS_DARK[options.altIndex ?? 0] ?? ALT_COLORS_DARK[0]!
+    : ALT_COLORS_LIGHT[options.altIndex ?? 0] ?? ALT_COLORS_LIGHT[0]!;
+  const compareColor = options.nightMap ? "#f0c14a" : "#c8102e";
+
+  return itinerary.legs
+    .map((leg, index) => {
+      const agency = carrierName(leg);
+      const carrierFade =
+        options.role === "selected" &&
+        options.highlightCarriers.length > 0 &&
+        Boolean(agency) &&
+        !options.highlightCarriers.includes(agency!);
+      const delay = delayMinutes(leg);
+      const delayed = (delay ?? 0) > 0 && options.role === "selected";
+      const live = index === liveIndex && isTransitMode(leg.mode);
+      const dashed =
+        options.role === "compare" || !isTransitMode(leg.mode);
+      const faded = options.role !== "selected" || carrierFade;
+      const coordinates = latLonToLngLat(
+        simplifyPath(pathPointsForLeg(leg), PATH_MAX_POINTS),
+      );
+      const color =
+        options.role === "compare"
+          ? compareColor
+          : options.role === "alt"
+            ? altColor
+            : delayed
+              ? options.nightMap
+                ? liftChartColor("#c8102e")
+                : "#c8102e"
+              : options.nightMap
+                ? liftChartColor(legColor(leg))
+                : legColor(leg);
+      return {
+        id: [
+          options.role,
+          journey,
+          leg.tripId ?? leg.routeShortName ?? index,
+          leg.mode,
+          dashed ? "d" : "s",
+          faded ? "f" : "o",
+          live ? "L" : "x",
+          coordinates.length,
+        ].join(":"),
+        journeyKey: journey,
+        role: options.role,
+        coordinates,
+        color,
+        dashed,
+        faded,
+        live,
+        delayed,
+        label: [
+          options.labelPrefix,
+          isTransitMode(leg.mode)
+            ? legName(leg)
+            : options.t(`modes.${leg.mode}`),
+          agency,
+          live ? options.t("detail.now") : null,
+          delayed && delay != null
+            ? options.t("detail.delayLate", { minutes: delay })
+            : null,
+        ]
+          .filter(Boolean)
+          .join(" · "),
+      } satisfies PathLeg;
+    })
+    .filter((path) => path.coordinates.length > 1);
 }
 
 function liftChartColor(hex: string): string {
@@ -212,6 +312,8 @@ function PinSeal({
 
 export default function RouteMapInner({
   itinerary,
+  alternatives = [],
+  compareItinerary = null,
   from,
   to,
   via,
@@ -226,6 +328,7 @@ export default function RouteMapInner({
   onMarkerDrag,
   onToggleFull,
   onOpenStation,
+  onSelectJourney,
 }: RouteMapInnerProps) {
   const { t } = useI18n();
   const now = useNow(Boolean(itinerary && itineraryIsLive(itinerary)));
@@ -244,59 +347,60 @@ export default function RouteMapInner({
   }, [basemap]);
 
   const paths = useMemo<PathLeg[]>(() => {
-    if (!itinerary) return [];
-    const liveIndex = liveTransitLegIndex(itinerary);
-    return itinerary.legs
-      .map((leg, index) => {
-        const agency = carrierName(leg);
-        const faded =
-          highlightCarriers.length > 0 &&
-          Boolean(agency) &&
-          !highlightCarriers.includes(agency!);
-        const delay = delayMinutes(leg);
-        const delayed = (delay ?? 0) > 0;
-        const live = index === liveIndex && isTransitMode(leg.mode);
-        const dashed = !isTransitMode(leg.mode);
-        const coordinates = latLonToLngLat(
-          simplifyPath(pathPointsForLeg(leg), PATH_MAX_POINTS),
-        );
-        const id = [
-          leg.tripId ?? leg.routeShortName ?? index,
-          leg.mode,
-          dashed ? "d" : "s",
-          faded ? "f" : "o",
-          live ? "L" : "x",
-          delayed ? "D" : "x",
-          coordinates.length,
-        ].join(":");
-        return {
-          id,
-          coordinates,
-          color: delayed
-            ? nightMap
-              ? liftChartColor("#c8102e")
-              : "#c8102e"
-            : nightMap
-              ? liftChartColor(legColor(leg))
-              : legColor(leg),
-          dashed,
-          faded,
-          live,
-          delayed,
-          label: [
-            isTransitMode(leg.mode) ? legName(leg) : t(`modes.${leg.mode}`),
-            agency,
-            live ? t("detail.now") : null,
-            delayed && delay != null
-              ? t("detail.delayLate", { minutes: delay })
-              : null,
-          ]
-            .filter(Boolean)
-            .join(" · "),
-        };
+    const selectedKey = itinerary ? itineraryKey(itinerary) : null;
+    const compareKey = compareItinerary
+      ? itineraryKey(compareItinerary)
+      : null;
+    const alts = alternatives
+      .filter((item) => {
+        const key = itineraryKey(item);
+        return key !== selectedKey && key !== compareKey;
       })
-      .filter((path) => path.coordinates.length > 1);
-  }, [itinerary, highlightCarriers, nightMap, t]);
+      .slice(0, MAP_ALT_MAX);
+
+    const out: PathLeg[] = [];
+    alts.forEach((item, altIndex) => {
+      out.push(
+        ...pathsForItinerary(item, {
+          role: "alt",
+          altIndex,
+          highlightCarriers,
+          nightMap,
+          labelPrefix: t("map.altTrack", { n: altIndex + 1 }),
+          t,
+        }),
+      );
+    });
+    if (compareItinerary && compareKey !== selectedKey) {
+      out.push(
+        ...pathsForItinerary(compareItinerary, {
+          role: "compare",
+          highlightCarriers,
+          nightMap,
+          labelPrefix: t("map.compareTrack"),
+          t,
+        }),
+      );
+    }
+    if (itinerary) {
+      out.push(
+        ...pathsForItinerary(itinerary, {
+          role: "selected",
+          highlightCarriers,
+          nightMap,
+          t,
+        }),
+      );
+    }
+    return out;
+  }, [
+    itinerary,
+    alternatives,
+    compareItinerary,
+    highlightCarriers,
+    nightMap,
+    t,
+  ]);
 
   const viaPoints = useMemo(
     () => via.filter((stop): stop is SelectedPlace => Boolean(stop)),
@@ -407,6 +511,7 @@ export default function RouteMapInner({
           spurs={spurLines}
           previewColor={previewColor}
           halo={halo}
+          onSelectJourney={onSelectJourney}
         />
         <CallStopMarkers
           itinerary={itinerary}
@@ -894,12 +999,14 @@ function JourneyPaths({
   spurs = [],
   previewColor,
   halo,
+  onSelectJourney,
 }: {
   paths: PathLeg[];
   preview: [number, number][];
   spurs?: [number, number][][];
   previewColor: string;
   halo: string;
+  onSelectJourney?: (key: string) => void;
 }) {
   return (
     <>
@@ -931,6 +1038,22 @@ function JourneyPaths({
       {paths.map((path) => {
         const liveWeight = path.live ? 2 : 0;
         const wantHalo = pathWantsHalo(path);
+        const selectable =
+          Boolean(onSelectJourney) && path.role !== "selected";
+        const opacity =
+          path.role === "compare"
+            ? 0.72
+            : path.role === "alt"
+              ? 0.42
+              : path.faded
+                ? 0.28
+                : 0.96;
+        const width =
+          path.role === "compare"
+            ? 4
+            : path.role === "alt"
+              ? 3
+              : (path.dashed ? 3 : path.faded ? 3 : 5) + liveWeight;
         return (
           <Fragment key={path.id}>
             {wantHalo ? (
@@ -939,7 +1062,7 @@ function JourneyPaths({
                 coordinates={path.coordinates}
                 color={halo}
                 width={(path.dashed ? 6 : 8) + liveWeight}
-                opacity={path.faded ? 0.12 : path.live ? 0.95 : 0.85}
+                opacity={path.live ? 0.95 : 0.85}
                 dashArray={path.dashed ? [2, 2] : undefined}
                 interactive={false}
               />
@@ -948,11 +1071,16 @@ function JourneyPaths({
               id={path.id}
               coordinates={path.coordinates}
               color={path.color}
-              width={(path.dashed ? 3 : path.faded ? 3 : 5) + liveWeight}
-              opacity={path.faded ? 0.28 : 0.96}
+              width={width}
+              opacity={opacity}
               dashArray={path.dashed ? [2, 2] : undefined}
-              active={path.live}
-              interactive={false}
+              active={path.role === "selected" && path.live}
+              interactive={selectable}
+              onClick={
+                selectable
+                  ? () => onSelectJourney?.(path.journeyKey)
+                  : undefined
+              }
             />
           </Fragment>
         );

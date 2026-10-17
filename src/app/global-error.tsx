@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { StatusScreen } from "@/components/status/StatusScreen";
-import "./globals.css";
+import "./global-error.css";
 
 type GlobalErrorProps = {
   error: Error & { digest?: string };

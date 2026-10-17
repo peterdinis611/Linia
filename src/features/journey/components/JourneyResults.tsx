@@ -31,6 +31,8 @@ type JourneyResultsProps = {
   selectedCarriers: string[];
   transferFilter: TransferFilter;
   shareUrl: string;
+  /** Sheets that will ink when Print / PDF runs (selected + held + return…). */
+  printCount?: number;
   serviceFrom?: string | null;
   allDay?: boolean;
   refreshing?: boolean;
@@ -45,6 +47,7 @@ type JourneyResultsProps = {
   watchingKey?: string | null;
   watchDenied?: boolean;
   onWatch?: (itinerary: Itinerary) => void;
+  onHeldChange?: (itinerary: Itinerary | null) => void;
 };
 
 const SORTS: ResultSort[] = ["depart", "fastest", "transfers"];
@@ -59,6 +62,7 @@ export function JourneyResults({
   selectedCarriers,
   transferFilter,
   shareUrl,
+  printCount = 0,
   serviceFrom = null,
   allDay = false,
   refreshing = false,
@@ -73,6 +77,7 @@ export function JourneyResults({
   watchingKey = null,
   watchDenied = false,
   onWatch,
+  onHeldChange,
 }: JourneyResultsProps) {
   const { t, tp } = useI18n();
   const [sort, setSort] = useState<ResultSort>("depart");
@@ -96,6 +101,9 @@ export function JourneyResults({
   useEffect(() => {
     setHeldKey(null);
   }, [boardId]);
+  useEffect(() => {
+    onHeldChange?.(held);
+  }, [held, onHeldChange]);
   const countLabel =
     filtered.length !== itineraries.length
       ? tp("connectionsOf", filtered.length, { total: itineraries.length })
@@ -131,6 +139,7 @@ export function JourneyResults({
             <ShareJourney
               url={shareUrl}
               itinerary={selected}
+              printCount={printCount}
               fromName={selected?.legs[0]?.from.name}
               toName={selected?.legs[selected.legs.length - 1]?.to.name}
             />
@@ -223,7 +232,17 @@ export function JourneyResults({
       )}
       {comparing && held && selected ? (
         <div className="desk-compare" data-testid="desk-compare">
-          <p className="kicker desk-compare-kicker">{t("results.twoPrints")}</p>
+          <div className="desk-compare-head">
+            <p className="kicker desk-compare-kicker">{t("results.twoPrints")}</p>
+            <button
+              type="button"
+              className="stamp"
+              data-testid="print-selected-routes"
+              onClick={() => window.print()}
+            >
+              {t("share.printBoth")}
+            </button>
+          </div>
           <div className="desk-compare-sheets">
             <ItineraryDetail itinerary={held} onOpenStation={onOpenStation} />
             <ItineraryDetail itinerary={selected} onOpenStation={onOpenStation} />

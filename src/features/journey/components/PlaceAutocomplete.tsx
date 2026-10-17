@@ -24,7 +24,7 @@ type PlaceAutocompleteProps = {
   value: SelectedPlace | null;
   error?: string;
   bias?: { lat: number; lon: number } | null;
-  kind?: "any" | "city";
+  kind?: "any" | "city" | "stop";
   placeBias?: number;
   onChange: (place: SelectedPlace | null) => void;
 };
@@ -99,7 +99,8 @@ export function PlaceAutocomplete({
           parsed.data.language ?? locale,
           bias,
           {
-            type: kind === "city" ? "PLACE" : undefined,
+            type:
+              kind === "city" ? "PLACE" : kind === "stop" ? "STOP" : undefined,
             placeBias,
           },
         );
