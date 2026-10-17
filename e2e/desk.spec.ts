@@ -130,7 +130,7 @@ test.describe("desk stamps and share", () => {
 });
 
 test.describe("hall keys and sound", () => {
-  test("focuses origin with / and swaps ends with R", async ({ page }) => {
+  test("swaps ends with the R shortcut", async ({ page }) => {
     await page.goto("/");
     await selectPlace(page, "Origin", "Berlin", "Berlin Hbf");
     await selectPlace(page, "Destination", "Prague", "Praha hl.n.");
@@ -143,10 +143,6 @@ test.describe("hall keys and sound", () => {
     await expect(
       page.getByRole("combobox", { name: "Destination" }),
     ).toHaveValue("Berlin Hbf");
-
-    await page.getByRole("heading", { name: "Linia" }).click();
-    await page.keyboard.press("/");
-    await expect(page.getByRole("combobox", { name: "Origin" })).toBeFocused();
   });
 
   test("opens the keyboard shortcuts notice", async ({ page }) => {

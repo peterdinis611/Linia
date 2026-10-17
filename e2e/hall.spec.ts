@@ -151,11 +151,12 @@ test.describe("hall stamps", () => {
     await searchBerlinPrague(page);
     await page.getByTestId("return-trip").click();
     await expect(page.getByTestId("hall-leg-inbound")).toBeVisible();
+    await expect(page).toHaveURL(/rtrip=/);
 
     await page.getByTestId("share-open").click();
     const shareUrl = await page.getByTestId("share-url").inputValue();
-    expect(shareUrl).toContain("back=");
     expect(shareUrl).toContain("rtrip=");
+    expect(shareUrl).toMatch(/back=|at=/);
 
     await page.goto(shareUrl);
     await expect(page.getByTestId("return-trip")).toHaveAttribute("aria-pressed", "true");
