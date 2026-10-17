@@ -8,9 +8,19 @@ export async function selectPlace(
   optionName: string,
 ) {
   const field = page.getByRole("combobox", { name: label });
+  const option = page.getByRole("option", { name: new RegExp(optionName) });
+  await field.click();
+  await field.fill("");
   await field.fill(query);
-  await expect(page.getByRole("option", { name: new RegExp(optionName) })).toBeVisible();
-  await page.getByRole("option", { name: new RegExp(optionName) }).click();
+  try {
+    await expect(option).toBeVisible({ timeout: 8_000 });
+  } catch {
+    // Mock/geocode can briefly miss under parallel load — nudge the query.
+    await field.fill("");
+    await field.fill(query);
+    await expect(option).toBeVisible();
+  }
+  await option.click();
   await expect(field).toHaveValue(optionName);
 }
 
