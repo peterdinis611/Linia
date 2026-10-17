@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { HallToaster } from "@/components/ui/hall-toaster";
 import { isLocale, localeNeedsLatinExt, locales } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { I18nProvider } from "@/i18n/provider";
@@ -83,6 +84,7 @@ export default async function LocaleLayout({
         <I18nProvider locale={locale} messages={messages}>
           <ThemeProvider initialTheme={theme} initialResolved={resolved}>
             {children}
+            <HallToaster />
           </ThemeProvider>
         </I18nProvider>
       </body>

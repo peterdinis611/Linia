@@ -45,3 +45,34 @@ export async function setHallClock(page: Page, hour: string, minute: string) {
   await page.getByTestId(`hall-clock-minute-${minute}`).click();
   await expect(page.getByTestId("journey-time")).toContainText(`${hour}:${minute}`);
 }
+
+export async function openMapPocket(page: Page) {
+  const pocket = page.getByTestId("map-pocket");
+  await expect(pocket).toBeVisible();
+  if ((await pocket.getAttribute("aria-expanded")) === "false") {
+    await pocket.click();
+  }
+  await expect(pocket).toHaveAttribute("aria-expanded", "true");
+}
+
+/** Headless Chromium often denies Notification.requestPermission — stub grant. */
+export async function allowHallNotifications(page: Page) {
+  await page.addInitScript(() => {
+    class HallNotification {
+      static permission: NotificationPermission = "granted";
+      static async requestPermission() {
+        HallNotification.permission = "granted";
+        return "granted" as NotificationPermission;
+      }
+      constructor(
+        public title: string,
+        public options?: NotificationOptions,
+      ) {}
+    }
+    Object.defineProperty(window, "Notification", {
+      configurable: true,
+      writable: true,
+      value: HallNotification,
+    });
+  });
+}

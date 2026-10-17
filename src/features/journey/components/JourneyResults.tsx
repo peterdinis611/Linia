@@ -31,6 +31,8 @@ type JourneyResultsProps = {
   selectedCarriers: string[];
   transferFilter: TransferFilter;
   shareUrl: string;
+  /** Sheets that will ink when Print / PDF runs (selected + held + return…). */
+  printCount?: number;
   serviceFrom?: string | null;
   allDay?: boolean;
   refreshing?: boolean;
@@ -60,6 +62,7 @@ export function JourneyResults({
   selectedCarriers,
   transferFilter,
   shareUrl,
+  printCount = 0,
   serviceFrom = null,
   allDay = false,
   refreshing = false,
@@ -136,6 +139,7 @@ export function JourneyResults({
             <ShareJourney
               url={shareUrl}
               itinerary={selected}
+              printCount={printCount}
               fromName={selected?.legs[0]?.from.name}
               toName={selected?.legs[selected.legs.length - 1]?.to.name}
             />
@@ -228,7 +232,17 @@ export function JourneyResults({
       )}
       {comparing && held && selected ? (
         <div className="desk-compare" data-testid="desk-compare">
-          <p className="kicker desk-compare-kicker">{t("results.twoPrints")}</p>
+          <div className="desk-compare-head">
+            <p className="kicker desk-compare-kicker">{t("results.twoPrints")}</p>
+            <button
+              type="button"
+              className="stamp"
+              data-testid="print-selected-routes"
+              onClick={() => window.print()}
+            >
+              {t("share.printBoth")}
+            </button>
+          </div>
           <div className="desk-compare-sheets">
             <ItineraryDetail itinerary={held} onOpenStation={onOpenStation} />
             <ItineraryDetail itinerary={selected} onOpenStation={onOpenStation} />

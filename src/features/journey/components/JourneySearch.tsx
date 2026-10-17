@@ -29,8 +29,21 @@ import { useHallTour } from "../hooks/use-hall-tour";
 import { useJourneySearch } from "../hooks/use-journey-search";
 import { useTripWatch } from "../hooks/use-trip-watch";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { buildPrintSheets, type PrintSheetRole } from "../lib/print-sheets";
 import { itineraryKey } from "../lib/share";
 import { watchKey } from "../lib/trip-watch";
+
+function printSheetMark(
+  role: PrintSheetRole,
+  t: (key: string) => string,
+  many: boolean,
+) {
+  if (!many) return undefined;
+  if (role === "outbound") return t("search.outbound");
+  if (role === "return") return t("search.returnTrip");
+  if (role === "held") return t("results.heldPrint");
+  return t("share.sheetSelected");
+}
 
 export function JourneySearch() {
   const search = useJourneySearch();
@@ -44,6 +57,33 @@ export function JourneySearch() {
     () => search.filtered.map((item) => item.itinerary),
     [search.filtered],
   );
+  const printSheets = useMemo(
+    () =>
+      buildPrintSheets({
+        boardView: search.boardView,
+        wantReturn: search.wantReturn,
+        selected: search.selected,
+        outboundSelected: search.outboundSelected,
+        returnSelected: search.returnSelected,
+        held: search.boardView ? null : heldItinerary,
+        from: search.from,
+        to: search.to,
+        city: search.city,
+        shareUrl: search.shareUrl,
+      }),
+    [
+      search.boardView,
+      search.wantReturn,
+      search.selected,
+      search.outboundSelected,
+      search.returnSelected,
+      search.from,
+      search.to,
+      search.city,
+      search.shareUrl,
+      heldItinerary,
+    ],
+  );
   const selectJourneyByKey = useCallback(
     (key: string) => {
       const at = search.itineraries.findIndex(
@@ -56,9 +96,9 @@ export function JourneySearch() {
 
   // Keyboard shortcuts: /, R, Escape
   const handleFocusSearch = useCallback(() => {
-    // Focus the first text input inside the search form (origin field)
+    // Focus the origin combobox (PlaceAutocomplete has no type="text").
     const input = document.querySelector<HTMLInputElement>(
-      "[data-testid='search-form'] input[type='text']",
+      "[data-testid='search-form'] input[role='combobox']",
     );
     input?.focus();
   }, []);
@@ -414,6 +454,7 @@ export function JourneySearch() {
                 selectedCarriers={search.selectedCarriers}
                 transferFilter={search.transferFilter}
                 shareUrl={search.shareUrl}
+                printCount={printSheets.length}
                 serviceFrom={search.serviceFrom}
                 allDay={search.allDay}
                 refreshing={search.refreshing}
@@ -509,32 +550,16 @@ export function JourneySearch() {
         </p>
       </footer>
     </div>
-    {search.boardView && search.selected ? (
+    {printSheets.map((sheet) => (
       <PrintTicket
-        itinerary={search.selected}
-        from={search.from ?? search.city}
-        to={search.to}
-        url={search.shareUrl}
+        key={sheet.key}
+        itinerary={sheet.itinerary}
+        from={sheet.from}
+        to={sheet.to}
+        url={sheet.url}
+        mark={printSheetMark(sheet.role, t, printSheets.length > 1)}
       />
-    ) : null}
-    {!search.boardView && search.outboundSelected ? (
-      <PrintTicket
-        itinerary={search.outboundSelected}
-        from={search.from}
-        to={search.to}
-        url={search.shareUrl}
-      />
-    ) : null}
-    {!search.boardView &&
-    search.wantReturn &&
-    search.returnSelected ? (
-      <PrintTicket
-        itinerary={search.returnSelected}
-        from={search.to}
-        to={search.from}
-        url={search.shareUrl}
-      />
-    ) : null}
+    ))}
     </>
   );
 }

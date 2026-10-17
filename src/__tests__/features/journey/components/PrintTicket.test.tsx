@@ -31,4 +31,20 @@ describe("PrintTicket", () => {
     );
     expect(screen.queryByTestId("print-qr")).not.toBeInTheDocument();
   });
+
+  it("stamps a sheet mark when printing several routes", () => {
+    renderHall(
+      <PrintTicket
+        itinerary={railItinerary()}
+        from={berlin}
+        to={prague}
+        mark="Held"
+      />,
+    );
+    expect(screen.getByTestId("print-ticket")).toHaveAttribute(
+      "data-mark",
+      "Held",
+    );
+    expect(screen.getByTestId("print-ticket")).toHaveTextContent("Held");
+  });
 });

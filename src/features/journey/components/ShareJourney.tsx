@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useI18n } from "@/i18n/provider";
 import type { Itinerary } from "@/lib/transit/types";
 import { downloadIcs, icsFilename, itineraryIcs } from "../lib/ics";
@@ -11,6 +12,8 @@ type ShareJourneyProps = {
   fromName?: string;
   toName?: string;
   kind?: "ticket" | "board";
+  /** How many paper sheets print / save as PDF (selected + held + return…). */
+  printCount?: number;
 };
 
 export function ShareJourney({
@@ -19,6 +22,7 @@ export function ShareJourney({
   fromName,
   toName,
   kind = "ticket",
+  printCount = 0,
 }: ShareJourneyProps) {
   const { t } = useI18n();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -56,18 +60,27 @@ export function ShareJourney({
       ? `${origin} → ${destination}`
       : "Linia";
   const shareText = board ? t("share.boardBody") : t("share.title");
-  const canPrint = Boolean(itinerary);
+  const sheets = Math.max(printCount, itinerary ? 1 : 0);
+  const canPrint = sheets > 0;
+  const manySheets = sheets > 1;
   const canCalendar = Boolean(itinerary && origin && (board || destination));
+  const printLabel = manySheets
+    ? t("share.printRoutes", { count: sheets })
+    : t("share.print");
 
   async function copyLink() {
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
+      toast.success(t("share.copied"));
     } catch {
       const field = dialogRef.current?.querySelector("input");
       field?.select();
       const ok = document.execCommand("copy");
-      if (ok) setCopied(true);
+      if (ok) {
+        setCopied(true);
+        toast.success(t("share.copied"));
+      }
     }
   }
 
@@ -82,6 +95,7 @@ export function ShareJourney({
       icsFilename(origin ?? "origin", destination ?? "board"),
       itineraryIcs({ itinerary, from: null, to: null, url }),
     );
+    toast.success(t("share.calendarSaved"));
   }
 
   async function nativeShare() {
@@ -184,10 +198,11 @@ export function ShareJourney({
             <button
               type="button"
               className="stamp w-full"
+              data-testid="share-print"
               onClick={printTicket}
               disabled={!canPrint}
             >
-              {t("share.print")}
+              {printLabel}
             </button>
             <button
               type="button"
@@ -205,7 +220,7 @@ export function ShareJourney({
             ) : null}
           </div>
           <p className="mt-3 text-xs leading-relaxed text-ink-muted">
-            {t("share.printHint")}
+            {manySheets ? t("share.printHintMany") : t("share.printHint")}
           </p>
           <button
             type="button"

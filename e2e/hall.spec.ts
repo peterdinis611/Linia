@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { searchBerlinPrague, selectLocale, selectPlace } from "./helpers";
+import {
+  allowHallNotifications,
+  searchBerlinPrague,
+  selectLocale,
+  selectPlace,
+} from "./helpers";
 
 test.describe("hall stamps", () => {
   test("hides the journey desk on the station board", async ({ page }) => {
@@ -43,8 +48,8 @@ test.describe("hall stamps", () => {
     expect(page.url()).not.toMatch(/[?&]to=/);
   });
 
-  test("stamps watch on the selected ticket", async ({ page, context }) => {
-    await context.grantPermissions(["notifications"]);
+  test("stamps watch on the selected ticket", async ({ page }) => {
+    await allowHallNotifications(page);
     await page.goto("/");
     await searchBerlinPrague(page);
     await expect(page.getByTestId("journey-results")).toBeVisible();
@@ -166,5 +171,43 @@ test.describe("hall stamps", () => {
     await expect(notice).toBeVisible();
     await notice.locator("summary").click();
     await expect(notice).toContainText("Rail replacement between Dresden and Praha.");
+  });
+
+  test("clears trip watch and toasts", async ({ page }) => {
+    await allowHallNotifications(page);
+    await page.goto("/");
+    await searchBerlinPrague(page);
+    await page.getByTestId("watch-trip").click();
+    await expect(page.getByTestId("watch-trip")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+
+    await page.getByTestId("watch-trip").click();
+    await expect(page.getByTestId("watch-trip")).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    await expect(page.locator("[data-sonner-toast]").first()).toContainText(
+      "Watch cleared",
+    );
+  });
+
+  test("lifts the hold stamp without leaving the board", async ({ page }) => {
+    await page.goto("/");
+    await page.getByTestId("all-day").click();
+    await searchBerlinPrague(page);
+    await page.getByTestId("hold-print").click();
+    await expect(page.getByTestId("hold-print")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+
+    await page.getByTestId("hold-print").click();
+    await expect(page.getByTestId("hold-print")).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    await expect(page.getByTestId("desk-compare")).toHaveCount(0);
   });
 });

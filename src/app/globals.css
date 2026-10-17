@@ -292,8 +292,16 @@ html.dark body::before {
   gap: 0.75rem;
 }
 
+.desk-compare-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+}
+
 .desk-compare-kicker {
-  grid-column: 1 / -1;
+  margin: 0;
 }
 
 .desk-compare-sheets {
@@ -3821,13 +3829,126 @@ details[open] .stops-chevron {
     max-width: 40rem;
     margin: 0 auto;
     padding: 0.5rem 0;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .print-ticket:last-of-type {
+    break-after: auto;
+    page-break-after: auto;
   }
 
   .howto-dialog,
   .driver-popover,
-  .driver-overlay {
+  .driver-overlay,
+  [data-sonner-toaster] {
     display: none !important;
   }
+}
+
+/* Sonner — paper stamp toasts (unstyled shell in HallToaster) */
+[data-sonner-toaster] {
+  --width: min(22rem, calc(100vw - 1.5rem));
+  font-family: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.hall-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: var(--width);
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--rule-strong);
+  background:
+    linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--paper-raised) 92%, var(--signal) 8%),
+      var(--paper-raised) 42%
+    );
+  color: var(--ink);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--ink) 8%, transparent),
+    0 12px 28px color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+.hall-toast::before {
+  content: "";
+  flex: 0 0 0.28rem;
+  align-self: stretch;
+  margin: -0.15rem 0;
+  background: var(--signal);
+}
+
+.hall-toast-success::before {
+  background: #2f6b4f;
+}
+
+.hall-toast-error::before,
+.hall-toast-warning::before {
+  background: var(--signal);
+}
+
+.hall-toast-info::before {
+  background: var(--ink-muted);
+}
+
+.hall-toast-title {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.35;
+}
+
+.hall-toast-body {
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--ink-muted);
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 400;
+}
+
+.hall-toast-close {
+  flex: 0 0 auto;
+  margin: -0.2rem -0.35rem 0 0;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink-muted);
+  width: 1.55rem;
+  height: 1.55rem;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.hall-toast-close:hover {
+  border-color: var(--rule-strong);
+  color: var(--ink);
+}
+
+.hall-toast-action,
+.hall-toast-cancel {
+  margin-top: 0.45rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.55rem;
+  cursor: pointer;
+}
+
+.hall-toast-cancel {
+  background: transparent;
+  color: var(--ink);
 }
 
 @media (prefers-reduced-motion: reduce) {
