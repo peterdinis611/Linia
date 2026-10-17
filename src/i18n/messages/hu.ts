@@ -245,6 +245,9 @@ export const hu: Messages = {
     delayedLeg: "{line} késik {delay}",
     callAt: "Megálló {name}",
     tightTransfer: "Szoros átszállás {name} · {minutes} perc",
+    tracks: "Vonalak a falon",
+    altTrack: "Alt {n}",
+    compareTrack: "Fogott jegy",
   },
   results: {
     departures: "Indulások",

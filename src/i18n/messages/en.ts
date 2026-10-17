@@ -242,6 +242,9 @@ export const en = {
     delayedLeg: "{line} delayed {delay}",
     callAt: "Call at {name}",
     tightTransfer: "Tight change at {name} · {minutes} min",
+    tracks: "Tracks on the wall",
+    altTrack: "Alt {n}",
+    compareTrack: "Held print",
   },
   results: {
     departures: "Departures",

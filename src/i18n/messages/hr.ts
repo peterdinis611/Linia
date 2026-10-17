@@ -245,6 +245,9 @@ export const hr: Messages = {
     delayedLeg: "{line} kasni {delay}",
     callAt: "Stajalište {name}",
     tightTransfer: "Tijesno presjedanje {name} · {minutes} min",
+    tracks: "Trase na zidu",
+    altTrack: "Alt {n}",
+    compareTrack: "Držani ispis",
   },
   results: {
     departures: "Odlasci",

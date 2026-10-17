@@ -245,6 +245,9 @@ export const ro: Messages = {
     delayedLeg: "{line} întârziat {delay}",
     callAt: "Oprire {name}",
     tightTransfer: "Transbordare strânsă {name} · {minutes} min",
+    tracks: "Trasee pe perete",
+    altTrack: "Alt {n}",
+    compareTrack: "Bilet ținut",
   },
   results: {
     departures: "Plecări",

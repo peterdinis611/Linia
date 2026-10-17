@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "maplibre-gl/dist/maplibre-gl.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -2515,6 +2514,71 @@ details[open] .stops-chevron {
   flex-wrap: wrap;
   gap: 0.35rem;
   margin-top: 0.45rem;
+}
+
+.map-track-rails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+}
+
+.map-track-rail {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 100%;
+  padding: 0.28rem 0.55rem;
+  border: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--paper-sunken) 70%, transparent);
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.map-track-rail:hover {
+  color: var(--ink);
+  border-color: var(--rule-strong);
+}
+
+.map-track-rail[data-on="true"],
+.map-track-rail[aria-selected="true"] {
+  color: var(--signal);
+  border-color: color-mix(in srgb, var(--signal) 45%, var(--rule));
+  background: color-mix(in srgb, var(--signal) 10%, transparent);
+}
+
+.map-track-rail[data-kind="compare"] {
+  color: var(--amber);
+  border-color: color-mix(in srgb, var(--amber) 40%, var(--rule));
+}
+
+.map-track-swatch {
+  width: 0.7rem;
+  height: 0.2rem;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0.85;
+}
+
+.map-track-rail[data-kind="alt"] .map-track-swatch {
+  opacity: 0.45;
+}
+
+.map-track-rail[data-kind="compare"] .map-track-swatch {
+  background: repeating-linear-gradient(
+    90deg,
+    currentColor 0 3px,
+    transparent 3px 6px
+  );
+}
+
+.map-track-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (min-width: 640px) {

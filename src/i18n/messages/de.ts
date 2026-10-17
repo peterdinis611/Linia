@@ -245,6 +245,9 @@ export const de: Messages = {
     delayedLeg: "{line} verspätet {delay}",
     callAt: "Halt {name}",
     tightTransfer: "Knapp umsteigen {name} · {minutes} min",
+    tracks: "Strecken an der Wand",
+    altTrack: "Alt {n}",
+    compareTrack: "Gehaltene Karte",
   },
   results: {
     departures: "Abfahrten",

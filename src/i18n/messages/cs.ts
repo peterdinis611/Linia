@@ -245,6 +245,9 @@ export const cs: Messages = {
     delayedLeg: "{line} má zpoždění {delay}",
     callAt: "Zastávka {name}",
     tightTransfer: "Těsný přestup {name} · {minutes} min",
+    tracks: "Trasy na stěně",
+    altTrack: "Alt {n}",
+    compareTrack: "Držený výtisk",
   },
   results: {
     departures: "Odjezdy",

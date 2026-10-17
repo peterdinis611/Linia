@@ -45,6 +45,7 @@ type JourneyResultsProps = {
   watchingKey?: string | null;
   watchDenied?: boolean;
   onWatch?: (itinerary: Itinerary) => void;
+  onHeldChange?: (itinerary: Itinerary | null) => void;
 };
 
 const SORTS: ResultSort[] = ["depart", "fastest", "transfers"];
@@ -73,6 +74,7 @@ export function JourneyResults({
   watchingKey = null,
   watchDenied = false,
   onWatch,
+  onHeldChange,
 }: JourneyResultsProps) {
   const { t, tp } = useI18n();
   const [sort, setSort] = useState<ResultSort>("depart");
@@ -96,6 +98,9 @@ export function JourneyResults({
   useEffect(() => {
     setHeldKey(null);
   }, [boardId]);
+  useEffect(() => {
+    onHeldChange?.(held);
+  }, [held, onHeldChange]);
   const countLabel =
     filtered.length !== itineraries.length
       ? tp("connectionsOf", filtered.length, { total: itineraries.length })

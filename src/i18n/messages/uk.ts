@@ -245,6 +245,9 @@ export const uk: Messages = {
     delayedLeg: "{line} затримується на {delay}",
     callAt: "Зупинка {name}",
     tightTransfer: "Тісна пересадка {name} · {minutes} хв",
+    tracks: "Маршрути на стіні",
+    altTrack: "Alt {n}",
+    compareTrack: "Утриманий квиток",
   },
   results: {
     departures: "Відправлення",

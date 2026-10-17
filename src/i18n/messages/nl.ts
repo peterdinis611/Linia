@@ -245,6 +245,9 @@ export const nl: Messages = {
     delayedLeg: "{line} vertraagd {delay}",
     callAt: "Halte {name}",
     tightTransfer: "Krappe overstap {name} · {minutes} min",
+    tracks: "Sporen op de muur",
+    altTrack: "Alt {n}",
+    compareTrack: "Vastgehouden print",
   },
   results: {
     departures: "Vertrekken",

@@ -7,6 +7,7 @@ import { useI18n } from "@/i18n/provider";
 import { transitAgencies } from "@/lib/carriers";
 import {
   delayMinutes,
+  formatClockRange,
   isTransitMode,
   legName,
   liveTransitLegIndex,
@@ -15,6 +16,9 @@ import { pathPointsForLeg } from "@/lib/transit/path";
 import type { Itinerary, Place, SelectedPlace } from "@/lib/transit/types";
 import type { MapPickMode, RouteMode } from "../hooks/use-journey-search";
 import { roleForMapClick } from "../lib/pins";
+import { itineraryKey } from "../lib/share";
+
+const MAP_ALT_CHIP_MAX = 4;
 
 const RouteMapInner = dynamic(() => import("./RouteMapInner"), {
   ssr: false,
@@ -32,6 +36,8 @@ function MapLoading() {
 
 type RouteMapProps = {
   itinerary: Itinerary | null;
+  alternatives?: Itinerary[];
+  compareItinerary?: Itinerary | null;
   from: SelectedPlace | null;
   to: SelectedPlace | null;
   via: Array<SelectedPlace | null>;
@@ -54,10 +60,13 @@ type RouteMapProps = {
   ) => void;
   onAssignPending: (role: "from" | "to" | "via") => void;
   onOpenStation?: (place: Place) => void;
+  onSelectJourney?: (key: string) => void;
 };
 
 export function RouteMap({
   itinerary,
+  alternatives = [],
+  compareItinerary = null,
   from,
   to,
   via,
@@ -76,8 +85,9 @@ export function RouteMap({
   onMarkerDrag,
   onAssignPending,
   onOpenStation,
+  onSelectJourney,
 }: RouteMapProps) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const stageId = useId();
   const stageRef = useRef<HTMLDivElement>(null);
   const [full, setFull] = useState(false);
@@ -105,6 +115,50 @@ export function RouteMap({
   const liveLeg = liveIndex >= 0 ? itinerary?.legs[liveIndex] : undefined;
   const liveDelay = liveLeg ? delayMinutes(liveLeg) : null;
   const liveLine = liveLeg ? legName(liveLeg) : "";
+  const selectedKey = itinerary ? itineraryKey(itinerary) : null;
+  const compareKey = compareItinerary
+    ? itineraryKey(compareItinerary)
+    : null;
+  const trackChoices = (() => {
+    const rows: Array<{
+      key: string;
+      label: string;
+      kind: "selected" | "alt" | "compare";
+    }> = [];
+    if (itinerary && selectedKey) {
+      rows.push({
+        key: selectedKey,
+        label: formatClockRange(
+          itinerary.startTime,
+          itinerary.endTime,
+          locale,
+        ),
+        kind: "selected",
+      });
+    }
+    if (compareItinerary && compareKey && compareKey !== selectedKey) {
+      rows.push({
+        key: compareKey,
+        label: formatClockRange(
+          compareItinerary.startTime,
+          compareItinerary.endTime,
+          locale,
+        ),
+        kind: "compare",
+      });
+    }
+    for (const item of alternatives.slice(0, MAP_ALT_CHIP_MAX)) {
+      const key = itineraryKey(item);
+      if (key === selectedKey || key === compareKey) continue;
+      if (rows.some((row) => row.key === key)) continue;
+      rows.push({
+        key,
+        label: formatClockRange(item.startTime, item.endTime, locale),
+        kind: "alt",
+      });
+    }
+    return rows;
+  })();
 
   const approximate = Boolean(
     itinerary &&
@@ -175,6 +229,8 @@ export function RouteMap({
       {mapReady ? (
         <RouteMapInner
           itinerary={itinerary}
+          alternatives={alternatives}
+          compareItinerary={compareItinerary}
           from={from}
           to={to}
           via={via}
@@ -188,6 +244,7 @@ export function RouteMap({
           onMapClick={onMapClick}
           onMarkerDrag={onMarkerDrag}
           onToggleFull={() => setFull((value) => !value)}
+          onSelectJourney={onSelectJourney}
           onOpenStation={
             onOpenStation
               ? (place) => {
@@ -311,6 +368,30 @@ export function RouteMap({
               ) : null}
               {approximate ? (
                 <p className="map-plaque-hint">{t("map.approximate")}</p>
+              ) : null}
+              {trackChoices.length > 1 && onSelectJourney ? (
+                <div
+                  className="map-track-rails"
+                  role="listbox"
+                  aria-label={t("map.tracks")}
+                  data-testid="map-track-rails"
+                >
+                  {trackChoices.map((track) => (
+                    <button
+                      key={track.key}
+                      type="button"
+                      role="option"
+                      className="map-track-rail"
+                      data-kind={track.kind}
+                      data-on={track.kind === "selected"}
+                      aria-selected={track.kind === "selected"}
+                      onClick={() => onSelectJourney(track.key)}
+                    >
+                      <span className="map-track-swatch" aria-hidden="true" />
+                      <span className="map-track-label">{track.label}</span>
+                    </button>
+                  ))}
+                </div>
               ) : null}
               {liveLeg && liveLine ? (
                 <p

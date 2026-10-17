@@ -245,6 +245,9 @@ export const pl: Messages = {
     delayedLeg: "{line} opóźniony o {delay}",
     callAt: "Przystanek {name}",
     tightTransfer: "Ciasna przesiadka {name} · {minutes} min",
+    tracks: "Trasy na ścianie",
+    altTrack: "Alt {n}",
+    compareTrack: "Przytrzymany bilet",
   },
   results: {
     departures: "Odjazdy",

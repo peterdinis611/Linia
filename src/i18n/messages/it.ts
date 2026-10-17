@@ -247,6 +247,9 @@ export const it: Messages = {
     delayedLeg: "{line} in ritardo di {delay}",
     callAt: "Fermata {name}",
     tightTransfer: "Cambio stretto {name} · {minutes} min",
+    tracks: "Tracciati sul muro",
+    altTrack: "Alt {n}",
+    compareTrack: "Biglietto tenuto",
   },
   results: {
     departures: "Partenze",

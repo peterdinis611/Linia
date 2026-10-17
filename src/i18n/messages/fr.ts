@@ -245,6 +245,9 @@ export const fr: Messages = {
     delayedLeg: "{line} retardé de {delay}",
     callAt: "Arrêt {name}",
     tightTransfer: "Correspondance serrée {name} · {minutes} min",
+    tracks: "Tracés au mur",
+    altTrack: "Alt {n}",
+    compareTrack: "Ticket retenu",
   },
   results: {
     departures: "Départs",
