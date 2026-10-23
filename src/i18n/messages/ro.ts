@@ -107,7 +107,7 @@ export const ro: Messages = {
     city: "Oraș",
     cityPlaceholder: "Prešov, Košice, Cluj…",
     cityKicker: "Ghișeu oraș",
-    cityHint: "Întâi orașul. Apoi lungă distanță sau suburban.",
+    cityHint: "Opțional — restrânge opriri apropiate. Lungă distanță sau suburban la nevoie.",
     suburbanHint: "Ștampila de unde și încotro. Harta prinde ambele stații și linia suburbană.",
     distanceGroup: "Tipul liniei",
     distanceLong: "Lungă distanță",

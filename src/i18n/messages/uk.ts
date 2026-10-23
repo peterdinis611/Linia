@@ -107,7 +107,7 @@ export const uk: Messages = {
     city: "Місто",
     cityPlaceholder: "Prešov, Košice, Львів…",
     cityKicker: "Міська каса",
-    cityHint: "Спочатку місто. Потім дальній або приміський.",
+    cityHint: "Необовʼязково — звужує близькі зупинки. Дальній або приміський за потреби.",
     suburbanHint: "Штамп звідки й куди. Мапа прикріплює обидві зупинки та приміську лінію.",
     distanceGroup: "Тип рейсу",
     distanceLong: "Дальній",

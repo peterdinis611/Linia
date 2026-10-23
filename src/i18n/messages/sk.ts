@@ -107,7 +107,7 @@ export const sk: Messages = {
     city: "Mesto",
     cityPlaceholder: "Prešov, Košice, Bardejov…",
     cityKicker: "Obvod",
-    cityHint: "Najprv mesto. Potom pečiatka diaľkový alebo prímestský.",
+    cityHint: "Voliteľné — priblíži zastávky v okolí. Diaľkový alebo prímestský podľa potreby.",
     suburbanHint: "Pečiatka odkiaľ a kam. Mapa pripne obe zastávky a prímestskú linku.",
     distanceGroup: "Druh spoja",
     distanceLong: "Diaľkový",

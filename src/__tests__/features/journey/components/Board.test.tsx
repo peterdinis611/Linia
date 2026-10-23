@@ -26,7 +26,7 @@ describe("SearchingBoard", () => {
 });
 
 describe("EmptyBoard", () => {
-  it("shows the idle copy and can start the hall walk", async () => {
+  it("shows the idle copy and can start the hall walk when guide is on", async () => {
     const user = userEvent.setup();
     const onTour = vi.fn();
     renderHall(
@@ -35,6 +35,7 @@ describe("EmptyBoard", () => {
         kicker="The board is open"
         title="Name a station."
         body="Live European times."
+        showGuide
         onTour={onTour}
       />,
     );
@@ -45,24 +46,28 @@ describe("EmptyBoard", () => {
     expect(onTour).toHaveBeenCalledOnce();
   });
 
-  it("stamps no path after a search and reprints a recent ticket", async () => {
-    const user = userEvent.setup();
-    const onRecentSelect = vi.fn();
+  it("hides the howto when the guide is off", () => {
+    renderHall(
+      <EmptyBoard
+        hasSearched={false}
+        kicker="The board is open"
+        title="Name a station."
+        body="Live European times."
+        showGuide={false}
+      />,
+    );
+    expect(
+      screen.queryByRole("button", { name: "Walk through the hall" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("stamps no path after a search without inline recents", () => {
     renderHall(
       <EmptyBoard
         hasSearched
         kicker="Nothing on this departure"
         title="No connections found"
         body="Try another hour."
-        recents={[
-          {
-            from: berlin,
-            to: prague,
-            via: [],
-            savedAt: 1,
-          },
-        ]}
-        onRecentSelect={onRecentSelect}
       />,
     );
 
@@ -71,25 +76,6 @@ describe("EmptyBoard", () => {
     expect(
       screen.queryByRole("button", { name: "Walk through the hall" }),
     ).not.toBeInTheDocument();
-  });
-
-  it("lists recent tickets before the first search", async () => {
-    const user = userEvent.setup();
-    const onRecentSelect = vi.fn();
-    const recent = { from: berlin, to: prague, via: [], savedAt: 1 };
-    renderHall(
-      <EmptyBoard
-        hasSearched={false}
-        kicker="The board is open"
-        title="Name a station."
-        body="Live European times."
-        recents={[recent]}
-        onRecentSelect={onRecentSelect}
-      />,
-    );
-
-    await user.click(screen.getByRole("button", { name: /Berlin Hbf → Praha hl\.n\./ }));
-    expect(onRecentSelect).toHaveBeenCalledWith(recent);
   });
 
   it("prints pinned home and work stamps on the idle board", async () => {

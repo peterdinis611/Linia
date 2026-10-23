@@ -1,9 +1,9 @@
 import { unwrapAction } from "@/lib/action-result";
 import { geocodeAction, reverseGeocodeAction } from "@/app/actions/geocode";
-import { planJourneyAction } from "@/app/actions/plan";
 import { getStopTimesAction } from "@/app/actions/stoptimes";
 import { getTripAction } from "@/app/actions/trip";
 import { createTtlCache } from "@/lib/ttl-cache";
+import { isAbortError } from "@/lib/transit/client";
 import { hasMappableCoords } from "@/lib/transit/geocode-rank";
 import { matchToPlace } from "@/lib/transit/place";
 import { boardDestinationName, boardDestinations } from "@/lib/transit/path";
@@ -127,9 +127,42 @@ export async function reverseGeocodePlace(input: {
   );
 }
 
+async function postPlan(
+  body: PlanInput & {
+    fresh?: boolean;
+    paging: "first" | "rest";
+    pageCursor?: string;
+    seedKeys?: string[];
+  },
+  signal?: AbortSignal,
+): Promise<PlanResponse> {
+  const response = await fetch("/api/plan", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(body),
+    signal,
+  });
+  if (response.status === 499 || signal?.aborted) {
+    throw signal?.reason ?? new DOMException("Aborted", "AbortError");
+  }
+  const payload = (await response.json().catch(() => null)) as
+    | PlanResponse
+    | { error?: string }
+    | null;
+  if (!response.ok) {
+    const message =
+      payload && typeof payload === "object" && "error" in payload
+        ? payload.error
+        : undefined;
+    throw new Error(message || "errors.searchFailed");
+  }
+  return payload as PlanResponse;
+}
+
 /**
  * Progressive plan: paints page 1 via `onFirst`, then pages the rest until
  * enough unique journeys / horizon. Full result is cached.
+ * Pass `signal` to cancel in-flight MOTIS work on the server.
  */
 export async function planJourney(
   input: PlanInput,
@@ -137,6 +170,7 @@ export async function planJourney(
     fresh?: boolean;
     onFirst?: (partial: PlanResponse) => void;
     isCancelled?: () => boolean;
+    signal?: AbortSignal;
   },
 ): Promise<PlanResponse> {
   const key = planCacheKey(input);
@@ -148,48 +182,55 @@ export async function planJourney(
     }
   }
 
-  const first = unwrapAction(
-    await planJourneyAction({
+  const first = await postPlan(
+    {
       ...input,
       fresh: options?.fresh,
       paging: "first",
-    }),
+    },
+    options?.signal,
   );
   options?.onFirst?.(first);
-  if (options?.isCancelled?.()) return first;
+  if (options?.isCancelled?.() || options?.signal?.aborted) return first;
 
   if (!first.nextPageCursor) {
     planCache.set(key, first);
     return first;
   }
 
-  const more = unwrapAction(
-    await planJourneyAction({
-      ...input,
-      fresh: options?.fresh,
-      paging: "rest",
-      pageCursor: first.nextPageCursor,
-      seedKeys: [
-        ...(first.itineraries ?? []),
-        ...(first.direct ?? []),
-      ].map(journeyKey),
-    }),
-  );
-  if (options?.isCancelled?.()) return first;
+  try {
+    const more = await postPlan(
+      {
+        ...input,
+        fresh: options?.fresh,
+        paging: "rest",
+        pageCursor: first.nextPageCursor,
+        seedKeys: [
+          ...(first.itineraries ?? []),
+          ...(first.direct ?? []),
+        ].map(journeyKey),
+      },
+      options?.signal,
+    );
+    if (options?.isCancelled?.() || options?.signal?.aborted) return first;
 
-  const merged: PlanResponse = {
-    from: first.from ?? more.from,
-    to: first.to ?? more.to,
-    itineraries: uniqueJourneys([
-      ...(first.itineraries ?? []),
-      ...(more.itineraries ?? []),
-    ]),
-    direct: first.direct ?? [],
-    serviceFrom: first.serviceFrom,
-    lastAt: first.lastAt,
-  };
-  planCache.set(key, merged);
-  return merged;
+    const merged: PlanResponse = {
+      from: first.from ?? more.from,
+      to: first.to ?? more.to,
+      itineraries: uniqueJourneys([
+        ...(first.itineraries ?? []),
+        ...(more.itineraries ?? []),
+      ]),
+      direct: first.direct ?? [],
+      serviceFrom: first.serviceFrom,
+      lastAt: first.lastAt,
+    };
+    planCache.set(key, merged);
+    return merged;
+  } catch (error) {
+    if (isAbortError(error) || options?.isCancelled?.()) return first;
+    throw error;
+  }
 }
 
 export async function fetchTrip(tripId: string): Promise<Itinerary> {

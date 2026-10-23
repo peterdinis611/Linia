@@ -107,7 +107,7 @@ export const de: Messages = {
     city: "Stadt",
     cityPlaceholder: "Prešov, Košice, Wien…",
     cityKicker: "Stadtstempel",
-    cityHint: "Zuerst die Stadt. Dann Fernverkehr oder Regional.",
+    cityHint: "Optional — grenzt nahe Halte ein. Fern- oder Regionalstempel bei Bedarf.",
     suburbanHint: "Stempel von und nach. Die Karte pinnen beide Halte und die Regionalinie.",
     distanceGroup: "Art der Verbindung",
     distanceLong: "Fernverkehr",

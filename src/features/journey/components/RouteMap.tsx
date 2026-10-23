@@ -19,6 +19,8 @@ import { roleForMapClick } from "../lib/pins";
 import { itineraryKey } from "../lib/share";
 
 const MAP_ALT_CHIP_MAX = 4;
+/** Cap alternatives passed into the map (also exported for callers). */
+export const MAP_ALT_MAX = 4;
 
 const RouteMapInner = dynamic(() => import("./RouteMapInner"), {
   ssr: false,
@@ -229,7 +231,7 @@ export function RouteMap({
       {mapReady ? (
         <RouteMapInner
           itinerary={itinerary}
-          alternatives={alternatives}
+          alternatives={alternatives.slice(0, MAP_ALT_MAX)}
           compareItinerary={compareItinerary}
           from={from}
           to={to}

@@ -62,8 +62,8 @@ const PATH_MAX_POINTS = 200;
 /** Other result tracks drawn faded under the selected print. */
 export const MAP_ALT_MAX = 4;
 
-const ALT_COLORS_LIGHT = ["#8a8378", "#6e675d", "#9a9184", "#7a7368"];
-const ALT_COLORS_DARK = ["#8fa0b3", "#6e7f94", "#5a6b80", "#4a5a6e"];
+const ALT_COLORS_LIGHT = ["#7e8da0", "#5c6b7e", "#a8b4c4", "#6e7f94"];
+const ALT_COLORS_DARK = ["#8b97a8", "#5c6b7e", "#3a4556", "#2a3340"];
 
 type Basemap = "map" | "satellite";
 
@@ -167,7 +167,7 @@ function pathsForItinerary(
   const altColor = options.nightMap
     ? ALT_COLORS_DARK[options.altIndex ?? 0] ?? ALT_COLORS_DARK[0]!
     : ALT_COLORS_LIGHT[options.altIndex ?? 0] ?? ALT_COLORS_LIGHT[0]!;
-  const compareColor = options.nightMap ? "#f0c14a" : "#c8102e";
+  const compareColor = options.nightMap ? "#ffc857" : "#ffb020";
 
   return itinerary.legs
     .map((leg, index) => {
@@ -193,8 +193,8 @@ function pathsForItinerary(
             ? altColor
             : delayed
               ? options.nightMap
-                ? liftChartColor("#c8102e")
-                : "#c8102e"
+                ? liftChartColor("#ff3b30")
+                : "#e11d2e"
               : options.nightMap
                 ? liftChartColor(legColor(leg))
                 : legColor(leg);
@@ -450,7 +450,7 @@ export default function RouteMapInner({
     ]);
   }, [from, extraEnds]);
 
-  const previewColor = nightMap ? "#ff8b7a" : "#c8102e";
+  const previewColor = nightMap ? "#ffc857" : "#ffb020";
 
   const fitPoints = useMemo<[number, number][]>(() => {
     const fromPaths = paths.flatMap((path) => path.coordinates);

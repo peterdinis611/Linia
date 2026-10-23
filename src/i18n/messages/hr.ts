@@ -107,7 +107,7 @@ export const hr: Messages = {
     city: "Grad",
     cityPlaceholder: "Prešov, Košice, Zagreb…",
     cityKicker: "Šalter grada",
-    cityHint: "Prvo grad. Zatim dalekosežni ili prigradski.",
+    cityHint: "Neobavezno — sužava obližnja stajališta. Dalekosežni ili prigradski po potrebi.",
     suburbanHint: "Pečat odakle i kamo. Karta pričvrsti obje stanice i prigradsku liniju.",
     distanceGroup: "Vrsta linije",
     distanceLong: "Dalekosežni",

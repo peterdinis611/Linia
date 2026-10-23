@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n/provider";
+import { localizePlaceName } from "@/i18n/place-name";
 import type { JourneyFormFieldErrors } from "@/lib/schemas";
 import { MAX_VIA_STOPS } from "@/lib/transit/place";
 import type {
   DistanceFilter,
-  ModeFilter,
   SelectedPlace,
-  TransferFilter,
 } from "@/lib/transit/types";
 import type { RouteMode } from "../hooks/use-journey-search";
+import type { RecentSearch } from "../lib/recent";
 import { PlaceAutocomplete } from "./PlaceAutocomplete";
 import { HallWhen } from "./HallWhen";
 
@@ -25,17 +25,12 @@ type SearchFormProps = {
   allDay: boolean;
   city: SelectedPlace | null;
   distanceFilter: DistanceFilter;
-  modeFilter: ModeFilter;
-  transferFilter: TransferFilter;
-  accessible: boolean;
-  bike: boolean;
-  night: boolean;
   wantReturn: boolean;
   returnDatetime: string;
   loading: boolean;
   hasSearched?: boolean;
-  transferCounts?: { direct: number; transfers: number } | null;
   fieldErrors?: JourneyFormFieldErrors;
+  recents?: RecentSearch[];
   onFromChange: (place: SelectedPlace | null) => void;
   onToChange: (place: SelectedPlace | null) => void;
   onViaChange: (index: number, place: SelectedPlace | null) => void;
@@ -49,13 +44,9 @@ type SearchFormProps = {
   onAllDayChange: (value: boolean) => void;
   onCityChange: (place: SelectedPlace | null) => void;
   onDistanceFilterChange: (value: DistanceFilter) => void;
-  onModeFilterChange: (value: ModeFilter) => void;
-  onTransferFilterChange: (value: TransferFilter) => void;
-  onAccessibleChange: (value: boolean) => void;
-  onBikeChange: (value: boolean) => void;
-  onNightChange: (value: boolean) => void;
   onWantReturnChange: (value: boolean) => void;
   onReturnDatetimeChange: (value: string) => void;
+  onRecentSelect?: (item: RecentSearch) => void;
   onSearch: () => void;
   onClear: () => void;
   geoBusy?: boolean;
@@ -75,17 +66,12 @@ export function SearchForm({
   allDay,
   city,
   distanceFilter,
-  modeFilter,
-  transferFilter,
-  accessible,
-  bike,
-  night,
   wantReturn,
   returnDatetime,
   loading,
   hasSearched = false,
-  transferCounts,
   fieldErrors,
+  recents = [],
   onFromChange,
   onToChange,
   onViaChange,
@@ -99,13 +85,9 @@ export function SearchForm({
   onAllDayChange,
   onCityChange,
   onDistanceFilterChange,
-  onModeFilterChange,
-  onTransferFilterChange,
-  onAccessibleChange,
-  onBikeChange,
-  onNightChange,
   onWantReturnChange,
   onReturnDatetimeChange,
+  onRecentSelect,
   onSearch,
   onClear,
   geoBusy = false,
@@ -113,10 +95,12 @@ export function SearchForm({
   onUseMyLocation,
   onNearbyBoard,
 }: SearchFormProps) {
-  const { t } = useI18n();
+  const { messages, t } = useI18n();
+  const kinds = messages.placeKind;
   const [fieldsKey, setFieldsKey] = useState(0);
   const suburban = distanceFilter === "suburban";
   const board = routeMode === "board";
+  const scopeOpen = Boolean(city || distanceFilter !== "all");
   const canClear = Boolean(
     hasSearched ||
       from ||
@@ -128,17 +112,12 @@ export function SearchForm({
       allDay ||
       city ||
       distanceFilter !== "all" ||
-      modeFilter !== "all" ||
-      transferFilter !== "all" ||
-      accessible ||
-      bike ||
-      night ||
       wantReturn,
   );
 
   useEffect(() => {
-    const messages = Object.values(fieldErrors ?? {}).filter(Boolean);
-    if (messages.length === 0) return;
+    const messagesList = Object.values(fieldErrors ?? {}).filter(Boolean);
+    if (messagesList.length === 0) return;
     document
       .querySelector("[data-testid='search-form'] .field-error")
       ?.scrollIntoView({ block: "center" });
@@ -150,26 +129,6 @@ export function SearchForm({
   }[] = [
     { value: "long", label: t("search.distanceLong") },
     { value: "suburban", label: t("search.distanceSuburban") },
-  ];
-  const modeOptions: { value: Exclude<ModeFilter, "all">; label: string }[] = [
-    { value: "train", label: t("search.modeRail") },
-    { value: "bus", label: t("search.modeCoach") },
-  ];
-  const transferOptions: { value: Exclude<TransferFilter, "all">; label: string }[] = [
-    {
-      value: "direct",
-      label:
-        transferCounts != null
-          ? t("search.transferDirectCount", { count: transferCounts.direct })
-          : t("search.transferDirect"),
-    },
-    {
-      value: "transfers",
-      label:
-        transferCounts != null
-          ? t("search.transferTransfersCount", { count: transferCounts.transfers })
-          : t("search.transferTransfers"),
-    },
   ];
 
   return (
@@ -187,50 +146,37 @@ export function SearchForm({
     >
       <div>
         <p className="kicker">{t("search.kicker")}</p>
-        <p className="font-display mt-1 text-[1.65rem] leading-none italic">
+        <p className="font-display mt-1 text-[1.65rem] leading-none">
           {t("search.title")}
         </p>
       </div>
 
-      <div className="ticket-line" data-desk="city">
-        <p className="kicker">{t("search.cityKicker")}</p>
-        <PlaceAutocomplete
-          key={`city-${fieldsKey}`}
-          kind="city"
-          label={t("search.city")}
-          placeholder={t("search.cityPlaceholder")}
-          value={city}
-          error={fieldErrors?.city ? t(fieldErrors.city) : undefined}
-          onChange={onCityChange}
-        />
-        <div
-          className="ticket-line-row"
-          role="group"
-          aria-label={t("search.distanceGroup")}
-        >
-          {distanceOptions.map((option) => {
-            const selected = distanceFilter === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                className="stamp"
-                data-on={selected}
-                data-testid={`distance-${option.value}`}
-                aria-pressed={selected}
-                onClick={() =>
-                  onDistanceFilterChange(selected ? "all" : option.value)
-                }
-              >
-                {option.label}
-              </button>
-            );
-          })}
+      {!hasSearched && recents.length > 0 && onRecentSelect ? (
+        <div data-testid="recent-searches">
+          <p className="kicker">{t("recent.kicker")}</p>
+          <ul className="mt-2 space-y-2">
+            {recents.slice(0, 4).map((item) => {
+              const viaLabel =
+                item.via.length > 0
+                  ? ` · ${item.via.map((stop) => localizePlaceName(stop.name, kinds)).join(" · ")}`
+                  : "";
+              return (
+                <li key={`${item.from.id}-${item.to.id}-${item.savedAt}`}>
+                  <button
+                    type="button"
+                    className="stamp stamp-plain w-full text-left"
+                    onClick={() => onRecentSelect(item)}
+                  >
+                    {localizePlaceName(item.from.name, kinds)} →{" "}
+                    {localizePlaceName(item.to.name, kinds)}
+                    {viaLabel}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         </div>
-        <p className="font-mono text-[11px] tracking-[0.12em] text-ink-muted uppercase">
-          {suburban ? t("search.suburbanHint") : t("search.cityHint")}
-        </p>
-      </div>
+      ) : null}
 
       <div className="space-y-3" data-tour="origin">
         <PlaceAutocomplete
@@ -312,236 +258,244 @@ export function SearchForm({
         </>
       ) : null}
       {!suburban ? (
-      <div className="space-y-3">
-        <div data-tour="route">
-          <p className="kicker mb-2">{t("search.route")}</p>
-          <div className="mode-switch" role="group" aria-label={t("search.routeType")}>
-            <button
-              type="button"
-              data-on={routeMode === "point"}
-              aria-pressed={routeMode === "point"}
-              onClick={() => onRouteModeChange("point")}
+        <div className="space-y-3">
+          <div data-tour="route">
+            <p className="kicker mb-2">{t("search.route")}</p>
+            <div
+              className="mode-switch"
+              role="group"
+              aria-label={t("search.routeType")}
             >
-              {t("search.pointToPoint")}
-            </button>
-            <button
-              type="button"
-              data-on={routeMode === "via"}
-              aria-pressed={routeMode === "via"}
-              onClick={() => onRouteModeChange("via")}
-            >
-              {t("search.viaStops")}
-            </button>
-            <button
-              type="button"
-              data-on={board}
-              aria-pressed={board}
-              data-testid="station-board-mode"
-              onClick={() => onRouteModeChange("board")}
-            >
-              {t("search.stationBoard")}
-            </button>
-          </div>
-        </div>
-        {routeMode === "via" && (
-          <>
-            {via.map((stop, index) => (
-              <div key={`via-wrap-${index}-${fieldsKey}`} className="relative">
-                <PlaceAutocomplete
-                  label={t("search.viaN", { n: index + 1 })}
-                  placeholder={t("search.viaPlaceholder")}
-                  value={stop}
-                  kind="stop"
-                  bias={city ?? from ?? to}
-                  placeBias={city ? 3 : undefined}
-                  error={
-                    fieldErrors?.[`via.${index}`]
-                      ? t(fieldErrors[`via.${index}`]!)
-                      : index === 0 && fieldErrors?.via
-                        ? t(fieldErrors.via)
-                        : undefined
-                  }
-                  onChange={(place) => onViaChange(index, place)}
-                />
-                <button
-                  type="button"
-                  className="search-clear mt-1 text-left"
-                  aria-label={t("search.removeViaN", { n: index + 1 })}
-                  onClick={() => onRemoveVia(index)}
-                >
-                  {t("search.removeVia")}
-                </button>
-              </div>
-            ))}
-            {via.length < MAX_VIA_STOPS && (
-              <button type="button" className="stamp w-full" onClick={onAddVia}>
-                {t("search.addVia")}
+              <button
+                type="button"
+                data-on={routeMode === "point"}
+                aria-pressed={routeMode === "point"}
+                onClick={() => onRouteModeChange("point")}
+              >
+                {t("search.pointToPoint")}
               </button>
-            )}
-          </>
-        )}
-      </div>
-      ) : null}
-
-      <div className="space-y-5" data-tour="when">
-      <div className={board ? "space-y-2" : "grid grid-cols-2 gap-2"}>
-        <button
-          type="button"
-          data-on={leaveNow}
-          className="stamp"
-          onClick={() => {
-            onLeaveNowChange(!leaveNow);
-          }}
-          aria-pressed={leaveNow}
-        >
-          {t("search.leaveNow")}
-        </button>
-        {board ? (
-          <div
-            className="mode-switch"
-            data-cols="2"
-            role="group"
-            aria-label={t("board.direction")}
-          >
-            <button
-              type="button"
-              data-on={!arriveBy}
-              data-testid="board-departures"
-              aria-pressed={!arriveBy}
-              onClick={() => {
-                if (arriveBy) onArriveByChange(false);
-              }}
-            >
-              {t("search.departure")}
-            </button>
-            <button
-              type="button"
-              data-on={arriveBy}
-              data-testid="board-arrivals"
-              aria-pressed={arriveBy}
-              onClick={() => {
-                if (!arriveBy) onArriveByChange(true);
-              }}
-            >
-              {t("search.arrival")}
-            </button>
+              <button
+                type="button"
+                data-on={routeMode === "via"}
+                aria-pressed={routeMode === "via"}
+                onClick={() => onRouteModeChange("via")}
+              >
+                {t("search.viaStops")}
+              </button>
+              <button
+                type="button"
+                data-on={board}
+                aria-pressed={board}
+                data-testid="station-board-mode"
+                onClick={() => onRouteModeChange("board")}
+              >
+                {t("search.stationBoard")}
+              </button>
+            </div>
           </div>
-        ) : (
-          <button
-            type="button"
-            data-on={arriveBy}
-            className="stamp"
-            onClick={() => {
-              onArriveByChange(!arriveBy);
-            }}
-            aria-pressed={arriveBy}
-          >
-            {t("search.arriveBy")}
-          </button>
-        )}
-      </div>
-      <button
-        type="button"
-        data-on={allDay}
-        data-testid="all-day"
-        className="stamp w-full"
-        onClick={() => {
-          onAllDayChange(!allDay);
-        }}
-        aria-pressed={allDay}
-      >
-        {t("search.allDay")}
-      </button>
-      {!board ? (
-        <button
-          type="button"
-          data-on={wantReturn}
-          data-testid="return-trip"
-          className="stamp w-full"
-          onClick={() => onWantReturnChange(!wantReturn)}
-          aria-pressed={wantReturn}
-        >
-          {t("search.returnTrip")}
-        </button>
-      ) : null}
-
-      <div>
-        <p className="kicker mb-2">
-          {allDay
-            ? t("search.allDayKicker")
-            : arriveBy
-              ? t("search.arrival")
-              : t("search.departure")}
-        </p>
-        <HallWhen
-          datetime={datetime}
-          leaveNow={leaveNow}
-          allDay={allDay}
-          invalid={Boolean(fieldErrors?.time)}
-          describedBy={fieldErrors?.time ? "journey-time-error" : undefined}
-          onChange={onDatetimeChange}
-        />
-        {fieldErrors?.time && (
-          <p id="journey-time-error" role="alert" className="field-error">
-            {t(fieldErrors.time)}
-          </p>
-        )}
-      </div>
-      {wantReturn && !board ? (
-        <div>
-          <p className="kicker mb-2">{t("search.returnKicker")}</p>
-          <HallWhen
-            datetime={returnDatetime}
-            leaveNow={false}
-            allDay={allDay}
-            invalid={Boolean(fieldErrors?.returnTime)}
-            describedBy={fieldErrors?.returnTime ? "return-time-error" : undefined}
-            idPrefix="return"
-            onChange={onReturnDatetimeChange}
-          />
-          {fieldErrors?.returnTime && (
-            <p id="return-time-error" role="alert" className="field-error">
-              {t(fieldErrors.returnTime)}
-            </p>
+          {routeMode === "via" && (
+            <>
+              {via.map((stop, index) => (
+                <div key={`via-wrap-${index}-${fieldsKey}`} className="relative">
+                  <PlaceAutocomplete
+                    label={t("search.viaN", { n: index + 1 })}
+                    placeholder={t("search.viaPlaceholder")}
+                    value={stop}
+                    kind="stop"
+                    bias={city ?? from ?? to}
+                    placeBias={city ? 3 : undefined}
+                    error={
+                      fieldErrors?.[`via.${index}`]
+                        ? t(fieldErrors[`via.${index}`]!)
+                        : index === 0 && fieldErrors?.via
+                          ? t(fieldErrors.via)
+                          : undefined
+                    }
+                    onChange={(place) => onViaChange(index, place)}
+                  />
+                  <button
+                    type="button"
+                    className="search-clear mt-1 text-left"
+                    aria-label={t("search.removeViaN", { n: index + 1 })}
+                    onClick={() => onRemoveVia(index)}
+                  >
+                    {t("search.removeVia")}
+                  </button>
+                </div>
+              ))}
+              {via.length < MAX_VIA_STOPS && (
+                <button type="button" className="stamp w-full" onClick={onAddVia}>
+                  {t("search.addVia")}
+                </button>
+              )}
+            </>
           )}
         </div>
       ) : null}
+
+      <div className="space-y-5" data-tour="when">
+        <div className={board ? "space-y-2" : "grid grid-cols-2 gap-2"}>
+          <button
+            type="button"
+            data-on={leaveNow}
+            className="stamp"
+            onClick={() => {
+              onLeaveNowChange(!leaveNow);
+            }}
+            aria-pressed={leaveNow}
+          >
+            {t("search.leaveNow")}
+          </button>
+          {board ? (
+            <div
+              className="mode-switch"
+              data-cols="2"
+              role="group"
+              aria-label={t("board.direction")}
+            >
+              <button
+                type="button"
+                data-on={!arriveBy}
+                data-testid="board-departures"
+                aria-pressed={!arriveBy}
+                onClick={() => {
+                  if (arriveBy) onArriveByChange(false);
+                }}
+              >
+                {t("search.departure")}
+              </button>
+              <button
+                type="button"
+                data-on={arriveBy}
+                data-testid="board-arrivals"
+                aria-pressed={arriveBy}
+                onClick={() => {
+                  if (!arriveBy) onArriveByChange(true);
+                }}
+              >
+                {t("search.arrival")}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              data-on={arriveBy}
+              className="stamp"
+              onClick={() => {
+                onArriveByChange(!arriveBy);
+              }}
+              aria-pressed={arriveBy}
+            >
+              {t("search.arriveBy")}
+            </button>
+          )}
+        </div>
+        <button
+          type="button"
+          data-on={allDay}
+          data-testid="all-day"
+          className="stamp w-full"
+          onClick={() => {
+            onAllDayChange(!allDay);
+          }}
+          aria-pressed={allDay}
+        >
+          {t("search.allDay")}
+        </button>
+        {!board ? (
+          <button
+            type="button"
+            data-on={wantReturn}
+            data-testid="return-trip"
+            className="stamp w-full"
+            onClick={() => onWantReturnChange(!wantReturn)}
+            aria-pressed={wantReturn}
+          >
+            {t("search.returnTrip")}
+          </button>
+        ) : null}
+
+        <div>
+          <p className="kicker mb-2">
+            {allDay
+              ? t("search.allDayKicker")
+              : arriveBy
+                ? t("search.arrival")
+                : t("search.departure")}
+          </p>
+          <HallWhen
+            datetime={datetime}
+            leaveNow={leaveNow}
+            allDay={allDay}
+            invalid={Boolean(fieldErrors?.time)}
+            describedBy={fieldErrors?.time ? "journey-time-error" : undefined}
+            onChange={onDatetimeChange}
+          />
+          {fieldErrors?.time && (
+            <p id="journey-time-error" role="alert" className="field-error">
+              {t(fieldErrors.time)}
+            </p>
+          )}
+        </div>
+        {wantReturn && !board ? (
+          <div>
+            <p className="kicker mb-2">{t("search.returnKicker")}</p>
+            <HallWhen
+              datetime={returnDatetime}
+              leaveNow={false}
+              allDay={allDay}
+              invalid={Boolean(fieldErrors?.returnTime)}
+              describedBy={
+                fieldErrors?.returnTime ? "return-time-error" : undefined
+              }
+              idPrefix="return"
+              onChange={onReturnDatetimeChange}
+            />
+            {fieldErrors?.returnTime && (
+              <p id="return-time-error" role="alert" className="field-error">
+                {t(fieldErrors.returnTime)}
+              </p>
+            )}
+          </div>
+        ) : null}
       </div>
 
-      <div className="ticket-line" data-tour="line">
-        <p className="kicker">{t("search.line")}</p>
-        <div className="ticket-line-row" role="group" aria-label={t("search.modeGroup")}>
-          {modeOptions.map((option) => {
-            const selected = modeFilter === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                className="stamp"
-                data-on={selected}
-                aria-pressed={selected}
-                onClick={() =>
-                  onModeFilterChange(selected ? "all" : option.value)
-                }
-              >
-                {option.label}
-              </button>
-            );
-          })}
-        </div>
-        {!board ? (
-          <div className="ticket-line-row" role="group" aria-label={t("search.connectionsGroup")}>
-            {transferOptions.map((option) => {
-              const selected = transferFilter === option.value;
+      <details
+        className="desk-scope"
+        data-desk="city"
+        open={scopeOpen || undefined}
+      >
+        <summary className="desk-scope-summary">
+          <span className="kicker">{t("search.cityKicker")}</span>
+          <span className="desk-scope-hint">{t("search.cityHint")}</span>
+        </summary>
+        <div className="ticket-line mt-3">
+          <PlaceAutocomplete
+            key={`city-${fieldsKey}`}
+            kind="city"
+            label={t("search.city")}
+            placeholder={t("search.cityPlaceholder")}
+            value={city}
+            error={fieldErrors?.city ? t(fieldErrors.city) : undefined}
+            onChange={onCityChange}
+          />
+          <div
+            className="ticket-line-row"
+            role="group"
+            aria-label={t("search.distanceGroup")}
+          >
+            {distanceOptions.map((option) => {
+              const selected = distanceFilter === option.value;
               return (
                 <button
                   key={option.value}
                   type="button"
                   className="stamp"
                   data-on={selected}
+                  data-testid={`distance-${option.value}`}
                   aria-pressed={selected}
                   onClick={() =>
-                    onTransferFilterChange(selected ? "all" : option.value)
+                    onDistanceFilterChange(selected ? "all" : option.value)
                   }
                 >
                   {option.label}
@@ -549,42 +503,13 @@ export function SearchForm({
               );
             })}
           </div>
-        ) : null}
-        {!board ? (
-          <>
-            <button
-              type="button"
-              className="stamp w-full"
-              data-on={accessible}
-              data-testid="accessible"
-              aria-pressed={accessible}
-              onClick={() => onAccessibleChange(!accessible)}
-            >
-              {t("search.accessible")}
-            </button>
-            <button
-              type="button"
-              className="stamp w-full"
-              data-on={bike}
-              data-testid="bike"
-              aria-pressed={bike}
-              onClick={() => onBikeChange(!bike)}
-            >
-              {t("search.bike")}
-            </button>
-          </>
-        ) : null}
-        <button
-          type="button"
-          className="stamp w-full"
-          data-on={night}
-          data-testid="night-rail"
-          aria-pressed={night}
-          onClick={() => onNightChange(!night)}
-        >
-          {t("search.nightRail")}
-        </button>
-      </div>
+          {suburban ? (
+            <p className="font-mono text-[11px] tracking-[0.12em] text-ink-muted uppercase">
+              {t("search.suburbanHint")}
+            </p>
+          ) : null}
+        </div>
+      </details>
 
       <div className="space-y-2">
         <button

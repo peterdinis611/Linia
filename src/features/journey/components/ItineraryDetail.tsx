@@ -53,7 +53,7 @@ export function ItineraryDetail({ itinerary, onOpenStation }: ItineraryDetailPro
       <div className="mb-4 flex items-end justify-between gap-3 border-b border-rule pb-3">
         <div>
           <p className="kicker">{t("detail.kicker")}</p>
-          <h2 className="font-display mt-1 text-xl italic">
+          <h2 className="font-display mt-1 text-xl">
             {t("detail.title")}
           </h2>
         </div>

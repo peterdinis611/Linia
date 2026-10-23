@@ -9,6 +9,11 @@ import { useI18n } from "@/i18n/provider";
 import type { Itinerary } from "@/lib/transit/types";
 import { splitDateTime } from "../lib/datetime";
 import { hallAlertsFromBoard } from "../lib/alerts";
+import {
+  hallHowtoSeen,
+  markHallHowtoSeen,
+  subscribeHallPrefs,
+} from "../lib/hall-prefs";
 import { EmptyBoard, SearchingBoard, StationClock } from "./Board";
 import { BoardMast } from "./BoardMast";
 import { HallLift } from "./HallLift";
@@ -17,9 +22,10 @@ import { ShareJourney } from "./ShareJourney";
 import { HowToButton } from "./HowToUse";
 import { ItineraryDetail } from "./ItineraryDetail";
 import { JourneyResults } from "./JourneyResults";
+import { LineFilters } from "./LineFilters";
 import { PinLine } from "./PinLine";
 import { PrintTicket } from "./PrintTicket";
-import { RouteMap } from "./RouteMap";
+import { MAP_ALT_MAX, RouteMap } from "./RouteMap";
 import { SearchForm } from "./SearchForm";
 import { ShortcutsHint } from "./ShortcutsHint";
 import { SoundStamp } from "./SoundStamp";
@@ -53,8 +59,28 @@ export function JourneySearch() {
   const originInputRef = useRef<HTMLInputElement>(null);
   const [mapOpen, setMapOpen] = useState(false);
   const [heldItinerary, setHeldItinerary] = useState<Itinerary | null>(null);
+  const [showHowto, setShowHowto] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const refresh = () => {
+      void hallHowtoSeen().then((seen) => {
+        if (!cancelled) setShowHowto(!seen);
+      });
+    };
+    refresh();
+    return subscribeHallPrefs(refresh);
+  }, []);
+
+  useEffect(() => {
+    if (!search.hasSearched) return;
+    void markHallHowtoSeen().then(() => setShowHowto(false));
+  }, [search.hasSearched]);
   const mapAlternatives = useMemo(
-    () => search.filtered.map((item) => item.itinerary),
+    () =>
+      search.filtered
+        .slice(0, MAP_ALT_MAX)
+        .map((item) => item.itinerary),
     [search.filtered],
   );
   const printSheets = useMemo(
@@ -199,7 +225,7 @@ export function JourneySearch() {
           <div className="hall-mast-brand reveal">
             <p className="kicker">{t("brand.kicker")}</p>
             <div className="mt-1 flex items-baseline gap-3">
-              <h1 className="font-display text-[2.15rem] leading-none font-semibold tracking-tight italic sm:text-[2.6rem]">
+              <h1 className="font-display text-[2.15rem] leading-none font-semibold tracking-tight sm:text-[2.6rem]">
                 Linia
               </h1>
               <span
@@ -238,17 +264,12 @@ export function JourneySearch() {
             allDay={search.allDay}
             city={search.city}
             distanceFilter={search.distanceFilter}
-            modeFilter={search.modeFilter}
-            transferFilter={search.transferFilter}
-            accessible={search.accessible}
-            bike={search.bike}
-            night={search.night}
             wantReturn={search.wantReturn}
             returnDatetime={search.returnDatetime}
             loading={search.loading}
             hasSearched={search.hasSearched}
-            transferCounts={search.transferCounts}
             fieldErrors={search.fieldErrors}
+            recents={search.recents}
             onFromChange={search.handleFromChange}
             onToChange={search.handleToChange}
             onViaChange={search.handleViaChange}
@@ -293,11 +314,6 @@ export function JourneySearch() {
             }}
             onCityChange={search.handleCityChange}
             onDistanceFilterChange={search.handleDistanceFilterChange}
-            onModeFilterChange={search.setModeFilter}
-            onTransferFilterChange={search.setTransferFilter}
-            onAccessibleChange={search.setAccessible}
-            onBikeChange={search.setBike}
-            onNightChange={search.setNight}
             onWantReturnChange={search.handleWantReturnChange}
             onReturnDatetimeChange={(value) => {
               search.setReturnDatetime(value);
@@ -306,6 +322,7 @@ export function JourneySearch() {
                 returnTime: undefined,
               }));
             }}
+            onRecentSelect={search.handleRecentSelect}
             onSearch={search.handleSearch}
             onClear={search.handleClearForm}
             geoBusy={search.geoBusy}
@@ -336,11 +353,10 @@ export function JourneySearch() {
               kicker={t(search.emptyCopy.kicker)}
               title={t(search.emptyCopy.title)}
               body={t(search.emptyCopy.body)}
-              recents={search.recents}
               pins={search.pins}
               serviceFrom={search.serviceFrom}
               lastAt={search.lastAt}
-              onRecentSelect={search.handleRecentSelect}
+              showGuide={showHowto}
               onPinnedSelect={search.handlePinnedSelect}
               onTour={startTour}
             />
@@ -352,6 +368,19 @@ export function JourneySearch() {
               data-tour="board"
               className="space-y-4"
             >
+              <LineFilters
+                modeFilter={search.modeFilter}
+                transferFilter={search.transferFilter}
+                accessible={search.accessible}
+                bike={search.bike}
+                night={search.night}
+                board
+                onModeFilterChange={search.setModeFilter}
+                onTransferFilterChange={search.setTransferFilter}
+                onAccessibleChange={search.setAccessible}
+                onBikeChange={search.setBike}
+                onNightChange={search.setNight}
+              />
               <BoardMast
                 kicker={t("board.stationKicker")}
                 headline={
@@ -452,7 +481,12 @@ export function JourneySearch() {
                 selected={search.selected}
                 selectedIndex={search.selectedIndex}
                 selectedCarriers={search.selectedCarriers}
+                modeFilter={search.modeFilter}
                 transferFilter={search.transferFilter}
+                accessible={search.accessible}
+                bike={search.bike}
+                night={search.night}
+                transferCounts={search.transferCounts}
                 shareUrl={search.shareUrl}
                 printCount={printSheets.length}
                 serviceFrom={search.serviceFrom}
@@ -462,7 +496,11 @@ export function JourneySearch() {
                 liveFresh={liveFresh}
                 onSelectedCarriersChange={search.setSelectedCarriers}
                 onSelectedIndexChange={search.setSelectedIndex}
+                onModeFilterChange={search.setModeFilter}
                 onTransferFilterChange={search.setTransferFilter}
+                onAccessibleChange={search.setAccessible}
+                onBikeChange={search.setBike}
+                onNightChange={search.setNight}
                 onRefresh={search.handleRefresh}
                 onTimeShift={search.allDay ? undefined : search.handleTimeShift}
                 onOpenStation={search.handleOpenStation}

@@ -88,6 +88,7 @@ export async function collectPlanPages<T extends { itineraries: Itinerary[]; nex
     enoughUnique?: number;
     /** Journey keys already painted (first page) so enoughUnique spans the whole search. */
     seedKeys?: string[];
+    signal?: AbortSignal;
   },
 ) {
   const pages = [first.itineraries];
@@ -100,6 +101,11 @@ export async function collectPlanPages<T extends { itineraries: Itinerary[]; nex
   const enough = options.enoughUnique;
 
   for (let page = 1; page < options.maxPages && cursor; page += 1) {
+    if (options.signal?.aborted) {
+      throw (
+        options.signal.reason ?? new DOMException("Aborted", "AbortError")
+      );
+    }
     if (enough != null && seen.size >= enough) break;
     const lastPage = pages.at(-1) ?? [];
     if (

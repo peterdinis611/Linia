@@ -25,6 +25,7 @@ import {
   type StopTimeEvent,
   type TransferFilter,
 } from "@/lib/transit/types";
+import { isAbortError } from "@/lib/transit/client";
 import {
   fetchStopTimes,
   fetchTrip,
@@ -32,6 +33,10 @@ import {
   resolveBoardEnds,
   reverseGeocodePlace,
 } from "@/lib/transit/queries";
+import { usePlanGeneration } from "./use-plan-generation";
+
+const PLACE_PLAN_MS = 280;
+const FILTER_PLAN_MS = 720;
 import {
   countTransferKinds,
   emptyBoardCopy,
@@ -156,7 +161,8 @@ export function useJourneySearch() {
   const [via, setVia] = useState<Array<SelectedPlace | null>>([]);
   const [routeMode, setRouteMode] = useState<RouteMode>("point");
   const [leaveNow, setLeaveNow] = useState(true);
-  const [datetime, setDatetime] = useState(toLocalDateTimeValue);
+  /** Empty until mount — wall clock in useState() mismatches SSR/client minutes. */
+  const [datetime, setDatetime] = useState("");
   const [arriveBy, setArriveBy] = useState(false);
   const [allDay, setAllDay] = useState(false);
   const [city, setCity] = useState<SelectedPlace | null>(null);
@@ -185,9 +191,7 @@ export function useJourneySearch() {
   const [bike, setBike] = useState(false);
   const [night, setNight] = useState(false);
   const [wantReturn, setWantReturn] = useState(false);
-  const [returnDatetime, setReturnDatetime] = useState(() =>
-    addDaysToDateTime(toLocalDateTimeValue(), 1),
-  );
+  const [returnDatetime, setReturnDatetime] = useState("");
   const [hallLeg, setHallLeg] = useState<HallLeg>("outbound");
   const [inboundItineraries, setInboundItineraries] = useState<Itinerary[]>([]);
   const [inboundSelectedIndex, setInboundSelectedIndex] = useState(0);
@@ -206,7 +210,9 @@ export function useJourneySearch() {
   const selectedRef = useRef<Itinerary | null>(null);
   const claimedPlan = useRef("");
   const pinBusyRef = useRef(false);
-  const planGen = useRef(0);
+  const lastPlacesSig = useRef("");
+  const { begin: beginPlanGeneration, isCurrent: isPlanCurrent } =
+    usePlanGeneration();
   const searchSnap = useRef({
     from,
     to,
@@ -664,7 +670,7 @@ export function useJourneySearch() {
     });
     if (key) claimedPlan.current = key;
     const silent = Boolean(options?.silent);
-    const gen = ++planGen.current;
+    const { gen } = beginPlanGeneration();
     setFieldErrors({});
     if (silent) setRefreshing(true);
     else setLoading(true);
@@ -689,7 +695,7 @@ export function useJourneySearch() {
         },
         { fresh: options?.fresh },
       );
-      if (gen !== planGen.current) return;
+      if (!isPlanCurrent(gen)) return;
       lastPlan.current = {
         from: snapshot.from,
         to: null,
@@ -720,7 +726,7 @@ export function useJourneySearch() {
         snapshot.from,
         locale,
       );
-      if (gen !== planGen.current) return;
+      if (!isPlanCurrent(gen)) return;
       setBoardEnds(ends);
       if (snapshot.tripKey) {
         const match = result.stopTimes.find(
@@ -729,7 +735,7 @@ export function useJourneySearch() {
         if (match?.tripId) {
           setBoardEvent(match);
           const trip = await fetchTrip(match.tripId);
-          if (gen !== planGen.current) return;
+          if (!isPlanCurrent(gen)) return;
           setBoardTrip(trip);
         }
       } else if (!silent) {
@@ -737,7 +743,7 @@ export function useJourneySearch() {
         if (first) {
           setBoardEvent(first);
           const trip = await loadBoardTrip(first);
-          if (gen !== planGen.current) return;
+          if (!isPlanCurrent(gen)) return;
           setBoardTrip(trip);
         } else {
           setBoardEvent(null);
@@ -747,7 +753,7 @@ export function useJourneySearch() {
       setLiveAt(Date.now());
       if (!silent) bumpFit();
     } catch (err) {
-      if (gen !== planGen.current) return;
+      if (!isPlanCurrent(gen) || isAbortError(err)) return;
       if (!silent) {
         setStopTimes([]);
         setBoardTrip(null);
@@ -764,7 +770,7 @@ export function useJourneySearch() {
         );
       }
     } finally {
-      if (gen === planGen.current) {
+      if (isPlanCurrent(gen)) {
         setLoading(false);
         setRefreshing(false);
       }
@@ -834,7 +840,7 @@ export function useJourneySearch() {
       (stop): stop is SelectedPlace => Boolean(stop),
     );
     const silent = Boolean(options?.silent);
-    const gen = ++planGen.current;
+    const { gen, signal } = beginPlanGeneration();
     const access = Boolean(parsed.data.accessible);
     const withBike = Boolean(parsed.data.bike);
     const nightRail = Boolean(parsed.data.night);
@@ -870,9 +876,10 @@ export function useJourneySearch() {
       let paintedOutbound = false;
       const outbound = planJourney(outboundInput, {
         fresh: options?.fresh,
-        isCancelled: () => gen !== planGen.current,
+        signal,
+        isCancelled: () => !isPlanCurrent(gen),
         onFirst: (partial) => {
-          if (gen !== planGen.current) return;
+          if (!isPlanCurrent(gen)) return;
           const early = [
             ...(partial.itineraries ?? []),
             ...(partial.direct ?? []),
@@ -910,12 +917,13 @@ export function useJourneySearch() {
             },
             {
               fresh: options?.fresh,
-              isCancelled: () => gen !== planGen.current,
+              signal,
+              isCancelled: () => !isPlanCurrent(gen),
             },
           )
         : Promise.resolve(null);
       const [outResult, inResult] = await Promise.all([outbound, inbound]);
-      if (gen !== planGen.current) return;
+      if (!isPlanCurrent(gen)) return;
       const journeys = [
         ...(outResult.itineraries ?? []),
         ...(outResult.direct ?? []),
@@ -959,7 +967,7 @@ export function useJourneySearch() {
       setLiveAt(Date.now());
       if (!silent && !paintedOutbound) bumpFit();
     } catch (err) {
-      if (gen !== planGen.current) return;
+      if (!isPlanCurrent(gen) || isAbortError(err)) return;
       if (!silent) {
         setItineraries([]);
         setInboundItineraries([]);
@@ -980,7 +988,7 @@ export function useJourneySearch() {
         }
       }
     } finally {
-      if (gen === planGen.current) {
+      if (isPlanCurrent(gen)) {
         setLoading(false);
         setRefreshing(false);
       }
@@ -992,6 +1000,9 @@ export function useJourneySearch() {
     hydratedShare.current = true;
     const snapshot = parseShareQuery(window.location.search);
     if (!snapshot) {
+      const now = toLocalDateTimeValue();
+      setDatetime(now);
+      setReturnDatetime(addDaysToDateTime(now, 1));
       setShareQuery(window.location.search);
       return;
     }
@@ -1002,7 +1013,7 @@ export function useJourneySearch() {
       wantReturn: Boolean(snapshot.returnDatetime),
       board: snapshot.board,
     });
-    // Restore a public link once on first paint.
+    // Restore a public link once on first paint; seed wall clock only when no share.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only share restore
   }, []);
 
@@ -1183,9 +1194,26 @@ export function useJourneySearch() {
     };
     const key = planKey(snapshot);
     if (!key || key === claimedPlan.current) return;
+    const placesSig = planKey({
+      ...snapshot,
+      leaveNow: true,
+      datetime: "",
+      arriveBy: false,
+      allDay: false,
+      modeFilter: "all",
+      transferFilter: "all",
+      accessible: false,
+      bike: false,
+      night: false,
+      wantReturn: false,
+      returnDatetime: undefined,
+    });
+    const placesChanged = placesSig !== lastPlacesSig.current;
+    lastPlacesSig.current = placesSig ?? "";
+    const delay = placesChanged ? PLACE_PLAN_MS : FILTER_PLAN_MS;
     const timer = window.setTimeout(() => {
       void runPlan(snapshot);
-    }, 280);
+    }, delay);
     return () => window.clearTimeout(timer);
     // runPlan reads the snapshot captured here; claimedPlan prevents a second trip.
     // eslint-disable-next-line react-hooks/exhaustive-deps

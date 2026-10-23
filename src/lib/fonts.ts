@@ -1,28 +1,30 @@
-import { Fraunces, IBM_Plex_Mono, Schibsted_Grotesk } from "next/font/google";
+import {
+  Barlow_Condensed,
+  IBM_Plex_Mono,
+  IBM_Plex_Sans,
+} from "next/font/google";
 
-const frauncesLatin = Fraunces({
-  variable: "--font-fraunces",
+const displayLatin = Barlow_Condensed({
+  variable: "--font-display-face",
   subsets: ["latin"],
-  style: ["italic"],
-  weight: ["400", "600"],
+  weight: ["500", "600", "700"],
 });
 
-const frauncesExt = Fraunces({
-  variable: "--font-fraunces",
+const displayExt = Barlow_Condensed({
+  variable: "--font-display-face",
   subsets: ["latin", "latin-ext"],
-  style: ["italic"],
-  weight: ["400", "600"],
+  weight: ["500", "600", "700"],
 });
 
-const schibstedLatin = Schibsted_Grotesk({
-  variable: "--font-schibsted",
+const sansLatin = IBM_Plex_Sans({
+  variable: "--font-sans-face",
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   preload: false,
 });
 
-const schibstedExt = Schibsted_Grotesk({
-  variable: "--font-schibsted",
+const sansExt = IBM_Plex_Sans({
+  variable: "--font-sans-face",
   subsets: ["latin", "latin-ext"],
   weight: ["400", "500", "600"],
   preload: false,
@@ -44,7 +46,7 @@ const plexExt = IBM_Plex_Mono({
 
 export function hallFontClass(latinExt: boolean) {
   const pack = latinExt
-    ? [frauncesExt, schibstedExt, plexExt]
-    : [frauncesLatin, schibstedLatin, plexLatin];
+    ? [displayExt, sansExt, plexExt]
+    : [displayLatin, sansLatin, plexLatin];
   return pack.map((font) => font.variable).join(" ");
 }

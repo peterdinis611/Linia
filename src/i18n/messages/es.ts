@@ -107,7 +107,7 @@ export const es: Messages = {
     city: "Ciudad",
     cityPlaceholder: "Prešov, Košice, Madrid…",
     cityKicker: "Taquilla de ciudad",
-    cityHint: "Primero la ciudad. Luego larga distancia o cercanías.",
+    cityHint: "Opcional — sesga paradas cercanas. Larga distancia o cercanías si hace falta.",
     suburbanHint: "Sello de y a. El mapa fija ambas paradas y la línea de cercanías.",
     distanceGroup: "Tipo de línea",
     distanceLong: "Larga distancia",

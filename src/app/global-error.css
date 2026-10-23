@@ -4,9 +4,9 @@ html,
 body {
   height: 100%;
   margin: 0;
-  background: #10161f;
-  color: #f3e6d0;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  background: #0c0e12;
+  color: #e8edf2;
+  font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
 .search-cta {
@@ -16,9 +16,12 @@ body {
   width: 100%;
   max-width: 16rem;
   padding: 0.75rem 1rem;
-  border: 1px solid #ff3b4a;
-  background: #ff3b4a;
-  color: #fff8f4;
+  border: 1px solid #d99212;
+  background: #ffb020;
+  color: #0c0e12;
   font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   cursor: pointer;
 }

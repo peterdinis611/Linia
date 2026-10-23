@@ -23,9 +23,17 @@ function renderResults(itineraries = [railItinerary()], selectedIndex = 0) {
       selected={itineraries[selectedIndex] ?? null}
       selectedIndex={selectedIndex}
       selectedCarriers={[]}
+      modeFilter="all"
       transferFilter="all"
+      accessible={false}
+      bike={false}
+      night={false}
       shareUrl=""
       onSelectedCarriersChange={vi.fn()}
+      onModeFilterChange={vi.fn()}
+      onAccessibleChange={vi.fn()}
+      onBikeChange={vi.fn()}
+      onNightChange={vi.fn()}
       onSelectedIndexChange={vi.fn()}
     />,
   );
@@ -71,9 +79,17 @@ describe("JourneyResults hall stamps", () => {
         selected={first}
         selectedIndex={0}
         selectedCarriers={[]}
-        transferFilter="all"
+        modeFilter="all"
+      transferFilter="all"
+      accessible={false}
+      bike={false}
+      night={false}
         shareUrl=""
         onSelectedCarriersChange={vi.fn()}
+      onModeFilterChange={vi.fn()}
+      onAccessibleChange={vi.fn()}
+      onBikeChange={vi.fn()}
+      onNightChange={vi.fn()}
         onSelectedIndexChange={onSelectedIndexChange}
       />,
     );
@@ -90,9 +106,17 @@ describe("JourneyResults hall stamps", () => {
         selected={second}
         selectedIndex={1}
         selectedCarriers={[]}
-        transferFilter="all"
+        modeFilter="all"
+      transferFilter="all"
+      accessible={false}
+      bike={false}
+      night={false}
         shareUrl=""
         onSelectedCarriersChange={vi.fn()}
+      onModeFilterChange={vi.fn()}
+      onAccessibleChange={vi.fn()}
+      onBikeChange={vi.fn()}
+      onNightChange={vi.fn()}
         onSelectedIndexChange={onSelectedIndexChange}
       />,
     );

@@ -28,7 +28,7 @@ export function StatusScreen({
       <header className="shrink-0 border-b border-rule px-4 py-4 sm:px-6">
         <p className="kicker">{brandKicker}</p>
         <div className="mt-1 flex items-baseline gap-3">
-          <p className="font-display text-[2.15rem] leading-none font-semibold tracking-tight italic sm:text-[2.6rem]">
+          <p className="font-display text-[2.15rem] leading-none font-semibold tracking-tight sm:text-[2.6rem]">
             Linia
           </p>
           <span
@@ -43,7 +43,7 @@ export function StatusScreen({
           <StatusGlyph />
           {mark ? <p className="empty-mark mb-5">{mark}</p> : null}
           <p className="kicker">{kicker}</p>
-          <h1 className="font-display mt-2 max-w-[18ch] text-3xl leading-tight italic sm:text-4xl">
+          <h1 className="font-display mt-2 max-w-[18ch] text-3xl leading-tight sm:text-4xl">
             {title}
           </h1>
           <p className="mt-3 max-w-prose text-sm leading-relaxed text-ink-muted">

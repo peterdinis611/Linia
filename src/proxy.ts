@@ -26,6 +26,9 @@ function withColorSchemeHint(response: NextResponse) {
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  if (pathname.startsWith("/api/") || pathname === "/api") {
+    return NextResponse.next();
+  }
   const current = pathnameLocale(pathname);
 
   if (current) {

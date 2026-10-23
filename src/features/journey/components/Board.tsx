@@ -6,7 +6,6 @@ import { localizePlaceName } from "@/i18n/place-name";
 import { useI18n } from "@/i18n/provider";
 import { formatTime, serviceDay, waitUntil } from "@/lib/format";
 import { HowToGuide } from "./HowToUse";
-import type { RecentSearch } from "../lib/recent";
 import type { PinnedSearch } from "../lib/pinned";
 
 export function StationClock() {
@@ -50,7 +49,7 @@ export function SearchingBoard() {
     >
       <div>
         <p className="kicker">{t("board.searchingKicker")}</p>
-        <p className="font-display mt-1 text-lg italic">{t("board.searchingTitle")}</p>
+        <p className="font-display mt-1 text-lg">{t("board.searchingTitle")}</p>
       </div>
       <SearchingTrack />
     </div>
@@ -102,11 +101,10 @@ export function EmptyBoard({
   kicker,
   title,
   body,
-  recents = [],
   pins = [],
   serviceFrom = null,
   lastAt = null,
-  onRecentSelect,
+  showGuide = false,
   onPinnedSelect,
   onTour,
 }: {
@@ -114,11 +112,10 @@ export function EmptyBoard({
   kicker: string;
   title: string;
   body: string;
-  recents?: RecentSearch[];
   pins?: PinnedSearch[];
   serviceFrom?: string | null;
   lastAt?: string | null;
-  onRecentSelect?: (item: RecentSearch) => void;
+  showGuide?: boolean;
   onPinnedSelect?: (item: PinnedSearch) => void;
   onTour?: () => void;
 }) {
@@ -133,7 +130,7 @@ export function EmptyBoard({
       <SignalGlyph />
       {hasSearched && <p className="empty-mark mb-5">{t("board.emptyMark")}</p>}
       <p className="kicker">{kicker}</p>
-      <p className="font-display mt-2 max-w-[22ch] text-2xl leading-tight italic">
+      <p className="font-display mt-2 max-w-[22ch] text-2xl leading-tight">
         {title}
       </p>
       <p className="mt-3 max-w-prose text-sm leading-relaxed text-ink-muted">
@@ -179,38 +176,11 @@ export function EmptyBoard({
           </ul>
         </div>
       ) : null}
-      {!hasSearched && recents.length > 0 && onRecentSelect ? (
-        <div className="mt-5" data-testid="recent-searches">
-          <p className="kicker">{t("recent.kicker")}</p>
-          <p className="mt-1 text-sm font-semibold tracking-tight">{t("recent.title")}</p>
-          <ul className="mt-3 space-y-2">
-            {recents.map((item) => {
-              const viaLabel =
-                item.via.length > 0
-                  ? ` · ${item.via.map((stop) => localizePlaceName(stop.name, kinds)).join(" · ")}`
-                  : "";
-              return (
-                <li key={`${item.from.id}-${item.to.id}-${item.savedAt}`}>
-                  <button
-                    type="button"
-                    className="stamp stamp-plain w-full text-left"
-                    onClick={() => onRecentSelect(item)}
-                  >
-                    {localizePlaceName(item.from.name, kinds)} →{" "}
-                    {localizePlaceName(item.to.name, kinds)}
-                    {viaLabel}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ) : null}
-      {!hasSearched && (
+      {!hasSearched && showGuide ? (
         <div className="mt-5">
           <HowToGuide onTour={onTour} />
         </div>
-      )}
+      ) : null}
       <div className="rail-ornament mt-6" aria-hidden="true" />
     </div>
   );

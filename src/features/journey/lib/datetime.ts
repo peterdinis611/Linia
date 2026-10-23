@@ -13,11 +13,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-import {
-  hallDateTimeFormat,
-  parseHallDateTime,
-  toLocalDateTimeValue,
-} from "@/lib/format";
+import { hallDateTimeFormat, parseHallDateTime } from "@/lib/format";
 
 export type DateTimeParts = {
   year: number;
@@ -44,9 +40,19 @@ function partsFromDate(date: Date): DateTimeParts {
   };
 }
 
+/** Stable empty stamp — never use wall-clock during render (avoids hydration drift). */
+const EMPTY_PARTS: DateTimeParts = {
+  year: 1970,
+  month: 1,
+  day: 1,
+  hour: 0,
+  minute: 0,
+};
+
 export function splitDateTime(value: string): DateTimeParts {
+  if (!value) return EMPTY_PARTS;
   const parsed = parse(value, hallDateTimeFormat, new Date());
-  if (!isValid(parsed)) return splitDateTime(toLocalDateTimeValue());
+  if (!isValid(parsed)) return EMPTY_PARTS;
   return partsFromDate(parsed);
 }
 

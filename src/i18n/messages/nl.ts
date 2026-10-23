@@ -107,7 +107,7 @@ export const nl: Messages = {
     city: "Stad",
     cityPlaceholder: "Prešov, Košice, Utrecht…",
     cityKicker: "Stadsloket",
-    cityHint: "Eerst de stad. Daarna lange afstand of streek.",
+    cityHint: "Optioneel — beperkt nabije haltes. Lange afstand of streek indien nodig.",
     suburbanHint: "Stempel van en naar. De kaart speldt beide haltes en de streeklijn vast.",
     distanceGroup: "Soort lijn",
     distanceLong: "Lange afstand",

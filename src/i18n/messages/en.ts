@@ -105,7 +105,7 @@ export const en = {
     city: "City",
     cityPlaceholder: "Prešov, Košice, Vienna…",
     cityKicker: "City desk",
-    cityHint: "Name the city first. Then stamp long-distance or suburban.",
+    cityHint: "Optional — biases nearby stops. Stamp long-distance or suburban when you need it.",
     suburbanHint: "Stamp from and to. The map pins both stops and the suburban line.",
     distanceGroup: "Kind of line",
     distanceLong: "Long-distance",

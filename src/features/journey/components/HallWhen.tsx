@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { FloatSheet } from "@/components/FloatSheet";
 import { IconChevronLeft, IconChevronRight } from "@/components/icons";
 import { useI18n } from "@/i18n/provider";
+import { toLocalDateTimeValue } from "@/lib/format";
 import {
   joinDateTime,
   monthCells,
@@ -38,6 +39,7 @@ export function HallWhen({
   onChange,
 }: HallWhenProps) {
   const { locale, t } = useI18n();
+  const ready = Boolean(datetime);
   const parts = splitDateTime(datetime);
   const [open, setOpen] = useState<"date" | "time" | null>(null);
   const [view, setView] = useState({ year: parts.year, month: parts.month });
@@ -57,7 +59,7 @@ export function HallWhen({
   }
 
   function openPane(pane: "date" | "time") {
-    if (leaveNow) onChange(datetime);
+    if (!ready || leaveNow) onChange(datetime || toLocalDateTimeValue());
     setOpen(pane);
   }
 
@@ -65,20 +67,32 @@ export function HallWhen({
   const timeRef = useRef<HTMLButtonElement>(null);
   const close = useCallback(() => setOpen(null), []);
 
-  const weekday = new Intl.DateTimeFormat(locale, { weekday: "short" }).format(
-    new Date(parts.year, parts.month - 1, parts.day),
-  );
-  const monthShort = new Intl.DateTimeFormat(locale, { month: "short" }).format(
-    new Date(parts.year, parts.month - 1, 1),
-  );
+  const weekday = ready
+    ? new Intl.DateTimeFormat(locale, { weekday: "short" }).format(
+        new Date(parts.year, parts.month - 1, parts.day),
+      )
+    : "––";
+  const monthShort = ready
+    ? new Intl.DateTimeFormat(locale, { month: "short" }).format(
+        new Date(parts.year, parts.month - 1, 1),
+      )
+    : "";
   const monthTitle = new Intl.DateTimeFormat(locale, {
     month: "long",
     year: "numeric",
   }).format(new Date(view.year, view.month - 1, 1));
-  const timeLabel = format(
-    new Date(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute),
-    "HH:mm",
-  );
+  const timeLabel = ready
+    ? format(
+        new Date(
+          parts.year,
+          parts.month - 1,
+          parts.day,
+          parts.hour,
+          parts.minute,
+        ),
+        "HH:mm",
+      )
+    : "––:––";
 
   return (
     <div className="hall-when" data-day={allDay}>
@@ -96,9 +110,9 @@ export function HallWhen({
       >
         <span className="kicker">{weekday}</span>
         <span className="hall-when-date-line">
-          <span className="hall-when-day">{parts.day}</span>
+          <span className="hall-when-day">{ready ? parts.day : "––"}</span>
           <span>
-            {monthShort} {parts.year}
+            {ready ? `${monthShort} ${parts.year}` : ""}
           </span>
         </span>
       </button>

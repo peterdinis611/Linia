@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { Itinerary, Place, TransferFilter } from "@/lib/transit/types";
+import type {
+  Itinerary,
+  ModeFilter,
+  Place,
+  TransferFilter,
+} from "@/lib/transit/types";
 import { useI18n } from "@/i18n/provider";
 import {
   emptyFilterCopy,
@@ -19,6 +24,7 @@ import { BoardCount, BoardMast } from "./BoardMast";
 import { CarrierCompare } from "./CarrierCompare";
 import { ItineraryDetail } from "./ItineraryDetail";
 import { ItineraryList } from "./ItineraryList";
+import { LineFilters } from "./LineFilters";
 import { ShareJourney } from "./ShareJourney";
 
 type JourneyResultsProps = {
@@ -29,7 +35,12 @@ type JourneyResultsProps = {
   selected: Itinerary | null;
   selectedIndex: number;
   selectedCarriers: string[];
+  modeFilter: ModeFilter;
   transferFilter: TransferFilter;
+  accessible: boolean;
+  bike: boolean;
+  night: boolean;
+  transferCounts?: { direct: number; transfers: number } | null;
   shareUrl: string;
   /** Sheets that will ink when Print / PDF runs (selected + held + return…). */
   printCount?: number;
@@ -40,7 +51,11 @@ type JourneyResultsProps = {
   liveFresh?: boolean;
   onSelectedCarriersChange: (names: string[]) => void;
   onSelectedIndexChange: (index: number) => void;
+  onModeFilterChange: (value: ModeFilter) => void;
   onTransferFilterChange?: (value: TransferFilter) => void;
+  onAccessibleChange: (value: boolean) => void;
+  onBikeChange: (value: boolean) => void;
+  onNightChange: (value: boolean) => void;
   onRefresh?: () => void;
   onTimeShift?: (direction: "earlier" | "later") => void;
   onOpenStation?: (place: Place) => void;
@@ -60,7 +75,12 @@ export function JourneyResults({
   selected,
   selectedIndex,
   selectedCarriers,
+  modeFilter,
   transferFilter,
+  accessible,
+  bike,
+  night,
+  transferCounts = null,
   shareUrl,
   printCount = 0,
   serviceFrom = null,
@@ -70,7 +90,11 @@ export function JourneyResults({
   liveFresh = false,
   onSelectedCarriersChange,
   onSelectedIndexChange,
+  onModeFilterChange,
   onTransferFilterChange,
+  onAccessibleChange,
+  onBikeChange,
+  onNightChange,
   onRefresh,
   onTimeShift,
   onOpenStation,
@@ -109,11 +133,20 @@ export function JourneyResults({
       ? tp("connectionsOf", filtered.length, { total: itineraries.length })
       : tp("connections", filtered.length);
   const filtersOn =
-    transferFilter !== "all" || selectedCarriers.length > 0;
+    modeFilter !== "all" ||
+    transferFilter !== "all" ||
+    accessible ||
+    bike ||
+    night ||
+    selectedCarriers.length > 0;
 
   function resetFilters() {
     onSelectedCarriersChange([]);
+    onModeFilterChange("all");
     onTransferFilterChange?.("all");
+    onAccessibleChange(false);
+    onBikeChange(false);
+    onNightChange(false);
   }
 
   return (
@@ -129,6 +162,19 @@ export function JourneyResults({
       ) : null}
       <HallTape alerts={hallAlerts} />
       {serviceFrom ? <ServiceGap iso={serviceFrom} /> : null}
+      <LineFilters
+        modeFilter={modeFilter}
+        transferFilter={transferFilter}
+        accessible={accessible}
+        bike={bike}
+        night={night}
+        transferCounts={transferCounts}
+        onModeFilterChange={onModeFilterChange}
+        onTransferFilterChange={(value) => onTransferFilterChange?.(value)}
+        onAccessibleChange={onAccessibleChange}
+        onBikeChange={onBikeChange}
+        onNightChange={onNightChange}
+      />
       <BoardMast
         kicker={t("results.departures")}
         headline={

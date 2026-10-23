@@ -57,6 +57,34 @@ describe("motisFetch", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("does not call MOTIS when already aborted", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(
+      motisFetch("/v5/plan", new URLSearchParams({ fromPlace: "x" }), {
+        signal: controller.signal,
+      }),
+    ).rejects.toMatchObject({ name: "AbortError" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("does not retry after abort mid-flight", async () => {
+    const controller = new AbortController();
+    const fetchMock = vi.fn().mockImplementation(() => {
+      controller.abort();
+      return Promise.reject(new DOMException("Aborted", "AbortError"));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(
+      motisFetch("/v5/plan", new URLSearchParams({ fromPlace: "x" }), {
+        signal: controller.signal,
+      }),
+    ).rejects.toMatchObject({ name: "AbortError" });
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
   it("retries a 503 once, not a 400", async () => {
     const fetchMock = vi
       .fn()

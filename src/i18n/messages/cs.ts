@@ -107,7 +107,7 @@ export const cs: Messages = {
     city: "Město",
     cityPlaceholder: "Prešov, Košice, Praha…",
     cityKicker: "Obvod",
-    cityHint: "Nejdřív město. Pak dálkový nebo příměstský spoj.",
+    cityHint: "Volitelné — přiblíží zastávky v okolí. Dálkový nebo příměstský podle potřeby.",
     suburbanHint: "Pečiatka odkud a kam. Mapa připne obě zastávky a příměstskou linku.",
     distanceGroup: "Druh spoje",
     distanceLong: "Dálkový",

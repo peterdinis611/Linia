@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "targets": {
+    "/": {
+      "targetKind": "existing-ui",
+      "projectId": "89293c87-60c9-49ff-a4ca-1a6b15b63b47",
+      "baselineDraftId": "4878328d-2fbb-4642-aae0-306136481303",
+      "activeDraftId": "3ebafc52-783b-47d3-aff0-9c9bb9ca1f7d",
+      "designSystemPath": ".superdesign/design-system.md",
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        ".superdesign/init/theme.md",
+        ".superdesign/init/layouts.md",
+        ".superdesign/init/pages.md",
+        "src/features/journey/components/JourneySearch.tsx:192:540",
+        "src/features/journey/components/SearchForm.tsx:175:634",
+        "src/features/journey/components/ItineraryList.tsx",
+        "src/features/journey/components/BoardMast.tsx",
+        "src/app/globals.css:1:180"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "5a88cc8a3c4758ac190853467d9cb2984f5bb81af8a4b754da59414eb06a5114",
+        ".superdesign/init/theme.md": "a0f83613c9865b007f8822da6d75967c4e5cfe7c336961f60f84b66308d6a484",
+        ".superdesign/init/layouts.md": "5f07db0e8bda4ea2f553685e675516ce25925a5d89fd8ac54dd97e191c856b70",
+        ".superdesign/init/pages.md": "880eedc3984c1404246f8f1972a626a08057db20f5e478de2183b2117e89a592",
+        "src/features/journey/components/JourneySearch.tsx": "8afbda778646dbfa9e0010d1edd02695c9226b4e95b6848d910773081583cb92",
+        "src/features/journey/components/SearchForm.tsx": "c63789a103ec8073225aea9ac9083867b938135a1fc4f88b744f87d7ab5434ee",
+        "src/features/journey/components/ItineraryList.tsx": "3a090965ea118fdb3d33990d0e1dde674d7eee857b8f39ffe6f4d5b3a794e00c",
+        "src/features/journey/components/BoardMast.tsx": "ecfbd9fb2955d72f787d185609b54b6dca6eb71c617cb3e46123abd3c1de746c",
+        "src/app/globals.css": "3352e7c8f07d4ddf332fdc3d2a9fa110102aa6406fc649738c26c55e476ad2a7"
+      },
+      "components": [],
+      "drafts": {
+        "4878328d-2fbb-4642-aae0-306136481303": {
+          "title": "Current Linia hall (baseline)",
+          "visualDirection": "current cream paper hall",
+          "currentVersion": 1
+        },
+        "3ebafc52-783b-47d3-aff0-9c9bb9ca1f7d": {
+          "title": "Linia Industrial Departure Board",
+          "visualDirection": "charcoal enamel + LED amber departure board",
+          "parentDraftId": "4878328d-2fbb-4642-aae0-306136481303",
+          "currentVersion": 1
+        },
+        "7f76b4c3-2360-437f-bb9d-a21dc0f311cd": {
+          "title": "Linia - Industrial Control Room",
+          "visualDirection": "denser control-room enamel readout",
+          "parentDraftId": "4878328d-2fbb-4642-aae0-306136481303",
+          "currentVersion": 1
+        }
+      },
+      "updatedAt": "2026-10-23T19:41:51.526746+00:00"
+    }
+  }
+}

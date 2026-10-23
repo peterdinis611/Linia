@@ -13,7 +13,7 @@ export default function AppleIcon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#f1eadc",
+          background: "#0c0e12",
         }}
       >
         <div
@@ -21,8 +21,7 @@ export default function AppleIcon() {
             position: "absolute",
             width: 22,
             height: 136,
-            background: "#161310",
-            borderRadius: 4,
+            background: "#1a1f27",
           }}
         />
         <div
@@ -32,7 +31,7 @@ export default function AppleIcon() {
             width: 56,
             height: 56,
             borderRadius: 56,
-            background: "#c8102e",
+            background: "#ffb020",
           }}
         />
         <div
@@ -42,7 +41,7 @@ export default function AppleIcon() {
             width: 36,
             height: 36,
             borderRadius: 36,
-            background: "rgba(22, 19, 16, 0.28)",
+            background: "rgba(255, 176, 32, 0.35)",
           }}
         />
         <div
@@ -52,7 +51,7 @@ export default function AppleIcon() {
             width: 26,
             height: 26,
             borderRadius: 26,
-            background: "rgba(22, 19, 16, 0.16)",
+            background: "rgba(255, 176, 32, 0.18)",
           }}
         />
       </div>

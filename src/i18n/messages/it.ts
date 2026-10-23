@@ -107,7 +107,7 @@ export const it: Messages = {
     city: "Città",
     cityPlaceholder: "Prešov, Košice, Milano…",
     cityKicker: "Sportello città",
-    cityHint: "Prima la città. Poi lunga percorrenza o suburbano.",
+    cityHint: "Opzionale — filtra fermate vicine. Lunga percorrenza o suburbano se serve.",
     suburbanHint: "Timbro da e per. La mappa appunta entrambe le fermate e la linea suburbana.",
     distanceGroup: "Tipo di linea",
     distanceLong: "Lunga percorrenza",

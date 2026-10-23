@@ -48,8 +48,8 @@ export function PrintTicket({
       <div className="print-ticket-head">
         <div>
           <p className="kicker">{mark ?? t("share.ticketKicker")}</p>
-          <h1 className="font-display mt-1 text-3xl italic">Linia</h1>
-          <p className="mt-4 font-display text-2xl leading-tight italic">
+          <h1 className="font-display mt-1 text-3xl">Linia</h1>
+          <p className="mt-4 font-display text-2xl leading-tight">
             {origin} → {destination}
           </p>
           <p className="mt-2 font-mono text-sm tracking-wide">

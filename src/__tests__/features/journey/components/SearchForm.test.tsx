@@ -18,8 +18,6 @@ function renderForm(overrides: Partial<Props> = {}) {
     allDay: false,
     city: null,
     distanceFilter: "all",
-    modeFilter: "all",
-    transferFilter: "all",
     loading: false,
     onFromChange: vi.fn(),
     onToChange: vi.fn(),
@@ -34,18 +32,10 @@ function renderForm(overrides: Partial<Props> = {}) {
     onAllDayChange: vi.fn(),
     onCityChange: vi.fn(),
     onDistanceFilterChange: vi.fn(),
-    onModeFilterChange: vi.fn(),
-    onTransferFilterChange: vi.fn(),
-    onAccessibleChange: vi.fn(),
-    onBikeChange: vi.fn(),
-    onNightChange: vi.fn(),
     onWantReturnChange: vi.fn(),
     onReturnDatetimeChange: vi.fn(),
     onSearch: vi.fn(),
     onClear: vi.fn(),
-    accessible: false,
-    bike: false,
-    night: false,
     wantReturn: false,
     returnDatetime: "2026-08-15T08:30",
     ...overrides,
@@ -54,17 +44,18 @@ function renderForm(overrides: Partial<Props> = {}) {
 }
 
 describe("SearchForm", () => {
-  it("asks for a city before suburban lines", async () => {
+  it("keeps city scope optional behind a disclosure", async () => {
     const user = userEvent.setup();
     const { props } = renderForm();
+    expect(
+      screen.getByText(
+        "Optional — biases nearby stops. Stamp long-distance or suburban when you need it.",
+      ),
+    ).toBeInTheDocument();
+    await user.click(screen.getByText("City desk"));
     await user.click(screen.getByTestId("distance-suburban"));
     expect(props.onDistanceFilterChange).toHaveBeenCalledWith("suburban");
-    expect(screen.getByTestId("distance-suburban")).toHaveAttribute(
-      "aria-pressed",
-      "false",
-    );
     expect(screen.getByRole("combobox", { name: "City" })).toBeInTheDocument();
-    expect(screen.getByText("Name the city first. Then stamp long-distance or suburban.")).toBeInTheDocument();
   });
 
   it("stamps leave now by default", () => {
@@ -113,15 +104,9 @@ describe("SearchForm", () => {
     expect(props.onRouteModeChange).toHaveBeenCalledWith("board");
   });
 
-  it("stamps accessible, bike, night and return", async () => {
+  it("stamps return on the desk", async () => {
     const user = userEvent.setup();
     const { props } = renderForm();
-    await user.click(screen.getByTestId("accessible"));
-    expect(props.onAccessibleChange).toHaveBeenCalledWith(true);
-    await user.click(screen.getByTestId("bike"));
-    expect(props.onBikeChange).toHaveBeenCalledWith(true);
-    await user.click(screen.getByTestId("night-rail"));
-    expect(props.onNightChange).toHaveBeenCalledWith(true);
     await user.click(screen.getByTestId("return-trip"));
     expect(props.onWantReturnChange).toHaveBeenCalledWith(true);
   });
@@ -148,9 +133,7 @@ describe("SearchForm", () => {
       screen.queryByRole("button", { name: "Swap origin and destination" }),
     ).not.toBeInTheDocument();
     expect(screen.queryByTestId("return-trip")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("accessible")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("bike")).not.toBeInTheDocument();
-    expect(screen.getByTestId("night-rail")).toBeInTheDocument();
+    expect(screen.queryByTestId("line-filters")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Arrive by" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Read the board" })).toBeInTheDocument();
     expect(screen.getByTestId("station-board-mode")).toHaveAttribute(

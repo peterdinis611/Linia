@@ -78,16 +78,34 @@ export function transitModesFor(
 
 const RETRY_STATUS = new Set([429, 502, 503, 504]);
 
-function wait(ms: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
+export function isAbortError(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+  const name = "name" in error ? String(error.name) : "";
+  return name === "AbortError" || name === "TimeoutError";
+}
+
+function wait(ms: number, signal?: AbortSignal) {
+  return new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
+      return;
+    }
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    function onAbort() {
+      clearTimeout(timer);
+      reject(signal?.reason ?? new DOMException("Aborted", "AbortError"));
+    }
+    signal?.addEventListener("abort", onAbort, { once: true });
   });
 }
 
 export async function motisFetch(
   path: string,
   params: URLSearchParams,
-  options?: { language?: string; revalidate?: number },
+  options?: { language?: string; revalidate?: number; signal?: AbortSignal },
 ) {
   const url = new URL(`${MOTIS_BASE}${path}`);
   params.forEach((value, key) => {
@@ -106,17 +124,24 @@ export async function motisFetch(
     next: options?.revalidate
       ? { revalidate: options.revalidate }
       : undefined,
+    signal: options?.signal,
   };
 
   let lastError: unknown;
   for (let attempt = 0; attempt < 2; attempt += 1) {
+    if (options?.signal?.aborted) {
+      throw (
+        options.signal.reason ?? new DOMException("Aborted", "AbortError")
+      );
+    }
     let response: Response;
     try {
       response = await fetch(url, init);
     } catch (error) {
+      if (isAbortError(error) || options?.signal?.aborted) throw error;
       lastError = error;
       if (attempt === 0) {
-        await wait(300);
+        await wait(300, options?.signal);
         continue;
       }
       throw new TransitError(
@@ -126,7 +151,7 @@ export async function motisFetch(
 
     if (response.ok) return response.json();
     if (attempt === 0 && RETRY_STATUS.has(response.status)) {
-      await wait(300);
+      await wait(300, options?.signal);
       continue;
     }
     const detail = await response.text().catch(() => "");

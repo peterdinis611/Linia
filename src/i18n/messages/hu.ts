@@ -107,7 +107,7 @@ export const hu: Messages = {
     city: "Város",
     cityPlaceholder: "Prešov, Kassa, Budapest…",
     cityKicker: "Körzet",
-    cityHint: "Először a város. Aztán távolsági vagy elővárosi.",
+    cityHint: "Opcionális — közeli megállókat szűkít. Távolsági vagy elővárosi, ha kell.",
     suburbanHint: "Pecsét honnan és hová. A térkép mindkét megállót és az elővárosi járatot kitűzi.",
     distanceGroup: "Járat fajtája",
     distanceLong: "Távolsági",

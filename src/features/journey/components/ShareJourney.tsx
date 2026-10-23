@@ -158,7 +158,7 @@ export function ShareJourney({
           <p className="kicker">
             {board ? t("share.boardKicker") : t("share.kicker")}
           </p>
-          <h2 id={titleId} className="font-display mt-1 text-2xl italic">
+          <h2 id={titleId} className="font-display mt-1 text-2xl">
             {board ? t("share.boardTitle") : t("share.title")}
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-ink-muted">

@@ -21,6 +21,17 @@ describe("datetime", () => {
     expect(joinDateTime(parts)).toBe("2026-08-14T21:45");
   });
 
+  it("keeps an empty stamp stable (no wall clock)", () => {
+    expect(splitDateTime("")).toEqual({
+      year: 1970,
+      month: 1,
+      day: 1,
+      hour: 0,
+      minute: 0,
+    });
+    expect(splitDateTime("not-a-time")).toEqual(splitDateTime(""));
+  });
+
   it("shifts across a month", () => {
     expect(shiftDate(splitDateTime("2026-08-31T08:00"), 1)).toMatchObject({
       year: 2026,

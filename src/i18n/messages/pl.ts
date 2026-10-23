@@ -107,7 +107,7 @@ export const pl: Messages = {
     city: "Miasto",
     cityPlaceholder: "Prešov, Košice, Kraków…",
     cityKicker: "Obwód",
-    cityHint: "Najpierw miasto. Potem pieczątka dalekobieżny lub podmiejski.",
+    cityHint: "Opcjonalnie — zawęża pobliskie przystanki. Dalekobieżny lub podmiejski w razie potrzeby.",
     suburbanHint: "Pieczęć skąd i dokąd. Mapa przypnie oba przystanki i linię podmiejską.",
     distanceGroup: "Rodzaj połączenia",
     distanceLong: "Dalekobieżny",

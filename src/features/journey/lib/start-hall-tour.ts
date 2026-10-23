@@ -97,12 +97,12 @@ export function createHallTour(input: {
         },
       },
       {
-        element: "[data-tour='line']",
+        element: "[data-testid='search-form'] .search-cta",
         popover: {
-          title: copy("search.line"),
-          description: copy("search.lineHint"),
-          side: "right",
-          align: "start",
+          title: copy("search.submit"),
+          description: copy("guide.step4Body"),
+          side: "top",
+          align: "center",
         },
       },
       {

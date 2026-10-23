@@ -107,7 +107,7 @@ export const fr: Messages = {
     city: "Ville",
     cityPlaceholder: "Prešov, Košice, Lyon…",
     cityKicker: "Guichet ville",
-    cityHint: "D’abord la ville. Puis longue distance ou banlieue.",
+    cityHint: "Facultatif — recentre les arrêts proches. Longue distance ou banlieue au besoin.",
     suburbanHint: "Tampon de et vers. La carte épingle les deux arrêts et la ligne de banlieue.",
     distanceGroup: "Type de ligne",
     distanceLong: "Longue distance",

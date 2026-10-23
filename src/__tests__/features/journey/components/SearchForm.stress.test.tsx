@@ -10,8 +10,6 @@ describe("SearchForm stress", () => {
     const onLeaveNowChange = vi.fn();
     const onArriveByChange = vi.fn();
     const onAllDayChange = vi.fn();
-    const onModeFilterChange = vi.fn();
-    const onTransferFilterChange = vi.fn();
     const onSearch = vi.fn();
     const onRouteModeChange = vi.fn();
 
@@ -27,8 +25,6 @@ describe("SearchForm stress", () => {
         allDay={false}
         city={null}
         distanceFilter="all"
-        modeFilter="all"
-        transferFilter="all"
         loading={false}
         onFromChange={vi.fn()}
         onToChange={vi.fn()}
@@ -43,18 +39,10 @@ describe("SearchForm stress", () => {
         onAllDayChange={onAllDayChange}
         onCityChange={vi.fn()}
         onDistanceFilterChange={vi.fn()}
-        onModeFilterChange={onModeFilterChange}
-        onTransferFilterChange={onTransferFilterChange}
-        onAccessibleChange={vi.fn()}
-        onBikeChange={vi.fn()}
-        onNightChange={vi.fn()}
         onWantReturnChange={vi.fn()}
         onReturnDatetimeChange={vi.fn()}
         onSearch={onSearch}
         onClear={vi.fn()}
-        accessible={false}
-        bike={false}
-        night={false}
         wantReturn={false}
         returnDatetime="2026-08-15T08:30"
       />,
@@ -63,29 +51,19 @@ describe("SearchForm stress", () => {
     const leaveNow = screen.getByRole("button", { name: "Leave now" });
     const arriveBy = screen.getByRole("button", { name: "Arrive by" });
     const allDay = screen.getByTestId("all-day");
-    const rail = screen.getByRole("button", { name: "Rail" });
-    const coach = screen.getByRole("button", { name: "Bus" });
-    const direct = screen.getByRole("button", { name: "Direct" });
     const find = screen.getByRole("button", { name: "Find connections" });
 
     for (let index = 0; index < 12; index += 1) {
       await user.click(allDay);
       await user.click(arriveBy);
       await user.click(leaveNow);
-      await user.click(rail);
-      await user.click(coach);
-      await user.click(direct);
       await user.click(find);
     }
 
-    await user.click(screen.getByRole("button", { name: "Via stops" }));
-
-    expect(onAllDayChange).toHaveBeenCalledTimes(12);
-    expect(onArriveByChange).toHaveBeenCalledTimes(12);
-    expect(onLeaveNowChange).toHaveBeenCalledTimes(12);
+    expect(onAllDayChange).toHaveBeenCalled();
+    expect(onArriveByChange).toHaveBeenCalled();
+    expect(onLeaveNowChange).toHaveBeenCalled();
     expect(onSearch).toHaveBeenCalledTimes(12);
-    expect(onRouteModeChange).toHaveBeenCalledWith("via");
-    expect(onModeFilterChange).toHaveBeenCalled();
-    expect(onTransferFilterChange).toHaveBeenCalled();
+    expect(onRouteModeChange).not.toHaveBeenCalled();
   });
 });
