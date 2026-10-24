@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n/provider";
-import { localizePlaceName } from "@/i18n/place-name";
 import type { JourneyFormFieldErrors } from "@/lib/schemas";
 import { MAX_VIA_STOPS } from "@/lib/transit/place";
 import type {
@@ -11,8 +10,10 @@ import type {
 } from "@/lib/transit/types";
 import type { RouteMode } from "../hooks/use-journey-search";
 import type { RecentSearch } from "../lib/recent";
+import type { PinnedSearch } from "../lib/pinned";
 import { PlaceAutocomplete } from "./PlaceAutocomplete";
 import { HallWhen } from "./HallWhen";
+import { QuickRoutes } from "./QuickRoutes";
 
 type SearchFormProps = {
   from: SelectedPlace | null;
@@ -31,6 +32,7 @@ type SearchFormProps = {
   hasSearched?: boolean;
   fieldErrors?: JourneyFormFieldErrors;
   recents?: RecentSearch[];
+  pins?: PinnedSearch[];
   onFromChange: (place: SelectedPlace | null) => void;
   onToChange: (place: SelectedPlace | null) => void;
   onViaChange: (index: number, place: SelectedPlace | null) => void;
@@ -47,6 +49,7 @@ type SearchFormProps = {
   onWantReturnChange: (value: boolean) => void;
   onReturnDatetimeChange: (value: string) => void;
   onRecentSelect?: (item: RecentSearch) => void;
+  onPinnedSelect?: (item: PinnedSearch) => void;
   onSearch: () => void;
   onClear: () => void;
   geoBusy?: boolean;
@@ -72,6 +75,7 @@ export function SearchForm({
   hasSearched = false,
   fieldErrors,
   recents = [],
+  pins = [],
   onFromChange,
   onToChange,
   onViaChange,
@@ -88,6 +92,7 @@ export function SearchForm({
   onWantReturnChange,
   onReturnDatetimeChange,
   onRecentSelect,
+  onPinnedSelect,
   onSearch,
   onClear,
   geoBusy = false,
@@ -95,8 +100,7 @@ export function SearchForm({
   onUseMyLocation,
   onNearbyBoard,
 }: SearchFormProps) {
-  const { messages, t } = useI18n();
-  const kinds = messages.placeKind;
+  const { t } = useI18n();
   const [fieldsKey, setFieldsKey] = useState(0);
   const suburban = distanceFilter === "suburban";
   const board = routeMode === "board";
@@ -151,31 +155,13 @@ export function SearchForm({
         </p>
       </div>
 
-      {!hasSearched && recents.length > 0 && onRecentSelect ? (
-        <div data-testid="recent-searches">
-          <p className="kicker">{t("recent.kicker")}</p>
-          <ul className="mt-2 space-y-2">
-            {recents.slice(0, 4).map((item) => {
-              const viaLabel =
-                item.via.length > 0
-                  ? ` · ${item.via.map((stop) => localizePlaceName(stop.name, kinds)).join(" · ")}`
-                  : "";
-              return (
-                <li key={`${item.from.id}-${item.to.id}-${item.savedAt}`}>
-                  <button
-                    type="button"
-                    className="stamp stamp-plain w-full text-left"
-                    onClick={() => onRecentSelect(item)}
-                  >
-                    {localizePlaceName(item.from.name, kinds)} →{" "}
-                    {localizePlaceName(item.to.name, kinds)}
-                    {viaLabel}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+      {!hasSearched ? (
+        <QuickRoutes
+          recents={recents}
+          pins={pins}
+          onRecentSelect={onRecentSelect}
+          onPinnedSelect={onPinnedSelect}
+        />
       ) : null}
 
       <div className="space-y-3" data-tour="origin">

@@ -48,6 +48,7 @@ export async function executePlan(
     directModes: "WALK",
     timetableView: "true",
     slowDirect: "true",
+    withFares: "true",
     numItineraries: String(allDay ? DAY_ITINERARIES : NEAR_ITINERARIES),
     maxPreTransitTime: "2400",
     maxPostTransitTime: "2400",

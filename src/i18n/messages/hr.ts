@@ -194,6 +194,7 @@ export const hr: Messages = {
   alerts: {
     kicker: "Obavijest o prometu",
     hall: "Obavijest kroz dvoranu",
+    route: "Što je pokvareno na ovoj ruti",
     more: "Pročitaj obavijest",
     effects: {
       NO_SERVICE: "Nema prometa",
@@ -352,6 +353,12 @@ export const hr: Messages = {
     boardTo: "Što kreće odavde",
     carrierBoard: "Tabla {name}",
     carrierHint: "Otvara njihov red vožnje. Dvorana ne prodaje karte.",
+    accessKicker: "Pristup na ovoj liniji",
+    wheelchairOk: "Pristupačno za invalidska kolica",
+    wheelchairNo: "Nije pristupačno",
+    elevator: "Dizalo · {count}",
+    levelChange: "Razina {from} → {to}",
+    fareKicker: "Cijena",
   },
   carriers: {
     compare: "Usporedi prijevoznike",

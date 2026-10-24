@@ -9,12 +9,19 @@ type AlertStripProps = {
   compact?: boolean;
 };
 
-export function HallTape({ alerts }: { alerts: TransitAlert[] }) {
+export function HallTape({
+  alerts,
+  kicker,
+}: {
+  alerts: TransitAlert[];
+  /** Defaults to “notice across the hall”; use `alerts.route` for search-wide disruptions. */
+  kicker?: string;
+}) {
   const { t } = useI18n();
   if (alerts.length === 0) return null;
   return (
     <div className="hall-tape" data-testid="hall-tape" role="status">
-      <p className="kicker">{t("alerts.hall")}</p>
+      <p className="kicker">{kicker ?? t("alerts.hall")}</p>
       <AlertStrip alerts={alerts} />
     </div>
   );

@@ -194,6 +194,7 @@ export const sk: Messages = {
   alerts: {
     kicker: "Oznam o premávke",
     hall: "Oznam cez halu",
+    route: "Čo je rozbité na trase",
     more: "Čítať oznam",
     effects: {
       NO_SERVICE: "Bez premávky",
@@ -351,6 +352,12 @@ export const sk: Messages = {
     boardTo: "Čo ide odtiaľto",
     carrierBoard: "Tabuľa {name}",
     carrierHint: "Otvorí ich cestovný poriadok. Hala lístky nepredáva.",
+    accessKicker: "Prístup na linke",
+    wheelchairOk: "Bezbariérové",
+    wheelchairNo: "Nie je bezbariérové",
+    elevator: "Výťah · {count}",
+    levelChange: "Úroveň {from} → {to}",
+    fareKicker: "Cena",
   },
   carriers: {
     compare: "Porovnať dopravcov",

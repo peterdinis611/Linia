@@ -194,6 +194,7 @@ export const ro: Messages = {
   alerts: {
     kicker: "Anunț de trafic",
     hall: "Anunț prin hol",
+    route: "Ce e stricat pe acest traseu",
     more: "Citește anunțul",
     effects: {
       NO_SERVICE: "Fără circulație",
@@ -352,6 +353,12 @@ export const ro: Messages = {
     boardTo: "Ce pleacă de aici",
     carrierBoard: "Panou {name}",
     carrierHint: "Deschide mersul lor. Holul nu vinde bilete.",
+    accessKicker: "Acces pe această linie",
+    wheelchairOk: "Accesibil cu scaunul cu rotile",
+    wheelchairNo: "Nu este accesibil",
+    elevator: "Lift · {count}",
+    levelChange: "Nivel {from} → {to}",
+    fareKicker: "Tarif",
   },
   carriers: {
     compare: "Compară operatori",

@@ -101,6 +101,25 @@ export type EncodedPolyline = {
   length: number;
 };
 
+export type StepInstruction = {
+  relativeDirection?: string;
+  absoluteDirection?: string;
+  distance?: number;
+  fromLevel?: number;
+  toLevel?: number;
+  streetName?: string;
+};
+
+export type FareProduct = {
+  name: string;
+  amount?: number;
+  currency?: string;
+};
+
+export type FareTransfer = {
+  products: FareProduct[];
+};
+
 export type Leg = {
   mode: TransitMode;
   startTime: string;
@@ -123,7 +142,9 @@ export type Leg = {
   agencyId?: string;
   tripId?: string;
   cancelled?: boolean;
+  wheelchairAccessible?: boolean;
   intermediateStops?: Place[] | null;
+  steps?: StepInstruction[];
   legGeometry: EncodedPolyline;
   alerts?: TransitAlert[];
 };
@@ -134,6 +155,7 @@ export type Itinerary = {
   endTime: string;
   transfers: number;
   legs: Leg[];
+  fareTransfers?: FareTransfer[];
 };
 
 export type PlanResponse = {

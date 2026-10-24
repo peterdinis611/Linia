@@ -2487,6 +2487,101 @@ details[open] .stops-chevron {
   left: 0.5rem;
   z-index: 500;
   max-width: calc(100% - 1rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  align-items: flex-start;
+}
+
+.map-quick-routes {
+  max-width: min(18rem, calc(100vw - 2rem));
+}
+
+.map-hall-tape {
+  margin-bottom: 0.45rem;
+  max-width: 100%;
+}
+
+.map-hall-tape .hall-tape {
+  padding: 0.55rem 0.7rem 0.65rem;
+}
+
+.quick-routes {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.quick-routes-list {
+  margin: 0.35rem 0 0;
+  display: grid;
+  gap: 0.35rem;
+  list-style: none;
+  padding: 0;
+}
+
+.quick-routes-compact {
+  gap: 0.55rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--paper-raised) 94%, transparent);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--board) 12%, transparent);
+  backdrop-filter: blur(10px);
+  max-height: 11rem;
+  overflow: auto;
+}
+
+.quick-routes-compact .kicker {
+  margin: 0;
+}
+
+.quick-routes-compact .stamp {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  padding: 0.35rem 0.45rem;
+  white-space: normal;
+  line-height: 1.25;
+}
+
+.access-marks,
+.fare-marks {
+  margin: 0.65rem 0 0.85rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px dashed var(--rule);
+  background: color-mix(in srgb, var(--paper) 70%, transparent);
+}
+
+.access-marks .kicker,
+.fare-marks .kicker {
+  margin-bottom: 0.3rem;
+}
+
+.access-marks ul,
+.fare-marks ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.82rem;
+}
+
+.access-leg-marks {
+  margin: 0.35rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.45rem;
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+}
+
+.access-leg-marks li::before {
+  content: "· ";
+}
+
+.access-leg-marks li:first-child::before {
+  content: "";
 }
 
 .map-pin-bar {

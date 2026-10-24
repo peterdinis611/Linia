@@ -194,6 +194,7 @@ export const cs: Messages = {
   alerts: {
     kicker: "Oznámení o provozu",
     hall: "Oznámení přes halu",
+    route: "Co je rozbité na trase",
     more: "Číst oznámení",
     effects: {
       NO_SERVICE: "Bez provozu",
@@ -352,6 +353,12 @@ export const cs: Messages = {
     boardTo: "Co odtud jede",
     carrierBoard: "Tabule {name}",
     carrierHint: "Otevře jejich jízdní řád. Hala jízdenky neprodává.",
+    accessKicker: "Přístup na lince",
+    wheelchairOk: "Bezbariérové",
+    wheelchairNo: "Není bezbariérové",
+    elevator: "Výtah · {count}",
+    levelChange: "Úroveň {from} → {to}",
+    fareKicker: "Cena",
   },
   carriers: {
     compare: "Porovnat dopravce",

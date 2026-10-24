@@ -8,7 +8,10 @@ import { LanguageSwitcher } from "@/i18n/language-switcher";
 import { useI18n } from "@/i18n/provider";
 import type { Itinerary } from "@/lib/transit/types";
 import { splitDateTime } from "../lib/datetime";
-import { hallAlertsFromBoard } from "../lib/alerts";
+import {
+  hallAlertsFromBoard,
+  routeAlertsFromItineraries,
+} from "../lib/alerts";
 import {
   hallHowtoSeen,
   markHallHowtoSeen,
@@ -158,6 +161,21 @@ export function JourneySearch() {
   );
   const boardSigRef = useRef("");
   const hallBoardAlerts = hallAlertsFromBoard(search.stopTimes);
+  const mapRouteAlerts = useMemo(
+    () =>
+      search.boardView
+        ? hallBoardAlerts
+        : routeAlertsFromItineraries([
+            ...search.itineraries,
+            ...search.inboundItineraries,
+          ]),
+    [
+      search.boardView,
+      hallBoardAlerts,
+      search.itineraries,
+      search.inboundItineraries,
+    ],
+  );
 
   void originInputRef; // used via DOM query in handleFocusSearch
 
@@ -270,6 +288,7 @@ export function JourneySearch() {
             hasSearched={search.hasSearched}
             fieldErrors={search.fieldErrors}
             recents={search.recents}
+            pins={search.pins}
             onFromChange={search.handleFromChange}
             onToChange={search.handleToChange}
             onViaChange={search.handleViaChange}
@@ -323,6 +342,7 @@ export function JourneySearch() {
               }));
             }}
             onRecentSelect={search.handleRecentSelect}
+            onPinnedSelect={search.handlePinnedSelect}
             onSearch={search.handleSearch}
             onClear={search.handleClearForm}
             geoBusy={search.geoBusy}
@@ -353,11 +373,9 @@ export function JourneySearch() {
               kicker={t(search.emptyCopy.kicker)}
               title={t(search.emptyCopy.title)}
               body={t(search.emptyCopy.body)}
-              pins={search.pins}
               serviceFrom={search.serviceFrom}
               lastAt={search.lastAt}
               showGuide={showHowto}
-              onPinnedSelect={search.handlePinnedSelect}
               onTour={startTour}
             />
           )}
@@ -550,6 +568,11 @@ export function JourneySearch() {
             onMarkerDrag={search.handleMarkerDrag}
             onAssignPending={search.assignPendingPick}
             onOpenStation={search.handleOpenStation}
+            recents={search.recents}
+            pins={search.pins}
+            routeAlerts={mapRouteAlerts}
+            onRecentSelect={search.handleRecentSelect}
+            onPinnedSelect={search.handlePinnedSelect}
           />
         </section>
       </main>

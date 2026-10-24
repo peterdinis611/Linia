@@ -194,6 +194,7 @@ export const de: Messages = {
   alerts: {
     kicker: "Betriebshinweis",
     hall: "Hinweis durch die Halle",
+    route: "Was auf dieser Strecke kaputt ist",
     more: "Hinweis lesen",
     effects: {
       NO_SERVICE: "Kein Verkehr",
@@ -352,6 +353,12 @@ export const de: Messages = {
     boardTo: "Was fährt ab",
     carrierBoard: "{name}-Tafel",
     carrierHint: "Öffnet ihren Fahrplan. Diese Halle verkauft keine Fahrkarten.",
+    accessKicker: "Zugang auf dieser Linie",
+    wheelchairOk: "Rollstuhlgerecht",
+    wheelchairNo: "Nicht rollstuhlgerecht",
+    elevator: "Aufzug · {count}",
+    levelChange: "Ebene {from} → {to}",
+    fareKicker: "Fahrpreis",
   },
   carriers: {
     compare: "Betreiber vergleichen",

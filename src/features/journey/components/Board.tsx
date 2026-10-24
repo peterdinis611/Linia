@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { SearchingTrack } from "@/components/status/SearchingTrack";
-import { localizePlaceName } from "@/i18n/place-name";
 import { useI18n } from "@/i18n/provider";
 import { formatTime, serviceDay, waitUntil } from "@/lib/format";
 import { HowToGuide } from "./HowToUse";
-import type { PinnedSearch } from "../lib/pinned";
 
 export function StationClock() {
   const { locale, t } = useI18n();
@@ -101,26 +99,21 @@ export function EmptyBoard({
   kicker,
   title,
   body,
-  pins = [],
   serviceFrom = null,
   lastAt = null,
   showGuide = false,
-  onPinnedSelect,
   onTour,
 }: {
   hasSearched: boolean;
   kicker: string;
   title: string;
   body: string;
-  pins?: PinnedSearch[];
   serviceFrom?: string | null;
   lastAt?: string | null;
   showGuide?: boolean;
-  onPinnedSelect?: (item: PinnedSearch) => void;
   onTour?: () => void;
 }) {
-  const { messages, t } = useI18n();
-  const kinds = messages.placeKind;
+  const { t } = useI18n();
   return (
     <div
       data-testid="empty-board"
@@ -140,40 +133,6 @@ export function EmptyBoard({
         <div className="mt-5 space-y-3">
           {lastAt ? <LastToday iso={lastAt} /> : null}
           {serviceFrom ? <ServiceGap iso={serviceFrom} /> : null}
-        </div>
-      ) : null}
-      {!hasSearched && pins.length > 0 && onPinnedSelect ? (
-        <div className="mt-5" data-testid="pinned-searches">
-          <p className="kicker">{t("pinned.kicker")}</p>
-          <p className="mt-1 text-sm font-semibold tracking-tight">{t("pinned.title")}</p>
-          <ul className="mt-3 space-y-2">
-            {pins.map((item) => {
-              const viaLabel =
-                item.via.length > 0
-                  ? ` · ${item.via.map((stop) => localizePlaceName(stop.name, kinds)).join(" · ")}`
-                  : "";
-              const roleLabel =
-                item.role === "home"
-                  ? t("search.pinnedHome")
-                  : item.role === "work"
-                    ? t("search.pinnedWork")
-                    : t("search.pinnedOther");
-              return (
-                <li key={`${item.role}-${item.from.id}-${item.to.id}-${item.savedAt}`}>
-                  <button
-                    type="button"
-                    className="stamp stamp-plain w-full text-left"
-                    data-testid={`pinned-${item.role}`}
-                    onClick={() => onPinnedSelect(item)}
-                  >
-                    {roleLabel} · {localizePlaceName(item.from.name, kinds)} →{" "}
-                    {localizePlaceName(item.to.name, kinds)}
-                    {viaLabel}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
         </div>
       ) : null}
       {!hasSearched && showGuide ? (

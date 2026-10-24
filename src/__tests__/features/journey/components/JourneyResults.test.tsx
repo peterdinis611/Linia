@@ -56,7 +56,9 @@ describe("JourneyResults hall stamps", () => {
       ],
     });
     renderResults([first, second]);
-    expect(screen.getByTestId("hall-tape")).toHaveTextContent("Notice across the hall");
+    expect(screen.getByTestId("hall-tape")).toHaveTextContent(
+      "What's broken on this route",
+    );
     expect(screen.getByTestId("hall-tape")).toHaveTextContent("Works on the line");
   });
 

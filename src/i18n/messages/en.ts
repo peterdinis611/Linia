@@ -192,6 +192,7 @@ export const en = {
   alerts: {
     kicker: "Service notice",
     hall: "Notice across the hall",
+    route: "What's broken on this route",
     more: "Read the notice",
     effects: {
       NO_SERVICE: "No service",
@@ -350,6 +351,12 @@ export const en = {
     boardTo: "What’s leaving",
     carrierBoard: "{name} board",
     carrierHint: "Opens their timetable. This hall does not sell tickets.",
+    accessKicker: "Access on this line",
+    wheelchairOk: "Wheelchair accessible",
+    wheelchairNo: "Not wheelchair accessible",
+    elevator: "Elevator · {count}",
+    levelChange: "Level {from} → {to}",
+    fareKicker: "Fare",
   },
   carriers: {
     compare: "Compare operators",

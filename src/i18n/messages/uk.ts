@@ -194,6 +194,7 @@ export const uk: Messages = {
   alerts: {
     kicker: "Повідомлення про рух",
     hall: "Оголошення через залу",
+    route: "Що зламано на цьому маршруті",
     more: "Читати повідомлення",
     effects: {
       NO_SERVICE: "Немає руху",
@@ -352,6 +353,12 @@ export const uk: Messages = {
     boardTo: "Що вирушає звідси",
     carrierBoard: "Табло {name}",
     carrierHint: "Відкриває їхній розклад. Зала не продає квитки.",
+    accessKicker: "Доступність на лінії",
+    wheelchairOk: "Доступно для візків",
+    wheelchairNo: "Недоступно для візків",
+    elevator: "Ліфт · {count}",
+    levelChange: "Рівень {from} → {to}",
+    fareKicker: "Вартість",
   },
   carriers: {
     compare: "Порівняти перевізників",

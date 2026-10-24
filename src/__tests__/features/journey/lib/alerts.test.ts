@@ -7,6 +7,7 @@ import {
   hallAlertsFromBoard,
   hallAlertsFromItineraries,
   itineraryHasAlerts,
+  routeAlertsFromItineraries,
   uniqueAlerts,
 } from "@/features/journey/lib/alerts";
 import type { StopTimeEvent } from "@/lib/transit/types";
@@ -71,6 +72,37 @@ describe("alerts", () => {
     ]);
     expect(itineraryHasAlerts(itinerary)).toBe(true);
     expect(itineraryHasAlerts(railItinerary())).toBe(false);
+  });
+
+  it("unions route notices across tickets, severe first", () => {
+    const soft = {
+      headerText: "Extra coach",
+      descriptionText: "More seats.",
+      effect: "ADDITIONAL_SERVICE",
+    };
+    const hard = {
+      headerText: "Strike",
+      descriptionText: "No trains west of Dresden.",
+      effect: "NO_SERVICE",
+      severityLevel: "SEVERE",
+    };
+    const first = railItinerary({
+      legs: [{ ...railItinerary().legs[0]!, alerts: [soft] }],
+    });
+    const second = railItinerary({
+      startTime: "2026-08-14T16:00:00Z",
+      legs: [
+        {
+          ...railItinerary().legs[0]!,
+          startTime: "2026-08-14T16:00:00Z",
+          tripId: "trip-ec-178",
+          alerts: [hard],
+        },
+      ],
+    });
+    expect(
+      routeAlertsFromItineraries([first, second]).map((alert) => alert.headerText),
+    ).toEqual(["Strike", "Extra coach"]);
   });
 
   it("stamps a hall ribbon when the same notice sits on two tickets", () => {

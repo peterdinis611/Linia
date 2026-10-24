@@ -14,7 +14,7 @@ import {
   type IndexedItinerary,
   type ResultSort,
 } from "../lib/filters";
-import { hallAlertsFromItineraries } from "../lib/alerts";
+import { routeAlertsFromItineraries } from "../lib/alerts";
 import { itineraryKey } from "../lib/share";
 import { lastDepartureKey } from "../lib/ticket-notes";
 import { watchKey } from "../lib/trip-watch";
@@ -111,7 +111,7 @@ export function JourneyResults({
     [filtered, sort],
   );
   const hallAlerts = useMemo(
-    () => hallAlertsFromItineraries(itineraries),
+    () => routeAlertsFromItineraries(itineraries),
     [itineraries],
   );
   const held = heldKey
@@ -160,7 +160,7 @@ export function JourneyResults({
       {loading || refreshing ? (
         <div className="searching-ribbon" aria-hidden="true" />
       ) : null}
-      <HallTape alerts={hallAlerts} />
+      <HallTape alerts={hallAlerts} kicker={t("alerts.route")} />
       {serviceFrom ? <ServiceGap iso={serviceFrom} /> : null}
       <LineFilters
         modeFilter={modeFilter}

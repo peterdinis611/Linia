@@ -1,7 +1,6 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { berlin, prague } from "@/test/fixtures";
 import { renderHall } from "@/test/render";
 import { EmptyBoard, SearchingBoard, StationClock } from "@/features/journey/components/Board";
 
@@ -76,31 +75,6 @@ describe("EmptyBoard", () => {
     expect(
       screen.queryByRole("button", { name: "Walk through the hall" }),
     ).not.toBeInTheDocument();
-  });
-
-  it("prints pinned home and work stamps on the idle board", async () => {
-    const user = userEvent.setup();
-    const onPinnedSelect = vi.fn();
-    const home = {
-      role: "home" as const,
-      from: berlin,
-      to: prague,
-      via: [],
-      savedAt: 1,
-    };
-    renderHall(
-      <EmptyBoard
-        hasSearched={false}
-        kicker="The board is open"
-        title="Name a station."
-        body="Live European times."
-        pins={[home]}
-        onPinnedSelect={onPinnedSelect}
-      />,
-    );
-
-    await user.click(screen.getByTestId("pinned-home"));
-    expect(onPinnedSelect).toHaveBeenCalledWith(home);
   });
 
   it("explains a timetable gap after a search", () => {

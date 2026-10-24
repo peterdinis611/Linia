@@ -86,6 +86,34 @@ export function hallAlertsFromItineraries(itineraries: Itinerary[]): TransitAler
   return sharedAlerts(itineraries.map((item) => alertsFromItinerary(item)));
 }
 
+const SEVERE = new Set(["SEVERE", "WARNING"]);
+const HARD_EFFECTS = new Set([
+  "NO_SERVICE",
+  "REDUCED_SERVICE",
+  "SIGNIFICANT_DELAYS",
+  "DETOUR",
+  "STOP_MOVED",
+  "ACCESSIBILITY_ISSUE",
+]);
+
+/**
+ * All notices on this search (union), severe first — “what’s broken on the route”.
+ */
+export function routeAlertsFromItineraries(
+  itineraries: Itinerary[],
+  limit = 8,
+): TransitAlert[] {
+  const all = uniqueAlerts(
+    itineraries.flatMap((item) => alertsFromItinerary(item)),
+  );
+  const rank = (alert: TransitAlert) => {
+    const severe = alert.severityLevel && SEVERE.has(alert.severityLevel) ? 0 : 1;
+    const hard = alert.effect && HARD_EFFECTS.has(alert.effect) ? 0 : 1;
+    return severe * 2 + hard;
+  };
+  return [...all].sort((a, b) => rank(a) - rank(b)).slice(0, limit);
+}
+
 /**
  * Station-place notices always span the hall.
  * Trip notices only when they land on two or more rows.

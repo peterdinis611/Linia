@@ -196,6 +196,7 @@ export const it: Messages = {
   alerts: {
     kicker: "Avviso di servizio",
     hall: "Avviso attraverso la sala",
+    route: "Cosa non funziona su questo percorso",
     more: "Leggi l'avviso",
     effects: {
       NO_SERVICE: "Nessun servizio",
@@ -354,6 +355,12 @@ export const it: Messages = {
     boardTo: "Cosa parte da qui",
     carrierBoard: "Tabellone {name}",
     carrierHint: "Apre il loro orario. Questa sala non vende biglietti.",
+    accessKicker: "Accesso su questa linea",
+    wheelchairOk: "Accessibile in sedia a rotelle",
+    wheelchairNo: "Non accessibile in sedia a rotelle",
+    elevator: "Ascensore · {count}",
+    levelChange: "Livello {from} → {to}",
+    fareKicker: "Tariffa",
   },
   carriers: {
     compare: "Confronta operatori",

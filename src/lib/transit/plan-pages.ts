@@ -59,6 +59,7 @@ export function planPageDone(input: {
 export function slimItinerary(item: Itinerary): Itinerary {
   return {
     ...item,
+    // Keep fareTransfers / wheelchair / steps — only drop heavy path payload.
     legs: item.legs.map((leg) => ({
       ...leg,
       intermediateStops: [],

@@ -194,6 +194,7 @@ export const hu: Messages = {
   alerts: {
     kicker: "Forgalmi hirdetmény",
     hall: "Hirdetmény a csarnokon át",
+    route: "Mi van elromolva ezen az útvonalon",
     more: "Hirdetmény olvasása",
     effects: {
       NO_SERVICE: "Nincs közlekedés",
@@ -352,6 +353,12 @@ export const hu: Messages = {
     boardTo: "Mi indul innen",
     carrierBoard: "{name} tábla",
     carrierHint: "Megnyitja a menetrendjüket. Ez a csarnok nem árul jegyeket.",
+    accessKicker: "Akadálymentesség a vonalon",
+    wheelchairOk: "Kerekesszékkel megközelíthető",
+    wheelchairNo: "Nem akadálymentes",
+    elevator: "Lift · {count}",
+    levelChange: "Szint {from} → {to}",
+    fareKicker: "Díj",
   },
   carriers: {
     compare: "Szolgáltatók összevetése",

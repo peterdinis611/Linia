@@ -194,6 +194,7 @@ export const nl: Messages = {
   alerts: {
     kicker: "Dienstmededeling",
     hall: "Mededeling door de hal",
+    route: "Wat kapot is op deze route",
     more: "Lees de mededeling",
     effects: {
       NO_SERVICE: "Geen dienst",
@@ -352,6 +353,12 @@ export const nl: Messages = {
     boardTo: "Wat vertrekt hier",
     carrierBoard: "{name}-bord",
     carrierHint: "Opent hun dienstregeling. Deze hal verkoopt geen kaartjes.",
+    accessKicker: "Toegang op deze lijn",
+    wheelchairOk: "Rolstoeltoegankelijk",
+    wheelchairNo: "Niet rolstoeltoegankelijk",
+    elevator: "Lift · {count}",
+    levelChange: "Niveau {from} → {to}",
+    fareKicker: "Tarief",
   },
   carriers: {
     compare: "Vergelijk vervoerders",

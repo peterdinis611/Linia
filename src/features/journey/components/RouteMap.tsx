@@ -13,10 +13,14 @@ import {
   liveTransitLegIndex,
 } from "@/lib/format";
 import { pathPointsForLeg } from "@/lib/transit/path";
-import type { Itinerary, Place, SelectedPlace } from "@/lib/transit/types";
+import type { Itinerary, Place, SelectedPlace, TransitAlert } from "@/lib/transit/types";
 import type { MapPickMode, RouteMode } from "../hooks/use-journey-search";
+import type { RecentSearch } from "../lib/recent";
+import type { PinnedSearch } from "../lib/pinned";
 import { roleForMapClick } from "../lib/pins";
 import { itineraryKey } from "../lib/share";
+import { HallTape } from "./AlertStrip";
+import { QuickRoutes } from "./QuickRoutes";
 
 const MAP_ALT_CHIP_MAX = 4;
 /** Cap alternatives passed into the map (also exported for callers). */
@@ -63,6 +67,11 @@ type RouteMapProps = {
   onAssignPending: (role: "from" | "to" | "via") => void;
   onOpenStation?: (place: Place) => void;
   onSelectJourney?: (key: string) => void;
+  recents?: RecentSearch[];
+  pins?: PinnedSearch[];
+  routeAlerts?: TransitAlert[];
+  onRecentSelect?: (item: RecentSearch) => void;
+  onPinnedSelect?: (item: PinnedSearch) => void;
 };
 
 export function RouteMap({
@@ -88,6 +97,11 @@ export function RouteMap({
   onAssignPending,
   onOpenStation,
   onSelectJourney,
+  recents = [],
+  pins = [],
+  routeAlerts = [],
+  onRecentSelect,
+  onPinnedSelect,
 }: RouteMapProps) {
   const { locale, t } = useI18n();
   const stageId = useId();
@@ -287,8 +301,25 @@ export function RouteMap({
             </>
           )}
         </div>
+        {pickMode === "idle" && (recents.length > 0 || pins.length > 0) ? (
+          <div className="map-quick-routes pointer-events-auto">
+            <QuickRoutes
+              compact
+              maxRecents={3}
+              recents={recents}
+              pins={pins}
+              onRecentSelect={onRecentSelect}
+              onPinnedSelect={onPinnedSelect}
+            />
+          </div>
+        ) : null}
       </div>
       <div className="map-overlay pointer-events-none">
+        {routeAlerts.length > 0 && pickMode === "idle" ? (
+          <div className="map-hall-tape pointer-events-auto">
+            <HallTape alerts={routeAlerts} kicker={t("alerts.route")} />
+          </div>
+        ) : null}
         <div
           className="map-plaque pointer-events-auto"
           data-picking={pickMode !== "idle" || undefined}

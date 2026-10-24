@@ -22,7 +22,15 @@ import {
   type Place,
 } from "@/lib/transit/types";
 import { fetchTrip } from "@/lib/transit/queries";
+import {
+  accessNotesForLeg,
+  itineraryAccessNotes,
+} from "../lib/access";
 import { alertsFromItinerary, uniqueAlerts } from "../lib/alerts";
+import {
+  fareProductsFromItinerary,
+  formatFareProduct,
+} from "../lib/fares";
 import { currentStopIndex, itineraryIsLive, legPhase } from "../lib/progress";
 import {
   tightStampForLeg,
@@ -42,11 +50,13 @@ type ItineraryDetailProps = {
 };
 
 export function ItineraryDetail({ itinerary, onOpenStation }: ItineraryDetailProps) {
-  const { t, tp } = useI18n();
+  const { locale, t, tp } = useI18n();
   const now = useNow(itineraryIsLive(itinerary));
   const tights = tightTransfers(itinerary);
   const cancelled = ticketFault(itinerary).cancelled;
   const carrier = ticketLinkForItinerary(itinerary);
+  const accessNotes = itineraryAccessNotes(itinerary);
+  const fares = fareProductsFromItinerary(itinerary);
 
   return (
     <section className="journey-sheet">
@@ -84,6 +94,34 @@ export function ItineraryDetail({ itinerary, onOpenStation }: ItineraryDetailPro
         </div>
       </div>
       <AlertStrip alerts={alertsFromItinerary(itinerary)} />
+      {fares.length > 0 ? (
+        <div className="fare-marks" data-testid="fare-marks">
+          <p className="kicker">{t("detail.fareKicker")}</p>
+          <ul>
+            {fares.map((product, index) => {
+              const label = formatFareProduct(product, locale);
+              if (!label) return null;
+              return (
+                <li key={`${product.name}-${product.amount}-${index}`}>
+                  {label}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ) : null}
+      {accessNotes.length > 0 ? (
+        <div className="access-marks" data-testid="access-marks">
+          <p className="kicker">{t("detail.accessKicker")}</p>
+          <ul>
+            {accessNotes.map((note) => (
+              <li key={`${note.kind}-${note.labelKey}`}>
+                {t(note.labelKey, note.params)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
       <ol>
         {itinerary.legs.map((leg, index) => (
           <LegBlock
@@ -142,6 +180,7 @@ function LegBlock({
   const delay = delayMinutes(leg);
   const arriveDelay = arrivalDelayMinutes(leg);
   const liveStop = phase === "current" ? currentStopIndex(intermediates, now) : -1;
+  const legAccess = accessNotesForLeg(leg);
 
   if (!transit) {
     return (
@@ -173,6 +212,15 @@ function LegBlock({
             {t(`modes.${leg.mode}`)} · {formatDuration(leg.duration, t)}
             {formatDistance(leg.distance) ? ` · ${formatDistance(leg.distance)}` : ""}
           </p>
+          {legAccess.length > 0 ? (
+            <ul className="access-leg-marks">
+              {legAccess.map((note) => (
+                <li key={`${note.kind}-${note.labelKey}`}>
+                  {t(note.labelKey, note.params)}
+                </li>
+              ))}
+            </ul>
+          ) : null}
           {tight ? (
             <div className="ticket-marks">
               <TightFault transfer={tight} testId="detail-tight" />
@@ -254,6 +302,15 @@ function LegBlock({
               ? ` · ${t("detail.platform", { track: leg.from.track })}`
               : ""}
           </p>
+          {legAccess.length > 0 ? (
+            <ul className="access-leg-marks">
+              {legAccess.map((note) => (
+                <li key={`${note.kind}-${note.labelKey}`}>
+                  {t(note.labelKey, note.params)}
+                </li>
+              ))}
+            </ul>
+          ) : null}
           {trackChange(leg.from) ? (
             <div className="ticket-marks">
               <TrackFault place={leg.from} testId="detail-track-from" />

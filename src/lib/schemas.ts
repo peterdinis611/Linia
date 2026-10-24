@@ -326,6 +326,26 @@ export const encodedPolylineSchema = z.looseObject({
   length: z.number().optional().default(0),
 });
 
+/** MOTIS walk / transfer step (elevators, stairs, …). */
+export const stepInstructionSchema = z.looseObject({
+  relativeDirection: z.string().optional(),
+  absoluteDirection: z.string().optional(),
+  distance: z.number().optional(),
+  fromLevel: z.number().optional(),
+  toLevel: z.number().optional(),
+  streetName: z.string().optional(),
+});
+
+export const fareProductSchema = z.looseObject({
+  name: z.string().optional().default(""),
+  amount: z.number().optional(),
+  currency: z.string().optional(),
+});
+
+export const fareTransferSchema = z.looseObject({
+  products: z.array(fareProductSchema).optional().default([]),
+});
+
 export const legSchema = z.looseObject({
   mode: z.string(),
   startTime: z.string(),
@@ -348,7 +368,9 @@ export const legSchema = z.looseObject({
   agencyId: z.string().optional(),
   tripId: z.string().optional(),
   cancelled: z.boolean().optional(),
+  wheelchairAccessible: z.boolean().optional(),
   intermediateStops: z.array(placeSchema).nullable().optional(),
+  steps: z.array(stepInstructionSchema).optional(),
   alerts: z.array(transitAlertSchema).optional(),
   legGeometry: encodedPolylineSchema.optional().default({
     points: "",
@@ -363,6 +385,7 @@ export const itinerarySchema = z.looseObject({
   endTime: z.string(),
   transfers: z.number(),
   legs: z.array(legSchema),
+  fareTransfers: z.array(fareTransferSchema).optional(),
 });
 
 export const planResponseSchema = z.looseObject({

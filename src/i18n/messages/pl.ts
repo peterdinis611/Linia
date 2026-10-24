@@ -194,6 +194,7 @@ export const pl: Messages = {
   alerts: {
     kicker: "Komunikat o ruchu",
     hall: "Komunikat przez halę",
+    route: "Co jest zepsute na trasie",
     more: "Czytaj komunikat",
     effects: {
       NO_SERVICE: "Brak kursów",
@@ -352,6 +353,12 @@ export const pl: Messages = {
     boardTo: "Co odjeżdża stąd",
     carrierBoard: "Tablica {name}",
     carrierHint: "Otwiera ich rozkład. Hala nie sprzedaje biletów.",
+    accessKicker: "Dostęp na tej linii",
+    wheelchairOk: "Dostępne dla wózków",
+    wheelchairNo: "Niedostępne dla wózków",
+    elevator: "Winda · {count}",
+    levelChange: "Poziom {from} → {to}",
+    fareKicker: "Cena",
   },
   carriers: {
     compare: "Porównaj przewoźników",
