@@ -62,7 +62,7 @@ const PATH_MAX_POINTS = 200;
 /** Other result tracks drawn faded under the selected print. */
 export const MAP_ALT_MAX = 4;
 
-const ALT_COLORS_LIGHT = ["#7e8da0", "#5c6b7e", "#a8b4c4", "#6e7f94"];
+const ALT_COLORS_LIGHT = ["#91897d", "#6a645a", "#c0b9ae", "#7a7268"];
 const ALT_COLORS_DARK = ["#8b97a8", "#5c6b7e", "#3a4556", "#2a3340"];
 
 type Basemap = "map" | "satellite";

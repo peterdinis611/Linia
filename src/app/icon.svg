@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Linia">
   <style>
-    .paper { fill: #d8dee8; }
-    .mast, .lamp-mid, .lamp-low { fill: #12151a; }
+    .paper { fill: #e7e3dc; }
+    .mast, .lamp-mid, .lamp-low { fill: #15130f; }
     .lamp-mid { opacity: 0.35; }
     .lamp-low { opacity: 0.18; }
     @media (prefers-color-scheme: dark) {

@@ -5,31 +5,91 @@
  * using the Web Audio API. No audio files required.
  *
  * Usage:
- *   import { playFlap, isSoundEnabled, toggleSound } from "@/lib/board-sound";
+ *   import { playFlap, isSoundEnabled, toggleSound, hydrateSoundPref } from "@/lib/board-sound";
  *
- *   playFlap();              // play one mechanical click
- *   playFlap(4);             // play a burst (e.g. 4-character flip sequence)
- *   toggleSound();           // enable / disable (persisted in localStorage)
- *   isSoundEnabled();        // returns boolean
+ *   await hydrateSoundPref(); // load preference from IndexedDB
+ *   playFlap();               // play one mechanical click
+ *   playFlap(4);              // play a burst (e.g. 4-character flip sequence)
+ *   toggleSound();            // enable / disable (persisted in IndexedDB)
+ *   isSoundEnabled();         // returns boolean (memory cache)
  */
 
-const STORAGE_KEY = "linia_board_sound_enabled";
+import {
+  openLiniaDb,
+  PREFS_STORE,
+  publishHall,
+  requestToPromise,
+  txDone,
+} from "@/lib/idb";
+
+const SOUND_KEY = "board-sound";
+const LEGACY_STORAGE_KEY = "linia_board_sound_enabled";
+
+/** In-memory cache — sync reads for flap playback. Default ON. */
+let cached = true;
+let migratedLegacy = false;
 
 // ---------------------------------------------------------------------------
-// Persistence
+// Persistence (IndexedDB prefs store)
 // ---------------------------------------------------------------------------
+
+function migrateLegacyLocalStorage(): boolean | null {
+  if (migratedLegacy || typeof localStorage === "undefined") return null;
+  migratedLegacy = true;
+  try {
+    const stored = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (stored === null) return null;
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+    return stored === "true";
+  } catch {
+    return null;
+  }
+}
+
+async function writeSound(value: boolean): Promise<void> {
+  if (typeof indexedDB === "undefined") return;
+  try {
+    const db = await openLiniaDb();
+    const tx = db.transaction(PREFS_STORE, "readwrite");
+    const done = txDone(tx);
+    tx.objectStore(PREFS_STORE).put(value, SOUND_KEY);
+    await done;
+    publishHall("prefs");
+  } catch {
+    // private mode / blocked storage
+  }
+}
+
+/** Load sound preference from IndexedDB (and one-shot localStorage migrate). */
+export async function hydrateSoundPref(): Promise<boolean> {
+  const migrated = migrateLegacyLocalStorage();
+  if (migrated !== null) {
+    cached = migrated;
+    await writeSound(migrated);
+    return cached;
+  }
+  if (typeof indexedDB === "undefined") return cached;
+  try {
+    const db = await openLiniaDb();
+    const tx = db.transaction(PREFS_STORE, "readonly");
+    const value = await requestToPromise(
+      tx.objectStore(PREFS_STORE).get(SOUND_KEY),
+    );
+    if (value === false) cached = false;
+    else if (value === true) cached = true;
+  } catch {
+    // keep cache
+  }
+  return cached;
+}
 
 export function isSoundEnabled(): boolean {
-  if (typeof localStorage === "undefined") return false;
-  const stored = localStorage.getItem(STORAGE_KEY);
-  // Default ON if never set
-  return stored === null ? true : stored === "true";
+  return cached;
 }
 
 export function setSoundEnabled(value: boolean): void {
-  if (typeof localStorage !== "undefined") {
-    localStorage.setItem(STORAGE_KEY, String(value));
-  }
+  cached = value;
+  void writeSound(value);
 }
 
 export function toggleSound(): boolean {

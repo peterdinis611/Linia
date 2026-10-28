@@ -1,15 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { isSoundEnabled, toggleSound } from "@/lib/board-sound";
+import { hydrateSoundPref, toggleSound } from "@/lib/board-sound";
 import { useI18n } from "@/i18n/provider";
+import { subscribeHallPrefs } from "../lib/hall-prefs";
 
 export function SoundStamp() {
   const { t } = useI18n();
   const [on, setOn] = useState(true);
 
   useEffect(() => {
-    setOn(isSoundEnabled());
+    void hydrateSoundPref().then(setOn);
+    return subscribeHallPrefs(() => {
+      void hydrateSoundPref().then(setOn);
+    });
   }, []);
 
   return (
