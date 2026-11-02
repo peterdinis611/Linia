@@ -274,6 +274,8 @@ export function JourneyResults({
           onSelect={(index) =>
             onSelectedIndexChange(sorted[index]?.index ?? 0)
           }
+          showDetail={!comparing}
+          onOpenStation={onOpenStation}
         />
       )}
       {comparing && held && selected ? (
@@ -294,8 +296,6 @@ export function JourneyResults({
             <ItineraryDetail itinerary={selected} onOpenStation={onOpenStation} />
           </div>
         </div>
-      ) : selected ? (
-        <ItineraryDetail itinerary={selected} onOpenStation={onOpenStation} />
       ) : null}
     </div>
   );

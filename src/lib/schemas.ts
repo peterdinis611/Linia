@@ -57,9 +57,9 @@ export const planJourneyInputSchema = z
     language: z.string().trim().min(2).max(8).optional(),
     arriveBy: z.boolean().optional().default(false),
     allDay: z.boolean().optional().default(false),
-    modeFilter: modeFilterSchema,
+    modeFilter: modeFilterSchema.optional().default("all"),
     distanceFilter: distanceFilterSchema.optional().default("all"),
-    transferFilter: transferFilterSchema,
+    transferFilter: transferFilterSchema.optional().default("all"),
     accessible: z.boolean().optional().default(false),
     bike: z.boolean().optional().default(false),
     night: z.boolean().optional().default(false),
@@ -368,7 +368,24 @@ export const legSchema = z.looseObject({
   agencyId: z.string().optional(),
   tripId: z.string().optional(),
   cancelled: z.boolean().optional(),
-  wheelchairAccessible: z.boolean().optional(),
+  /** MOTIS sends ACCESSIBLE / NOT_ACCESSIBLE strings (sometimes boolean). */
+  wheelchairAccessible: z.preprocess((value) => {
+    if (value === true || value === false) return value;
+    if (typeof value !== "string") return undefined;
+    const stamp = value.trim().toUpperCase();
+    if (stamp === "ACCESSIBLE" || stamp === "TRUE" || stamp === "YES") {
+      return true;
+    }
+    if (
+      stamp === "NOT_ACCESSIBLE" ||
+      stamp === "FALSE" ||
+      stamp === "NO" ||
+      stamp === "INACCESSIBLE"
+    ) {
+      return false;
+    }
+    return undefined;
+  }, z.boolean().optional()),
   intermediateStops: z.array(placeSchema).nullable().optional(),
   steps: z.array(stepInstructionSchema).optional(),
   alerts: z.array(transitAlertSchema).optional(),

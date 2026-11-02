@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useEffect, useRef, type ReactNode } from "react";
 import { useI18n } from "@/i18n/provider";
 import { transitAgencies } from "@/lib/carriers";
 import {
@@ -10,7 +10,7 @@ import {
   isTransitMode,
   legColor,
 } from "@/lib/format";
-import type { Itinerary, Leg } from "@/lib/transit/types";
+import type { Itinerary, Leg, Place } from "@/lib/transit/types";
 import { alertsFromItinerary } from "../lib/alerts";
 import { itineraryIsLive, legPhase } from "../lib/progress";
 import {
@@ -25,6 +25,7 @@ import { itineraryKey } from "../lib/share";
 import { watchKey } from "../lib/trip-watch";
 import { AlertStrip } from "./AlertStrip";
 import { HoldStamp } from "./HoldStamp";
+import { ItineraryDetail } from "./ItineraryDetail";
 import { LeavesSoon } from "./LeavesSoon";
 import { TightFault } from "./TightFault";
 import { WatchStamp } from "./WatchStamp";
@@ -39,6 +40,9 @@ type ItineraryListProps = {
   heldKey?: string | null;
   onHold?: (itinerary: Itinerary) => void;
   onSelect: (index: number) => void;
+  /** When true, stamp the stop-by-stop sheet under the selected ticket. */
+  showDetail?: boolean;
+  onOpenStation?: (place: Place) => void;
 };
 
 export function ItineraryList({
@@ -51,6 +55,8 @@ export function ItineraryList({
   heldKey = null,
   onHold,
   onSelect,
+  showDetail = false,
+  onOpenStation,
 }: ItineraryListProps) {
   const { t } = useI18n();
   return (
@@ -72,6 +78,14 @@ export function ItineraryList({
           onWatch={onWatch}
           onHold={onHold}
           onSelect={onSelect}
+          detail={
+            showDetail && index === selectedIndex ? (
+              <ItineraryDetail
+                itinerary={itinerary}
+                onOpenStation={onOpenStation}
+              />
+            ) : null
+          }
         />
       ))}
     </ul>
@@ -89,6 +103,7 @@ type TicketProps = {
   onWatch?: (itinerary: Itinerary) => void;
   onHold?: (itinerary: Itinerary) => void;
   onSelect: (index: number) => void;
+  detail?: ReactNode;
 };
 
 const ItineraryTicket = memo(function ItineraryTicket({
@@ -102,8 +117,10 @@ const ItineraryTicket = memo(function ItineraryTicket({
   onWatch,
   onHold,
   onSelect,
+  detail = null,
 }: TicketProps) {
   const { locale, t, tp } = useI18n();
+  const detailRef = useRef<HTMLDivElement>(null);
   const transitLegs = itinerary.legs.filter((leg) => isTransitMode(leg.mode));
   const fault = ticketFault(itinerary);
   const track = ticketTrackChange(itinerary);
@@ -119,6 +136,17 @@ const ItineraryTicket = memo(function ItineraryTicket({
     selected &&
     !fault.cancelled &&
     waitToDepartSeconds(itinerary.startTime) != null;
+
+  useEffect(() => {
+    if (!selected || !detail) return;
+    const node = detailRef.current;
+    if (!node) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    node.scrollIntoView({
+      block: "nearest",
+      behavior: reduce ? "auto" : "smooth",
+    });
+  }, [selected, detail, itinerary.startTime]);
 
   return (
     <li role="none" className="ticket-row">
@@ -246,6 +274,11 @@ const ItineraryTicket = memo(function ItineraryTicket({
           holding={heldKey === itineraryKey(itinerary)}
           onToggle={() => onHold(itinerary)}
         />
+      ) : null}
+      {detail ? (
+        <div ref={detailRef} className="ticket-detail" data-testid="ticket-detail">
+          {detail}
+        </div>
       ) : null}
     </li>
   );

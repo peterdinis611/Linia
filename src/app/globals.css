@@ -617,6 +617,15 @@ html:not(.dark) .board-clock .kicker {
   contain-intrinsic-size: auto 7.5rem;
 }
 
+.ticket-row:has(.ticket-detail) {
+  content-visibility: visible;
+  contain-intrinsic-size: none;
+}
+
+.ticket-detail {
+  margin-top: 0.55rem;
+}
+
 .ticket {
   position: relative;
   background: var(--paper-raised);
