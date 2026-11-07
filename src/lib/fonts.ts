@@ -1,47 +1,199 @@
-import {
-  Barlow_Condensed,
-  IBM_Plex_Mono,
-  IBM_Plex_Sans,
-} from "next/font/google";
+import localFont from "next/font/local";
 
-const displayLatin = Barlow_Condensed({
+/**
+ * Self-hosted hall fonts (woff2 in src/fonts).
+ * Avoids next/font/google downloads that break offline / CI builds.
+ */
+
+const displayLatin = localFont({
   variable: "--font-display-face",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  display: "swap",
+  src: [
+    {
+      path: "../fonts/barlow-condensed-latin-500-normal.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../fonts/barlow-condensed-latin-600-normal.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../fonts/barlow-condensed-latin-700-normal.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
 });
 
-const displayExt = Barlow_Condensed({
+const displayExt = localFont({
   variable: "--font-display-face",
-  subsets: ["latin", "latin-ext"],
-  weight: ["500", "600", "700"],
+  display: "swap",
+  src: [
+    {
+      path: "../fonts/barlow-condensed-latin-500-normal.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../fonts/barlow-condensed-latin-600-normal.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../fonts/barlow-condensed-latin-700-normal.woff2",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../fonts/barlow-condensed-latin-ext-500-normal.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../fonts/barlow-condensed-latin-ext-600-normal.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../fonts/barlow-condensed-latin-ext-700-normal.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
 });
 
-const sansLatin = IBM_Plex_Sans({
+const sansLatin = localFont({
   variable: "--font-sans-face",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  display: "swap",
   preload: false,
+  src: [
+    {
+      path: "../fonts/ibm-plex-sans-latin-400-normal.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/ibm-plex-sans-latin-500-normal.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../fonts/ibm-plex-sans-latin-600-normal.woff2",
+      weight: "600",
+      style: "normal",
+    },
+  ],
 });
 
-const sansExt = IBM_Plex_Sans({
+const sansExt = localFont({
   variable: "--font-sans-face",
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600"],
+  display: "swap",
   preload: false,
+  src: [
+    {
+      path: "../fonts/ibm-plex-sans-latin-400-normal.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/ibm-plex-sans-latin-500-normal.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../fonts/ibm-plex-sans-latin-600-normal.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../fonts/ibm-plex-sans-latin-ext-400-normal.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/ibm-plex-sans-latin-ext-500-normal.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../fonts/ibm-plex-sans-latin-ext-600-normal.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../fonts/ibm-plex-sans-cyrillic-400-normal.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/ibm-plex-sans-cyrillic-500-normal.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../fonts/ibm-plex-sans-cyrillic-600-normal.woff2",
+      weight: "600",
+      style: "normal",
+    },
+  ],
 });
 
-const plexLatin = IBM_Plex_Mono({
+const plexLatin = localFont({
   variable: "--font-plex-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
+  display: "swap",
   preload: false,
+  src: [
+    {
+      path: "../fonts/ibm-plex-mono-latin-400-normal.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/ibm-plex-mono-latin-500-normal.woff2",
+      weight: "500",
+      style: "normal",
+    },
+  ],
 });
 
-const plexExt = IBM_Plex_Mono({
+const plexExt = localFont({
   variable: "--font-plex-mono",
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "500"],
+  display: "swap",
   preload: false,
+  src: [
+    {
+      path: "../fonts/ibm-plex-mono-latin-400-normal.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/ibm-plex-mono-latin-500-normal.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../fonts/ibm-plex-mono-latin-ext-400-normal.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/ibm-plex-mono-latin-ext-500-normal.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../fonts/ibm-plex-mono-cyrillic-400-normal.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/ibm-plex-mono-cyrillic-500-normal.woff2",
+      weight: "500",
+      style: "normal",
+    },
+  ],
 });
 
 export function hallFontClass(latinExt: boolean) {

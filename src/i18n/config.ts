@@ -75,6 +75,7 @@ const latinExtLocales: ReadonlySet<Locale> = new Set([
   "hu",
   "ro",
   "hr",
+  "uk", // IBM Plex cyrillic (+ latin-ext pack)
 ]);
 
 export function localeNeedsLatinExt(locale: Locale): boolean {
