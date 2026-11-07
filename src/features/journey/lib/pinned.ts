@@ -1,15 +1,16 @@
 import { selectedPlaceSchema, type SelectedPlace } from "@/lib/schemas";
 import {
+  createHallSnapshotStore,
   openLiniaDb,
   PINNED_STORE,
   publishHall,
   requestPersistentHall,
   requestToPromise,
-  subscribeHall,
   txDone,
 } from "@/lib/idb";
 
 export const MAX_PINNED = 3;
+const EMPTY: PinnedSearch[] = [];
 
 export type PinnedRole = "home" | "work" | "line";
 
@@ -114,38 +115,67 @@ async function writeAll(db: IDBDatabase, items: PinnedSearch[]): Promise<void> {
   await done;
 }
 
-export async function readPinnedSearches(): Promise<PinnedSearch[]> {
-  if (typeof indexedDB === "undefined") return [];
+async function loadFromDb(): Promise<PinnedSearch[]> {
+  if (typeof indexedDB === "undefined") return EMPTY;
   try {
     return await readAll(await openLiniaDb());
   } catch {
-    return [];
+    return EMPTY;
   }
+}
+
+const pinnedStore = createHallSnapshotStore<PinnedSearch[]>({
+  topic: "pinned",
+  empty: EMPTY,
+  read: loadFromDb,
+  same: (a, b) =>
+    a.length === b.length &&
+    a.every(
+      (item, index) =>
+        item.role === b[index]?.role &&
+        item.savedAt === b[index]?.savedAt &&
+        item.from.id === b[index]?.from.id &&
+        item.to.id === b[index]?.to.id,
+    ),
+});
+
+export function getPinnedSearchesSnapshot() {
+  return pinnedStore.getSnapshot();
+}
+
+export async function readPinnedSearches(): Promise<PinnedSearch[]> {
+  return pinnedStore.refresh();
 }
 
 export async function pinSearch(
   entry: Omit<PinnedSearch, "savedAt">,
 ): Promise<PinnedSearch[]> {
-  const next = mergePinned(entry, await readPinnedSearches());
-  if (typeof indexedDB === "undefined") return next;
-  try {
-    await requestPersistentHall();
-    await writeAll(await openLiniaDb(), next);
-    publishHall("pinned");
-  } catch {
-    // private mode / blocked storage
+  await pinnedStore.ensureHydrated();
+  const next = mergePinned(entry, pinnedStore.getSnapshot());
+  pinnedStore.replace(next);
+  if (typeof indexedDB !== "undefined") {
+    try {
+      await requestPersistentHall();
+      await writeAll(await openLiniaDb(), next);
+      publishHall("pinned");
+    } catch {
+      // private mode / blocked storage
+    }
   }
   return next;
 }
 
 export async function unpinSearch(role: PinnedRole): Promise<PinnedSearch[]> {
-  const next = dropPinned(await readPinnedSearches(), role);
-  if (typeof indexedDB === "undefined") return next;
-  try {
-    await writeAll(await openLiniaDb(), next);
-    publishHall("pinned");
-  } catch {
-    // private mode / blocked storage
+  await pinnedStore.ensureHydrated();
+  const next = dropPinned(pinnedStore.getSnapshot(), role);
+  pinnedStore.replace(next);
+  if (typeof indexedDB !== "undefined") {
+    try {
+      await writeAll(await openLiniaDb(), next);
+      publishHall("pinned");
+    } catch {
+      // private mode / blocked storage
+    }
   }
   return next;
 }
@@ -153,7 +183,7 @@ export async function unpinSearch(role: PinnedRole): Promise<PinnedSearch[]> {
 export function subscribePinnedSearches(
   onChange: (items: PinnedSearch[]) => void,
 ) {
-  return subscribeHall("pinned", () => {
-    void readPinnedSearches().then(onChange);
-  });
+  const push = () => onChange(pinnedStore.getSnapshot());
+  push();
+  return pinnedStore.subscribe(push);
 }

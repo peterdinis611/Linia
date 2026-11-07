@@ -19,6 +19,7 @@ import {
   PREFS_STORE,
   publishHall,
   requestToPromise,
+  subscribeHall,
   txDone,
 } from "@/lib/idb";
 
@@ -28,6 +29,11 @@ const LEGACY_STORAGE_KEY = "linia_board_sound_enabled";
 /** In-memory cache — sync reads for flap playback. Default ON. */
 let cached = true;
 let migratedLegacy = false;
+const soundBus = new EventTarget();
+
+function notifySound() {
+  soundBus.dispatchEvent(new Event("change"));
+}
 
 // ---------------------------------------------------------------------------
 // Persistence (IndexedDB prefs store)
@@ -88,7 +94,9 @@ export function isSoundEnabled(): boolean {
 }
 
 export function setSoundEnabled(value: boolean): void {
+  if (cached === value) return;
   cached = value;
+  notifySound();
   void writeSound(value);
 }
 
@@ -96,6 +104,25 @@ export function toggleSound(): boolean {
   const next = !isSoundEnabled();
   setSoundEnabled(next);
   return next;
+}
+
+/** Snapshot for useSyncExternalStore — same as isSoundEnabled. */
+export function getSoundEnabledSnapshot() {
+  return cached;
+}
+
+/** Local + hall prefs — reactive sound toggle for React. */
+export function subscribeSoundEnabled(onChange: () => void) {
+  const onLocal = () => onChange();
+  soundBus.addEventListener("change", onLocal);
+  void hydrateSoundPref().then(() => onChange());
+  const stopHall = subscribeHall("prefs", () => {
+    void hydrateSoundPref().then(() => onChange());
+  });
+  return () => {
+    soundBus.removeEventListener("change", onLocal);
+    stopHall();
+  };
 }
 
 // ---------------------------------------------------------------------------

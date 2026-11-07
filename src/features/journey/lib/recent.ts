@@ -1,15 +1,16 @@
 import { selectedPlaceSchema, type SelectedPlace } from "@/lib/schemas";
 import {
+  createHallSnapshotStore,
   openLiniaDb,
   publishHall,
   RECENT_STORE,
   requestPersistentHall,
   requestToPromise,
-  subscribeHall,
   txDone,
 } from "@/lib/idb";
 
 const MAX_RECENT = 6;
+const EMPTY: RecentSearch[] = [];
 
 export type RecentSearch = {
   from: SelectedPlace;
@@ -88,26 +89,53 @@ async function writeAll(db: IDBDatabase, items: RecentSearch[]): Promise<void> {
   await done;
 }
 
-export async function readRecentSearches(): Promise<RecentSearch[]> {
-  if (typeof indexedDB === "undefined") return [];
+async function loadFromDb(): Promise<RecentSearch[]> {
+  if (typeof indexedDB === "undefined") return EMPTY;
   try {
     return await readAll(await openLiniaDb());
   } catch {
-    return [];
+    return EMPTY;
   }
+}
+
+const recentStore = createHallSnapshotStore<RecentSearch[]>({
+  topic: "recent",
+  empty: EMPTY,
+  read: loadFromDb,
+  same: (a, b) =>
+    a.length === b.length &&
+    a.every(
+      (item, index) =>
+        item.savedAt === b[index]?.savedAt &&
+        item.from.id === b[index]?.from.id &&
+        item.to.id === b[index]?.to.id,
+    ),
+});
+
+export function getRecentSearchesSnapshot() {
+  return recentStore.getSnapshot();
+}
+
+export async function readRecentSearches(): Promise<RecentSearch[]> {
+  return recentStore.refresh();
 }
 
 export async function rememberSearch(
   entry: Pick<RecentSearch, "from" | "to" | "via">,
 ): Promise<RecentSearch[]> {
-  const next = mergeRecent(entry, await readRecentSearches());
-  if (typeof indexedDB === "undefined") return next;
-  try {
-    await requestPersistentHall();
-    await writeAll(await openLiniaDb(), next);
-    publishHall("recent");
-  } catch {
-    // private mode / blocked storage
+  await recentStore.ensureHydrated();
+  const next = mergeRecent(entry, recentStore.getSnapshot());
+  // Optimistic UI first; publish only after a successful write so hall
+  // refresh cannot clobber the snapshot with a stale empty read.
+  recentStore.replace(next);
+  if (typeof indexedDB !== "undefined") {
+    try {
+      await requestPersistentHall();
+      await writeAll(await openLiniaDb(), next);
+      publishHall("recent");
+    } catch {
+      // private mode / blocked storage — memory snapshot still updated
+    }
   }
   return next;
 }
@@ -115,7 +143,7 @@ export async function rememberSearch(
 export function subscribeRecentSearches(
   onChange: (items: RecentSearch[]) => void,
 ) {
-  return subscribeHall("recent", () => {
-    void readRecentSearches().then(onChange);
-  });
+  const push = () => onChange(recentStore.getSnapshot());
+  push();
+  return recentStore.subscribe(push);
 }

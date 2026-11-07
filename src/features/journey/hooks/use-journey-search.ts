@@ -60,20 +60,14 @@ import {
   type MapPickMode,
   type PinRole,
 } from "../lib/pins";
-import {
-  readRecentSearches,
-  rememberSearch,
-  subscribeRecentSearches,
-  type RecentSearch,
-} from "../lib/recent";
+import { rememberSearch, type RecentSearch } from "../lib/recent";
 import {
   pinSearch,
-  readPinnedSearches,
-  subscribePinnedSearches,
   unpinSearch,
   type PinnedRole,
   type PinnedSearch,
 } from "../lib/pinned";
+import { usePinnedSearches, useRecentSearches } from "./use-hall-idb";
 
 export type { MapPickMode } from "../lib/pins";
 export type PlaceSource = "form" | "map";
@@ -185,8 +179,8 @@ export function useJourneySearch() {
   const [geoError, setGeoError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [liveAt, setLiveAt] = useState<number | null>(null);
-  const [recents, setRecents] = useState<RecentSearch[]>([]);
-  const [pins, setPins] = useState<PinnedSearch[]>([]);
+  const recents = useRecentSearches();
+  const pins = usePinnedSearches();
   const [accessible, setAccessible] = useState(false);
   const [bike, setBike] = useState(false);
   const [night, setNight] = useState(false);
@@ -960,9 +954,7 @@ export function useJourneySearch() {
       );
       if (!silent) {
         setSelectedCarriers([]);
-        setRecents(
-          await rememberSearch({ from: origin, to: destination, via: vias }),
-        );
+        await rememberSearch({ from: origin, to: destination, via: vias });
       }
       setLiveAt(Date.now());
       if (!silent && !paintedOutbound) bumpFit();
@@ -1236,32 +1228,6 @@ export function useJourneySearch() {
     wantReturn,
     returnDatetime,
   ]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const apply = (items: RecentSearch[]) => {
-      if (!cancelled) setRecents(items);
-    };
-    void readRecentSearches().then(apply);
-    const stop = subscribeRecentSearches(apply);
-    return () => {
-      cancelled = true;
-      stop();
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    const apply = (items: PinnedSearch[]) => {
-      if (!cancelled) setPins(items);
-    };
-    void readPinnedSearches().then(apply);
-    const stop = subscribePinnedSearches(apply);
-    return () => {
-      cancelled = true;
-      stop();
-    };
-  }, []);
 
   useEffect(() => {
     if (!hasSearched || (itineraries.length === 0 && stopTimes.length === 0)) return;
@@ -1545,11 +1511,11 @@ export function useJourneySearch() {
     const vias = (routeMode === "via" ? via : []).filter(
       (stop): stop is SelectedPlace => Boolean(stop),
     );
-    setPins(await pinSearch({ role, from, to, via: vias }));
+    await pinSearch({ role, from, to, via: vias });
   }
 
   async function handleUnpinSearch(role: PinnedRole) {
-    setPins(await unpinSearch(role));
+    await unpinSearch(role);
   }
 
   function revealMap() {

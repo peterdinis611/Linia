@@ -12,6 +12,12 @@ let dbPromise: Promise<IDBDatabase> | null = null;
 let channel: BroadcastChannel | null = null;
 let persistAsked = false;
 
+/** Bumps on every local publish — same-tab BroadcastChannel echoes are ignored. */
+let publishEpoch = 0;
+
+/** Same-tab reactive bus (BroadcastChannel alone is not enough for reactivity). */
+const localBus = new EventTarget();
+
 function hallChannel() {
   if (typeof BroadcastChannel === "undefined") return null;
   channel ??= new BroadcastChannel(CHANNEL);
@@ -72,28 +78,143 @@ export function txDone(tx: IDBTransaction): Promise<void> {
   });
 }
 
+/**
+ * Notify hall listeners. Same-tab gets the EventTarget immediately;
+ * other tabs get BroadcastChannel. Own-tab channel echo is skipped via epoch.
+ */
 export function publishHall(topic: HallTopic) {
-  hallChannel()?.postMessage({ topic });
+  publishEpoch += 1;
+  const epoch = publishEpoch;
+  localBus.dispatchEvent(
+    new CustomEvent("hall", { detail: { topic, epoch } }),
+  );
+  try {
+    hallChannel()?.postMessage({ topic, epoch });
+  } catch {
+    // channel closed / unsupported
+  }
 }
 
+/**
+ * Subscribe to hall topic changes.
+ * - Local writes → immediate (EventTarget)
+ * - Other tabs → BroadcastChannel
+ * - Return from background → one revalidate (missed cross-tab / external edits)
+ * No focus/pageshow spam.
+ */
 export function subscribeHall(topic: HallTopic, onChange: () => void) {
   if (typeof window === "undefined") return () => {};
-  const ch = hallChannel();
-  const onMessage = (event: MessageEvent<{ topic?: HallTopic }>) => {
-    if (event.data?.topic === topic) onChange();
+
+  const onLocal = (event: Event) => {
+    const detail = (event as CustomEvent<{ topic?: HallTopic }>).detail;
+    if (detail?.topic === topic) onChange();
   };
+
+  const onMessage = (
+    event: MessageEvent<{ topic?: HallTopic; epoch?: number }>,
+  ) => {
+    if (event.data?.topic !== topic) return;
+    if (event.data.epoch === publishEpoch) return;
+    onChange();
+  };
+
+  let hidden = document.visibilityState === "hidden";
   const onVisible = () => {
-    if (document.visibilityState === "visible") onChange();
+    if (document.visibilityState === "hidden") {
+      hidden = true;
+      return;
+    }
+    if (!hidden) return;
+    hidden = false;
+    onChange();
   };
+
+  localBus.addEventListener("hall", onLocal);
+  const ch = hallChannel();
   ch?.addEventListener("message", onMessage);
   document.addEventListener("visibilitychange", onVisible);
-  window.addEventListener("pageshow", onChange);
-  window.addEventListener("focus", onChange);
+
   return () => {
+    localBus.removeEventListener("hall", onLocal);
     ch?.removeEventListener("message", onMessage);
     document.removeEventListener("visibilitychange", onVisible);
-    window.removeEventListener("pageshow", onChange);
-    window.removeEventListener("focus", onChange);
+  };
+}
+
+/**
+ * In-memory snapshot store wired to a hall topic — sync reads for React,
+ * async hydrate + cross-tab reload.
+ */
+export function createHallSnapshotStore<T>(options: {
+  topic: HallTopic;
+  empty: T;
+  read: () => Promise<T>;
+  same?: (a: T, b: T) => boolean;
+}) {
+  let snapshot = options.empty;
+  let version = 0;
+  let hydrate: Promise<T> | null = null;
+  const listeners = new Set<() => void>();
+
+  function emit() {
+    version += 1;
+    for (const listener of listeners) listener();
+  }
+
+  function setSnapshot(next: T, notifyHall = false) {
+    if (options.same?.(snapshot, next)) {
+      if (notifyHall) publishHall(options.topic);
+      return snapshot;
+    }
+    snapshot = next;
+    emit();
+    if (notifyHall) publishHall(options.topic);
+    return snapshot;
+  }
+
+  async function refresh() {
+    const next = await options.read();
+    return setSnapshot(next, false);
+  }
+
+  function ensureHydrated() {
+    if (!hydrate) {
+      hydrate = refresh();
+    }
+    return hydrate;
+  }
+
+  let hallStop: (() => void) | null = null;
+
+  function subscribe(onStoreChange: () => void) {
+    listeners.add(onStoreChange);
+    if (!hallStop) {
+      void ensureHydrated();
+      hallStop = subscribeHall(options.topic, () => {
+        void refresh();
+      });
+    }
+    return () => {
+      listeners.delete(onStoreChange);
+      if (listeners.size === 0 && hallStop) {
+        hallStop();
+        hallStop = null;
+        hydrate = null;
+      }
+    };
+  }
+
+  return {
+    getSnapshot: () => snapshot,
+    getServerSnapshot: () => options.empty,
+    getVersion: () => version,
+    subscribe,
+    /** Optimistic / post-write update — notifies React, then hall for other tabs. */
+    commit: (next: T) => setSnapshot(next, true),
+    /** Replace cache without publishing (e.g. after local read). */
+    replace: (next: T) => setSnapshot(next, false),
+    refresh,
+    ensureHydrated,
   };
 }
 
